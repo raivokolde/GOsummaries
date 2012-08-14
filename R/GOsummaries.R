@@ -485,8 +485,6 @@ panelize_ggplot2 = function(plot_function, customize_function, par){
 			index = grepl("guide-box", p$layout$name, fixed = FALSE)
 			if(sum(index) == 0) return(zeroGrob())
 			a = p$grobs[[which(index)]]
-			a <<- a
-			p <<- p
 			width = p$widths[p$layout$l[index]]
 			# height = unit(length(getGrob(a, gPath = "key", grep = TRUE, global = T)) / 2 * 1.4 * fontsize, "points") + unit(1, "lines")
 			height = a$heights[2] - unit(3, "mm")
