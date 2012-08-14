@@ -145,7 +145,7 @@ SEXP findCoordinates_left( SEXP width, SEXP height ){
 
 	double x, y, sign, sign2;
 	double vertStep = 0.02;
-	double horizStep = 0.05;
+	double horizStep = 0.02;
 	
 	double rand = as<double>(runif(1));
 	sign = rand - 0.5 ;

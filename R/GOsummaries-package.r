@@ -2,10 +2,10 @@
 #'
 #' A package to visualize Gene Ontology (GO) enrichment analysis results on gene lists 
 #' arising from different analyses such clustering or PCA. The significant GO categories 
-#' are visualised as word clouds that can be combined with different plots summarizing the 
-#' underlying data.  
+#' are visualised as word clouds that can be combined with different plots summarizing 
+#' the underlying data.  
 #' 
-#' The goal of GOsummaries package is to draw nice figures that can be used in 
+#' The goal of GOsummaries package is to draw figures that can be used in 
 #' presentations and articles. To draw them, the user should first construct a 
 #' \code{\link{gosummaries}} object and then use its plot function on it. One can start 
 #' constructing the \code{\link{gosummaries}} object from gene lists, with filling in all 

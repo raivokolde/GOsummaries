@@ -9,6 +9,8 @@ findCoordinates_left = function (width, height){
 
 #' Plot a wordcloud given words and frequencies
 #' 
+#' General \code{grid} based wordcloud drawing function 
+#' 
 #' Uses the algorithm from wordcloud package to calculate the positions of the words. 
 #' then uses grid graphics to plot the words on screen. The shape of the wordcloud 
 #' depends on the shape of the plotting window

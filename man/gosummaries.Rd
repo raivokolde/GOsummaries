@@ -40,9 +40,12 @@
   A gosummaries type of object
 }
 \description{
-  The gosummaries object contains all the necessary
-  information to draw the figure, like gene lists and their
-  annotations, expression data and all the relevant texts.
+  Constructor for gosummaries object that contains all the
+  necessary information to d raw the figure, like gene
+  lists and their annotations, expression data and all the
+  relevant texts.
+}
+\details{
   The object is a list of "components", with each component
   defined by a gene list or a pair of gene lists. Each
   "component" has the slots as follows: \itemize{ \item
@@ -61,8 +64,18 @@
   percentage of variation the component explains, by
   default it just depicts the number of genes in the
   Gene_lists slot. }
-}
-\details{
+
+  The GO enrichment analysis is performed using g:Profiler
+  web toolkit and its associated R package
+  \code{gProfileR}. This means the computer has to have
+  internet access to annotate the gene lists. Since
+  g:Profiler can accept a wide range of gene IDs then user
+  usually does not have to worry about converitng the gene
+  IDs into right format. To be absolutely sure the tool
+  recognizes the gene IDs one can check if they will give
+  any results in
+  \url{http://biit.cs.ut.ee/gprofiler/gconvert.cgi}.
+
   There can be a lot of results for a typical GO enrichment
   analysis but usually these tend to be pretty redundant.
   Since one can fit only a small number of categories into

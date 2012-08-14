@@ -15,6 +15,10 @@
   \code{exp}}
 }
 \description{
+  Function to add expression data and its annotations to a
+  gosummaries object.
+}
+\details{
   The data is added to the object in a "long" format so it
   would be directly usable by the ggplot2 based panel
   drawing functions \code{\link{panel_boxplot}} etc. For

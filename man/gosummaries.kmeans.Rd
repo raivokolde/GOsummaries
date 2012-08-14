@@ -3,7 +3,7 @@
 \title{Prepare gosummaries object based on k-means results}
 \usage{
   \method{gosummaries}{kmeans} (x, exp = NULL,
-    annotation = NULL, components = 1:length(x), ...)
+    annotation = NULL, components = 1:length(x$size), ...)
 }
 \arguments{
   \item{x}{an object of class \code{kmeans}}
@@ -25,6 +25,11 @@
   A gosummaries object.
 }
 \description{
+  The gosummaries object is created based on the genes in
+  the clusters, it is possible to add corresponding gene
+  expression data as well.
+}
+\details{
   The k-means clustering of expression matrix naturally
   defines a set of gene lists that can be annotated
   functionally and displayed as a GOsummaries figure. This
@@ -33,8 +38,7 @@
   expression matrix is attached then the panel shows the
   expression values for each gene as boxplots, if not then
   number of genes is displayed
-}
-\details{
+
   It is advisable to filter some genes out before doing the
   clustering since the very large gene lists (more than
   2000 genes) might fail the annotation step and are

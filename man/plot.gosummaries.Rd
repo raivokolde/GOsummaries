@@ -3,7 +3,7 @@
 \title{Plot the GOsummaries figure}
 \usage{
   \method{plot}{gosummaries} (x,
-    components = names(gosummaries)[1:min(10, length(gosummaries))],
+    components = names(x)[1:min(10, length(x))],
     panel_plot = NULL, panel_customize = NULL,
     panel_par = list(), panel_height = 5, fontsize = 10,
     term_length = 35,
@@ -53,11 +53,11 @@
 }
 \description{
   The function to draw a GOsummaries figure based on a
-  gosummaries object.  The GOsummaries figure consists of
-  several components each defined by a gene list ora a pair
-  of them. The GO annotations of them are shown as
-  wordclouds. Optionally one can draw related (expression)
-  data on panels atop of the wordclouds.
+  \code{gosummaries} object.  The GOsummaries figure
+  consists of several components each defined by a gene
+  list ora a pair of them. The GO annotations of them are
+  shown as wordclouds. Optionally one can draw related
+  (expression) data on panels atop of the wordclouds.
 }
 \details{
   In most cases the function can decide which type of plot

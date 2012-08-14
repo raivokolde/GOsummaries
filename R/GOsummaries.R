@@ -27,12 +27,15 @@ add_dummydata.gosummaries = function(gosummaries){
  
 #' Constructor for gosummaries object
 #' 
-#' The gosummaries object contains all the necessary information to draw the figure, 
-#' like gene lists and their annotations, expression data and all the relevant texts. 
+#' Constructor for gosummaries object that contains all the necessary information to d
+#' raw the figure, like gene lists and their annotations, expression data and all the 
+#' relevant texts.
+#' 
 #' The object is a list of "components", with each component defined by a gene list or a 
 #' pair of gene lists. Each "component" has the slots as follows:
 #' \itemize{
-#'   \item \bold{Title}: title string of the component. (Default: the names of the gene lists)
+#'   \item \bold{Title}: title string of the component. (Default: the names of the gene 
+#' lists)
 #'   \item \bold{Gene_lists}: list of one or two gene lists with names gl1 (and gl2 if 
 #' present).
 #'   \item \bold{GPR}: g:Profiler results based on the Gene_lists slot. 
@@ -44,6 +47,13 @@ add_dummydata.gosummaries = function(gosummaries){
 #' component. In case of PCA this is the percentage of variation the component explains, 
 #' by default it just depicts the number of genes in the Gene_lists slot.
 #' }
+#' 
+#' The GO enrichment analysis is performed using g:Profiler web toolkit and its 
+#' associated R package \code{gProfileR}. This means the computer has to have internet 
+#' access to annotate the gene lists. Since g:Profiler can accept a wide range of gene 
+#' IDs then user usually does not have to worry about converitng the gene IDs into right 
+#' format. To be absolutely sure the tool recognizes the gene IDs one can check if they 
+#' will give any results in \url{http://biit.cs.ut.ee/gprofiler/gconvert.cgi}. 
 #' 
 #' There can be a lot of results for a typical GO enrichment analysis but usually these 
 #' tend to be pretty redundant. Since one can fit only a small number of categories into 
@@ -170,7 +180,7 @@ is.gosummaries = function(x) inherits(x, "gosummaries")
 #' @S3method print gosummaries
 #' @export
 print.gosummaries = function(x, ...){
-	for(a in gosummaries){
+	for(a in x){
 		cat(sprintf("Component title: %s\n", a$Title))
 		cat("\n")
 		cat(sprintf("%s\n", "Head of gene lists"))
@@ -207,19 +217,18 @@ print.gosummaries = function(x, ...){
 #' @rdname add_to_slot.gosummaries
 #' @export
 add_to_slot.gosummaries = function(x, slot, values){
-	if(length(gosummaries) != length(values)) stop("Length of gosummaries object and values does not match")
+	if(length(x) != length(values)) stop("Length of gosummaries object and values does not match")
 	
-	for(i in seq_along(gosummaries)){
-		gosummaries[[i]][[slot]] = values[[i]]
+	for(i in seq_along(x)){
+		x[[i]][[slot]] = values[[i]]
 	}
 	
-	return(gosummaries)
+	return(x)
 }
 ##
 
 ## Annotate gosummaries with g:Profiler
 filter_gprofiler_default = function(gpr, go_branches = c("BP", "KEGG", "REAC"), p_value_threshold, min_size, max_size, max_signif){
-	print(head(gpr))
 	gpr = gpr[gpr$domain %in% go_branches,]
 	
 	if(nrow(gpr) == 0) return(gpr)
@@ -227,7 +236,7 @@ filter_gprofiler_default = function(gpr, go_branches = c("BP", "KEGG", "REAC"), 
 	gpr$sg = 0
 	gpr$sg[which(gpr$term.size > max_size | gpr$relative.depth == 1)]= 1
 	gpr$sg2 = cumsum(gpr$sg)
-	gpr = gpr[gpr$term.size <= max_size]
+	gpr = gpr[gpr$term.size <= max_size,]
 	gpr = ddply(gpr, "sg2", function(x) x[which.min(x$p.value),, drop = F])
 	
 	gpr = ddply(gpr, "query.number", function(x){
@@ -314,7 +323,11 @@ padz = function(x, n=max(nchar(x))) gsub(" ", "0", formatC(x, width=n))
  
 #' Add expression data to gosummaries object
 #' 
-#' The data is added to the object in a "long" format so it would be directly usable by the ggplot2 based panel drawing functions \code{\link{panel_boxplot}} etc. For each component it produces a data frame with columns:
+#' Function to add expression data and its annotations to a gosummaries object.  
+#' 
+#' The data is added to the object in a "long" format so it would be directly usable by 
+#' the ggplot2 based panel drawing functions \code{\link{panel_boxplot}} etc. For each 
+#' component it produces a data frame with columns:
 #' \itemize{
 #'   \item \bold{x} : sample IDs for the x axis, their factor order is the same as on the columns of input matrix 
 #'   \item \bold{y} : expression values from the matrix
@@ -348,7 +361,7 @@ add_expression.gosummaries = function(gosummaries, exp, annotation){
 		}
 		a = do.call("rbind", a)
 		if(!is.null(annotation)){
-			annotation$ID = rownames(annotation)
+			annotation$ID = make.names(rownames(annotation))
 			a = merge(a, annotation)
 			a = a[, !(colnames(a) %in% "ID")]
 			a$x = factor(a$x, levels = sort(unique(as.character(a$x))))
@@ -472,8 +485,11 @@ panelize_ggplot2 = function(plot_function, customize_function, par){
 			index = grepl("guide-box", p$layout$name, fixed = FALSE)
 			if(sum(index) == 0) return(zeroGrob())
 			a = p$grobs[[which(index)]]
+			a <<- a
+			p <<- p
 			width = p$widths[p$layout$l[index]]
-			height = unit(length(getGrob(a, gPath = "key", grep = TRUE, global = T)) / 2 * 1.4 * fontsize, "points") + unit(1, "lines")
+			# height = unit(length(getGrob(a, gPath = "key", grep = TRUE, global = T)) / 2 * 1.4 * fontsize, "points") + unit(1, "lines")
+			height = a$heights[2] - unit(3, "mm")
 			fg = frameGrob()
 			fg = packGrob(fg, a, width = width, height = height)
 			return(fg)
@@ -517,11 +533,11 @@ calc_component_dimensions = function(component, par, legend){
 	# Wordcloud height
 	nr = max(laply(component$GPR, nrow))
 	if(length(component$GPR) > 1){
-		wc_height = ifelse(nr > 3, max(nr / 5, 3), nr)
+		wc_height = ifelse(nr > 3, max(nr / 6.5, 3), nr)
 		arrows_height = 1.5
 	}
 	else{
-		wc_height = ifelse(nr > 3, max(nr / 5, 3), nr)
+		wc_height = ifelse(nr > 3, max(nr / 8, 3), nr)
 		arrows_height = 0.5
 	}
 	
@@ -756,11 +772,11 @@ plot_motor = function(gosummaries, plot_panel, legend = T, par = list(fontsize =
 	hpl = grobHeight(panel_legend)
 	
 	pushViewport(vplayout(seq_along(gosummaries), 2))
-	pushViewport(viewport(x = unit(0, "npc") - unit(0.2, "cm") - unit(0.15, "cm"), y = unit(1, "npc") - unit(1.5, "lines"), height = hpl, width = grobWidth(panel_legend),  just = c(0, 1)))
+	pushViewport(viewport(x = unit(0, "npc"), y = unit(1, "npc") - unit(1.5, "lines"), height = hpl, width = grobWidth(panel_legend),  just = c(0, 1)))
 	grid.draw(panel_legend)
 	popViewport()
 	
-	pushViewport(viewport(x = unit(4, "points"), y = unit(1, "npc") - unit(ifelse(as.numeric(convertUnit(hpl, "cm")) > 0, 2.5, 1.5), "lines") - hpl, height = grobHeight(wordcloud_legend), width = grobWidth(wordcloud_legend), just = c(0, 1)))
+	pushViewport(viewport(x = unit(0.5, "lines") + unit(2, "mm"), y = unit(1, "npc") - unit(ifelse(as.numeric(convertUnit(hpl, "cm")) > 0, 2.5, 1.5), "lines") - hpl, height = grobHeight(wordcloud_legend), width = grobWidth(wordcloud_legend), just = c(0, 1)))
 	grid.draw(wordcloud_legend)
 	popViewport()
 	popViewport()
@@ -807,13 +823,13 @@ panel_crossbar = function(data, fontsize = 10, par){
 #' 
 #' These functions are used to draw the panel portion of every component based on the 
 #' Data slots in gosummaries object. These concrete functions assume the data is 
-#' presented as is done by \code{\link{add_expression.gosummaries}}. They provide three 
+#' presented as does \code{\link{add_expression.gosummaries}}. They provide three 
 #' options: boxplot, violin plot (which shows the distrubution more precisely) and both 
 #' combined.
 #' 
-#' These functions specify in principle the general setting for the figures, like which 
+#' These functions specify in principle the general setting for the panels, like which 
 #' "geom"-s, how the data is transformed and summarized, etc. To make small adjustments 
-#' to the figure such as changeing color scheme, write your own customization function 
+#' to the figure such as changing color scheme, write your own customization function 
 #' (See \code{\link{customize}} as example).
 #' 
 #' It is possible to write your own panel plotting function, as long as the parameters  
@@ -902,10 +918,10 @@ panel_violin_box = function(data, fontsize = 10, par){
 ## Panel functions for pca data
 panel_histogram = function(data, fontsize = 10, par){
 	if(!is.null(par$classes)){
-		p = qplot(x, geom = "bar", fill = data[, par$classes], data = data)
+		p = qplot(x, geom = "bar", fill = data[, par$classes], binwidth = (max(data$x) - min(data$x)) / 20, data = data) 
 	}
 	else{
-		p = qplot(x, geom = "bar", data = data)
+		p = qplot(x, geom = "bar", data = data) + geom_rug()
 	}
 	p = p + theme_bw(base_size = fontsize)
 	
@@ -917,7 +933,7 @@ panel_histogram = function(data, fontsize = 10, par){
 panel_dummy = function(data, fontsize = 10, par){
 	if(nrow(data$mat) == 1){
 		colors = "#336699"
-		p = qplot(x, y, geom = "bar", stat = "identity", data = data$mat, fill = x, width = 0.5) + scale_fill_manual(values = colors) + theme_bw(base_size = fontsize) + opts(legend.position = "none") + coord_flip()
+		p = qplot(1, y, geom = "bar", stat = "identity", data = data$mat, fill = x, width = I(0.6), ylim = c(0, data$max), xlim = c(0.5, 1.5)) + scale_fill_manual(values = colors) + theme_bw(base_size = fontsize) + opts(legend.position = "none") + coord_flip()
 	} 
 	
 	if(nrow(data$mat) == 2){
@@ -965,7 +981,7 @@ customize = function(p, par){
 
 #' Plot the GOsummaries figure
 #' 
-#' The function to draw a GOsummaries figure based on a gosummaries object.  The 
+#' The function to draw a GOsummaries figure based on a \code{gosummaries} object.  The 
 #' GOsummaries figure consists of several components each defined by a gene list ora a 
 #' pair of them. The GO annotations of them are shown as wordclouds. Optionally one can 
 #' draw related (expression) data on panels atop of the wordclouds. 
@@ -1003,34 +1019,34 @@ customize = function(p, par){
 #' @method plot gosummaries
 #' 
 #' @export
-plot.gosummaries = function(x, components = names(gosummaries)[1:min(10, length(gosummaries))],  panel_plot = NULL, panel_customize = NULL, panel_par = list(), panel_height = 5, fontsize = 10, term_length = 35, wordcloud_colors = c("grey70", "grey10"), filename = NA, ...){
+plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))],  panel_plot = NULL, panel_customize = NULL, panel_par = list(), panel_height = 5, fontsize = 10, term_length = 35, wordcloud_colors = c("grey70", "grey10"), filename = NA, ...){
 	
 	# Check input
-	if(!is.gosummaries(gosummaries)) stop("Function requires an object of gosummaries type")
-	if(any(!(as.character(components) %in% names(gosummaries)))) stop("Selected components are not present in data")
+	if(!is.gosummaries(x)) stop("Function requires an object of gosummaries type")
+	if(any(!(as.character(components) %in% names(x)))) stop("Selected components are not present in data")
 	
 	# Take out components of interest
-	gosummaries = gosummaries[as.character(components)]
-	if(length(gosummaries) < 1) stop("No components selected")
+	x = x[as.character(components)]
+	if(length(x) < 1) stop("No components selected")
 	
 	# Add wordcloud colors and adjust the string length
-	gosummaries = adjust_wordcloud_appearance(gosummaries, term_length, wordcloud_colors)
+	x = adjust_wordcloud_appearance(x, term_length, wordcloud_colors)
 	
 	# Attach default plotting method if it is not set
 	if(is.null(panel_plot)){
-		if (is.null(gosummaries[[1]]$Data)){
+		if (is.null(x[[1]]$Data)){
 			panel_height = 0
 		}
-		else if(inherits(gosummaries[[1]]$Data, "dummyData")){
-			if(length(gosummaries[[1]]$Gene_lists) == 1){
-				panel_height = 0
+		else if(inherits(x[[1]]$Data, "dummyData")){
+			if(panel_height == 5){
+				panel_height = 3
 			}
 			panel_plot = panel_dummy
 		}
-		else if(inherits(gosummaries[[1]]$Data, "pcaData")){
+		else if(inherits(x[[1]]$Data, "pcaData")){
 			panel_plot = panel_histogram
 		}
-		else if(inherits(gosummaries[[1]]$Data, "oneListExpData") | inherits(gosummaries[[1]]$Data, "twoListExpData")){
+		else if(inherits(x[[1]]$Data, "oneListExpData") | inherits(x[[1]]$Data, "twoListExpData")){
 			panel_plot = panel_boxplot
 		}
 		
@@ -1040,7 +1056,7 @@ plot.gosummaries = function(x, components = names(gosummaries)[1:min(10, length(
 	}
 	
 	if(is.null(panel_customize)){
-		if(inherits(gosummaries[[1]]$Data, "dummyData")){
+		if(inherits(x[[1]]$Data, "dummyData")){
 			panel_customize = customize_dummy
 		}
 		else{
@@ -1060,7 +1076,7 @@ plot.gosummaries = function(x, components = names(gosummaries)[1:min(10, length(
 	# Take the panel plot to proper format 
 	plot_panel = panelize_ggplot2(panel_plot, panel_customize, panel_par)
 	
-	plot_motor(gosummaries, plot_panel = plot_panel, legend = T, par = par, filename = filename)
+	plot_motor(x, plot_panel = plot_panel, legend = T, par = par, filename = filename)
 }
 
 ##
@@ -1069,6 +1085,9 @@ plot.gosummaries = function(x, components = names(gosummaries)[1:min(10, length(
 # TODO implement the data type specific convenience functions maybe using a S3 generic function on these different data types
  
 #' Prepare gosummaries object based on PCA results 
+#' 
+#' The PCA results are converted into a gosummaries object, by extracting genes with the 
+#' largest positive and negative weights from each component. 
 #' 
 #' The usual visualisation of PCA results displays the projections of sample expression  
 #' on the principal axes. It shows if and how the samples cluster, but not why do they  
@@ -1126,6 +1145,9 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:6, n_genes = 
  
 #' Prepare gosummaries object based on k-means results 
 #' 
+#' The gosummaries object is created based on the genes in the clusters, it is possible 
+#' to add corresponding gene expression data as well.
+#' 
 #' The k-means clustering of expression matrix naturally defines a set of gene lists 
 #' that can be annotated functionally and displayed as a GOsummaries figure. This 
 #' functon takes in a \code{kmeans} object and and converts it to a \code{gosummaries} 
@@ -1153,7 +1175,7 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:6, n_genes = 
 #' @S3method gosummaries kmeans
 #' 
 #' @export
-gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:length(x), ...){
+gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:length(x$size), ...){
 	
 	gl = list()
 	for(i in components){
@@ -1173,6 +1195,9 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 
  
 #' Prepare gosummaries object based on limma results
+#' 
+#' The gosummaries object is created based on the differentially expresed genes, each 
+#' contrast defines one component.
 #' 
 #' The usual differential expression analysis involves making several comparisons 
 #' between treatments ehere each one yields an up and down regulated gene list. In a 

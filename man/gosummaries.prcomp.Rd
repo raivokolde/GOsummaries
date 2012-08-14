@@ -24,6 +24,11 @@
   A gosummaries object.
 }
 \description{
+  The PCA results are converted into a gosummaries object,
+  by extracting genes with the largest positive and
+  negative weights from each component.
+}
+\details{
   The usual visualisation of PCA results displays the
   projections of sample expression on the principal axes.
   It shows if and how the samples cluster, but not why do
@@ -40,8 +45,7 @@
   negative weights for each of the principal axes, then it
   is possible to say which biological processes drive the
   separation of samples on them.
-}
-\details{
+
   This function creates a gosummaries object for such
   analysis. It expects the results of \code{\link{prcomp}}
   function. It assumes that the PCA was done on samples

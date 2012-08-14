@@ -34,16 +34,16 @@
   These functions are used to draw the panel portion of
   every component based on the Data slots in gosummaries
   object. These concrete functions assume the data is
-  presented as is done by
+  presented as does
   \code{\link{add_expression.gosummaries}}. They provide
   three options: boxplot, violin plot (which shows the
   distrubution more precisely) and both combined.
 }
 \details{
   These functions specify in principle the general setting
-  for the figures, like which "geom"-s, how the data is
+  for the panels, like which "geom"-s, how the data is
   transformed and summarized, etc. To make small
-  adjustments to the figure such as changeing color scheme,
+  adjustments to the figure such as changing color scheme,
   write your own customization function (See
   \code{\link{customize}} as example).
 

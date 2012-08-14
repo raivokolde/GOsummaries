@@ -35,6 +35,11 @@
   A gosummaries object.
 }
 \description{
+  The gosummaries object is created based on the
+  differentially expresed genes, each contrast defines one
+  component.
+}
+\details{
   The usual differential expression analysis involves
   making several comparisons between treatments ehere each
   one yields an up and down regulated gene list. In a
