@@ -16,7 +16,7 @@ Imports:
     plyr,
     grid,
     gProfileR,
-    reshape,
+    reshape2,
     limma
 LinkingTo: Rcpp
 Collate:

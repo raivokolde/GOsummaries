@@ -50,6 +50,9 @@
   \item{add}{if TRUE adds the picture to existing plot.}
 }
 \description{
+  General \code{grid} based wordcloud drawing function
+}
+\details{
   Uses the algorithm from wordcloud package to calculate
   the positions of the words. then uses grid graphics to
   plot the words on screen. The shape of the wordcloud

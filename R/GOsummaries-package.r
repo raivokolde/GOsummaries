@@ -30,7 +30,7 @@
 #' @import plyr
 #' @import ggplot2
 #' @import gProfileR
-#' @import reshape
+#' @import reshape2
 #' @import limma
 #' 
 #' @useDynLib GOsummaries 

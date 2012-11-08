@@ -119,6 +119,7 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	# Resize the words
 	d$width = d$width * d$size
 	d$height = d$height * d$size
+	# d = d[d$size > 0.6,]
 	
 	
 	# Calculate the coordinates of words
@@ -140,6 +141,7 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 				d$size = d$size * 0.95
 				d$width = d$width * 0.95
 				d$height = d$height * 0.95
+				# d = d[d$size > 0.6,]
 			}
 			else{
 				dontfit = F

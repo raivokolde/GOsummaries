@@ -8,7 +8,8 @@
   \method{gosummaries}{default} (x, organism = "hsapiens",
     go_branches = c("BP", "KEGG", "REAC"),
     p_value_threshold = 0.01, min_size = 50,
-    max_size = 1000, max_signif = 40, ...)
+    max_size = 1000, max_signif = 40, ordered_query = T,
+    ...)
 }
 \arguments{
   \item{x}{list of arrays of gene names (or list of lists
@@ -35,6 +36,10 @@
 
   \item{max_signif}{maximal number of categories returned
   per query}
+
+  \item{ordered_query}{logical showing if the lists are
+  ordered or not (it determines if the ordered query
+  algorithm is used in g:Profiler)}
 }
 \value{
   A gosummaries type of object

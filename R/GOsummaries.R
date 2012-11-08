@@ -106,12 +106,12 @@ gosummaries = function(x, ...){
 	UseMethod("gosummaries", x)
 }
 
-#' @param go_branches GO tree branches and pathway databases as denoted in g:Profiler (Possible values: BP, CC, MF, KEGG, REAC) 
+#' @param go_branches GO tree branches and pathway databases as denoted in g:Profiler (Possible values: BP, CC, MF, ke, re) 
 #' @param p_value_threshold threshold for p-values that are corrected for multiple testing
 #' @param min_size minimal size of functional category to be considered
 #' @param max_size maximal size of functional category to be considered
 #' @param max_signif maximal number of categories returned per query
-
+#' @param ordered_query logical showing if the lists are ordered or not (it determines if the ordered query algorithm is used in g:Profiler)
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
 #'  # Example1
@@ -120,7 +120,7 @@ gosummaries = function(x, ...){
 #' @method gosummaries default
 #' @S3method gosummaries default
 #' @export
-gosummaries.default = function(x, organism = "hsapiens", go_branches = c("BP", "KEGG", "REAC"), p_value_threshold = 1e-2, min_size = 50, max_size = 1000, max_signif = 40, ...){
+gosummaries.default = function(x, organism = "hsapiens", go_branches = c("BP", "ke", "re"), p_value_threshold = 1e-2, min_size = 50, max_size = 1000, max_signif = 40, ordered_query = T, ...){
 	components = 1:length(x)
 	
 	# Find the number of lists per component (assumed to be the same over components)
@@ -153,7 +153,7 @@ gosummaries.default = function(x, organism = "hsapiens", go_branches = c("BP", "
 		if(k == 2){
 			comp$Gene_lists = list(gl1 = x[[i]][[1]], gl2 = x[[i]][[2]])
 			comp$GPR = list(gpr1 = NULL, gpr2 = NULL)
-			comp$Percentage = sprintf("Up: %d\nDown: %d", length(x[[i]][[1]]), length(x[[i]][[2]]))
+			comp$Percentage = sprintf("Up: %d\nDown: %d", length(x[[i]][[2]]), length(x[[i]][[1]]))
 		}
 		
 		res[[as.character(components[i])]] = comp
@@ -162,7 +162,7 @@ gosummaries.default = function(x, organism = "hsapiens", go_branches = c("BP", "
 	class(res) = "gosummaries"
 	
 	res = add_dummydata.gosummaries(res)
-	res = annotate.gosummaries(res, organism = organism, go_branches = go_branches, p_value_threshold = p_value_threshold, min_size = min_size, max_size = max_size, max_signif = max_signif)
+	res = annotate.gosummaries(res, organism = organism, go_branches = go_branches, p_value_threshold = p_value_threshold, min_size = min_size, max_size = max_size, max_signif = max_signif, ordered_query = ordered_query)
 	
 	return(res)
 } 
@@ -275,7 +275,7 @@ adjust_gprofiler_output = function(gpr){
 	return(gpr)
 }
 
-annotate.gosummaries = function(gosummaries, organism, components = 1:length(gosummaries), go_branches, p_value_threshold, min_size, max_size, max_signif, go_pruning_heuristic = "default"){
+annotate.gosummaries = function(gosummaries, organism, components = 1:length(gosummaries), go_branches, p_value_threshold, min_size, max_size, max_signif, ordered_query, go_pruning_heuristic = "default"){
 	
 	if(!is.gosummaries(gosummaries)) stop("Function requires a gosummaries type of  object")
 	
@@ -294,7 +294,7 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	}
 	
 	# Run g:Profiler analysis 
-	gpr = gprofiler(query = gl, organism = organism, ordered_query = 1)
+	gpr = gprofiler(query = gl, organism = organism, ordered_query = ordered_query)
 	
 	# Clean and filter the results
 	gpr$query.number = as.numeric(as.character(gpr$query.number))
@@ -531,7 +531,7 @@ calc_component_dimensions = function(component, par, legend){
 	# Wordcloud height
 	nr = max(laply(component$GPR, nrow))
 	if(length(component$GPR) > 1){
-		wc_height = ifelse(nr > 3, max(nr / 6.5, 3), nr)
+		wc_height = ifelse(nr > 3, max(nr / 4.5, 3), nr)
 		arrows_height = 1.5
 	}
 	else{
@@ -937,7 +937,7 @@ panel_dummy = function(data, fontsize = 10, par){
 	if(nrow(data$mat) == 2){
 		colors = c("#336699", "#990033")
 		data$mat$y[1] = -data$mat$y[1]
-		data$mat$x = factor(data$mat$x, labels = c("Down", "Up"))
+		data$mat$x = factor(data$mat$x, labels = c("G1 > G2", "G1 < G2"))
 		p = qplot(1, y, geom = "bar", stat = "identity", position = "identity", data = data$mat, fill = x, ylim = c(-data$max, data$max), width = I(0.6), xlim = c(0.5, 1.5)) + scale_fill_manual("Regulation direction", values = colors) + theme_bw(base_size = fontsize)  + coord_flip()
 	}
 	
@@ -1233,8 +1233,12 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 		
 		gl_up = as.character(tt$ID[tt$logFC > 0])
 		gl_down = as.character(tt$ID[tt$logFC < 0])
-		title = sprintf("Comparison: %s", colnames(x$contrasts)[i])
-		perc[[i]] = sprintf("Up: %d\nDown: %d", length(gl_up), length(gl_down))
+		
+		g1 = paste(rownames(x$contrasts)[x$contrasts[, i] < 0], collapse = ", ")
+		g2 = paste(rownames(x$contrasts)[x$contrasts[, i] > 0], collapse = ", ")
+		
+		title = sprintf("%s VS %s", g1, g2)
+		perc[[i]] = sprintf("G1 > G2: %d\nG1 < G2: %d", length(gl_down), length(gl_up))
 		
 		gl[[title]] = list(
 			gl1 = gl_down,
