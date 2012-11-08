@@ -34,16 +34,23 @@ findCoordinates_left = function (width, height){
 #' @param tryfit if TRUE the algorithm checks if all words fit to the figure, if not it
 #' tries gradually smaller values of scale parameter until everything fits
 #' @param add if TRUE adds the picture to existing plot.
+#' @param grob if TRUE returns the text grob instead of drawing it
+#' @param dimensions a two element vector of units giving the width and height of the word 
+#' cloud respectively
 #' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
 #'  plotWordcloud(c("Audi", "Volkswagen", "Opel", "Porsche", "Mercedez", "BMW"), 8:3)
 #' 
 #' @export
-plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale = 0.4, min.freq = 3, max.words = Inf, random.order = FALSE, colors = "black", random.colors = FALSE, algorithm = "circle", tryfit = T, add = F){
+plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale = 0.4, min.freq = 3, max.words = Inf, random.order = FALSE, colors = "black", random.colors = FALSE, algorithm = "circle", tryfit = T, add = F, grob = F, dimensions = NULL){
 	# Empty the drawng area
 	if(add){
 		grid.newpage()
+	}
+	
+	if(!is.null(dimensions)){
+		pushViewport(viewport(width = dimensions[1], height = dimensions[2]))
 	}
 	
 	# Check if word and freq are same length
@@ -190,14 +197,20 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	if(algorithm == "leftside"){
 		hjust = ifelse(d$angle == 90, 0.5, 0)
 		vjust = ifelse(d$angle == 90, 1, 0.5)
-		grid.text(d$words, d$x, d$y, rot = d$angle,  hjust = hjust, vjust = vjust, gp = gpar(cex = d$size, col = d$colors))
 	}
 	if(algorithm == "rightside"){
 		hjust = ifelse(d$angle == 90, 0.5, 1)
 		vjust = ifelse(d$angle == 90, 0, 0.5)
-		grid.text(d$words, d$x, d$y, rot = d$angle, hjust = hjust, vjust = vjust, gp = gpar(cex = d$size, col = d$colors))
 	}
 	if(algorithm == "circle"){
-		grid.text(d$words, d$x, d$y, rot = d$angle, gp = gpar(cex = d$size, col = d$colors))
+		hjust = 0.5
+		vjust = 0.5
 	}
+	if(grob){
+		return(textGrob(d$words, d$x, d$y, rot = d$angle, hjust = hjust, vjust = vjust, gp = gpar(cex = d$size, col = d$colors)))
+	}
+	else{
+		grid.text(d$words, d$x, d$y, rot = d$angle, hjust = hjust, vjust = vjust, gp = gpar(cex = d$size, col = d$colors))
+	}
+	
 }
