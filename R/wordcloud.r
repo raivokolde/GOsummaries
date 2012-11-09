@@ -43,15 +43,14 @@ findCoordinates_left = function (width, height){
 #'  plotWordcloud(c("Audi", "Volkswagen", "Opel", "Porsche", "Mercedez", "BMW"), 8:3)
 #' 
 #' @export
-plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale = 0.4, min.freq = 3, max.words = Inf, random.order = FALSE, colors = "black", random.colors = FALSE, algorithm = "circle", tryfit = T, add = F, grob = F, dimensions = NULL){
+plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale = 0.4, min.freq = 3, max.words = Inf, random.order = FALSE, colors = "black", random.colors = FALSE, algorithm = "circle", tryfit = T, add = F, grob = F, dimensions = unit(c(1, 1), "npc")){
 	# Empty the drawng area
-	if(add){
+	if(!add){
 		grid.newpage()
 	}
 	
-	if(!is.null(dimensions)){
-		pushViewport(viewport(width = dimensions[1], height = dimensions[2]))
-	}
+	width = convertWidth(dimensions[1], "cm", valueOnly = T)
+	height = convertHeight(dimensions[2], "cm", valueOnly = T)
 	
 	# Check if word and freq are same length
 	if(length(words) != length(freq)){
@@ -99,9 +98,9 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	
 	# Calculate the word sizes
 	w = unit(rep(1, n), "strwidth", as.list(as.character(d$words)))
-	d$width = convertWidth(w, "npc", valueOnly = T)
+	d$width = convertWidth(w, "cm", valueOnly = T) / width
 	h = unit(rep(1, n), "strheight", as.list(as.character(d$words)))
-	d$height = convertHeight(h, "npc", valueOnly = T)
+	d$height = convertHeight(h, "cm", valueOnly = T) / height
 	
 	tailed = grepl("g|j|p|q|y|_", d$words)
 	d$height[tailed] = d$height[tailed] * 1.3
@@ -109,8 +108,8 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	# Rotate words
 	if(any(d$angle == 90)){
 		a = d$width[d$angle == 90]
-		d$width[d$angle == 90] = convertUnit(unit(d$height[d$angle == 90], "npc"), "npc", axisFrom = "y", axisTo = "x", valueOnly = T)
-		d$height[d$angle == 90] = convertUnit(unit(a, "npc"), "npc", axisFrom = "x", axisTo = "y", valueOnly = T)
+		d$width[d$angle == 90] = d$height[d$angle == 90] * height / width
+		d$height[d$angle == 90] = a * width / height
 	}
 	
 	# Calculate area of all words and apply scaling factor to sizes
@@ -171,7 +170,7 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	d$x = a[, 1]
 	d$y = a[, 2]
 	
-	# Issue warning when something is ńot drawn
+	# Issue warning when something is not drawn
 	if(any(d$y == 3)){
 		warning(sprintf("Words not drawn: %s", paste(as.character(d$words[d$y == 3]), collapse = ", ")))
 	}
@@ -207,10 +206,10 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 		vjust = 0.5
 	}
 	if(grob){
-		return(textGrob(d$words, d$x, d$y, rot = d$angle, hjust = hjust, vjust = vjust, gp = gpar(cex = d$size, col = d$colors)))
+		return(textGrob(d$words, d$x, d$y, rot = d$angle, hjust = hjust, vjust = vjust, gp = gpar(cex = d$size, col = d$colors), vp = viewport(width = unit(width, "cm"), height = unit(height, "cm"))))
 	}
 	else{
-		grid.text(d$words, d$x, d$y, rot = d$angle, hjust = hjust, vjust = vjust, gp = gpar(cex = d$size, col = d$colors))
+		grid.text(d$words, d$x, d$y, rot = d$angle, hjust = hjust, vjust = vjust, gp = gpar(cex = d$size, col = d$colors), vp = viewport(width = unit(width, "cm"), height = unit(height, "cm")))
 	}
 	
 }
