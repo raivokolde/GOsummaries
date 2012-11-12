@@ -640,91 +640,72 @@ gen_wordcloud_legend = function(gosummaries, par){
 	return(gen_legend(legend_data, par))
 }
 
-plot_wordcloud = function(words, freq, color, algorithm){
+plot_wordcloud = function(words, freq, color, algorithm, dimensions){
 	if(length(words) > 0){
-		plotWordcloud(words, freq, colors = color, random.order = F, min.freq = -Inf, rot.per = 0, scale = 0.85, max_min = c(1, 0), algorithm = algorithm, add = F)
+		return(plotWordcloud(words, freq, colors = color, random.order = F, min.freq = -Inf, rot.per = 0, scale = 0.85, max_min = c(1, 0), algorithm = algorithm, add = F, grob = T, dimensions = dimensions))
 	}
+	return(zeroGrob())
 }
 
 plot_arrow = function(end, par){
 	x = switch(end, first = c(0, 0.95), both = c(0.05, 0.95), last = c(0.05, 1))
-	grid.lines(x = x, y = 0.5, arrow = arrow(ends = end, type = "closed", angle = 15, length = unit(0.1, "inches")), gp = gpar(lwd = 0.3 * par$fontsize, col = "grey40"))
+	res = linesGrob(x = x, y = 0.5, arrow = arrow(ends = end, type = "closed", angle = 15, length = unit(0.1, "inches")), gp = gpar(lwd = 0.3 * par$fontsize, col = "grey40"))
+	return(res)
 }
 
 plot_component = function(data_component, plot_panel, par, component_dims){
 	
-	# Calculate the dimesions
-	heights = with(component_dims, unit.c(title_height, panel_height, arrows_height + wc_height, unit(1, "lines")))
+	# Create gtable
+	heights = with(component_dims, unit.c(title_height, panel_height, arrows_height + wc_height))
 	widths = with(component_dims, unit.c(panel_width, percentage_width))
+	gtable_component = gtable::gtable(widths, heights)
 	
-	# Push the layout
-	pushViewport(viewport(layout = grid.layout(ncol = 2, nrow = 4, heights = heights, widths = widths), gp = gpar(fontsize = par$fontsize)))
 	
-	# Draw title
-	pushViewport(vplayout(1, 1))
-	grid.text(x = 0, hjust = 0, data_component$Title, gp = gpar(fontface = "bold"))
-	popViewport()
+	# Add title
+	title = textGrob(x = 0, hjust = 0, data_component$Title, gp = gpar(fontface = "bold", fontsize = par$fontsize))
+	gtable_component = gtable::gtable_add_grob(gtable_component, title, 1, 1)
 	
-	# Draw plot
-	pushViewport(vplayout(2, 1))
+	# Add plot
 	if(par$panel_height != 0){
-		p = plot_panel(data_component$Data, par$fontsize)
-		grid.draw(p)
-	}
-	grid.rect(gp = gpar(lwd = 1.5, col = "grey40"))
-	popViewport()
+			p = plot_panel(data_component$Data, par$fontsize)
+			b = rectGrob(gp = gpar(lwd = 1.5, col = "grey40"))
+			gtable_component = gtable::gtable_add_grob(gtable_component, gList(p, b), 2, 1)
+		}
 	
-	# Draw percentage
-	pushViewport(vplayout(2, 2))
-	grid.text(data_component$Percentage, x = 0.1, y = 1, vjust = 1, hjust = 0, gp = gpar(fontsize = par$fontsize * 0.8))
-	popViewport()
+	# Add percentage
+	p = textGrob(data_component$Percentage, x = 0.1, y = 1, vjust = 1, hjust = 0, gp = gpar(fontsize = par$fontsize * 0.8))
+	gtable_component = gtable::gtable_add_grob(gtable_component, p, 2, 2)
 	
-	# Draw arrows and wordclouds
-	pushViewport(vplayout(3, 1))
+	# Arrows and wordclouds
 	heights = with(component_dims, unit.c(arrows_height, wc_height))
 	widths = with(component_dims, rep(wc_width, length(data_component$GPR)))
-	
-	pushViewport(viewport(layout = grid.layout(ncol = length(data_component$GPR), nrow = 2, heights = heights, widths = widths)))
+	gtable_aw = gtable::gtable(widths, heights)
 	
 	if(length(data_component$GPR) == 1){
-		pushViewport(vplayout(2, 1))
-		plot_wordcloud(data_component$GPR$gpr1$Term.name, -log10(data_component$GPR$gpr1$P.value), data_component$GPR$gpr1$Colors, algorithm = "leftside")
-		popViewport()
+		wc = plot_wordcloud(data_component$GPR$gpr1$Term.name, -log10(data_component$GPR$gpr1$P.value), data_component$GPR$gpr1$Colors, algorithm = "leftside", dimensions = with(component_dims, unit.c(wc_width, wc_height)))
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc, 2, 1)
 	}
 	
 	if(length(data_component$GPR) == 2){
-		pushViewport(vplayout(1, 1))
-		plot_arrow(end = "first", par)
-		popViewport()
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "first", par), 1, 1)
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "last", par), 1, 2)
 		
-		pushViewport(vplayout(1, 2))
-		plot_arrow(end = "last", par)
-		popViewport()
+		wc1 = plot_wordcloud(data_component$GPR$gpr1$Term.name, -log10(data_component$GPR$gpr1$P.value), data_component$GPR$gpr1$Colors, algorithm = "leftside", dimensions = with(component_dims, unit.c(wc_width, wc_height)))
+		wc2 = plot_wordcloud(data_component$GPR$gpr2$Term.name, -log10(data_component$GPR$gpr2$P.value), data_component$GPR$gpr2$Colors, algorithm = "rightside", dimensions = with(component_dims, unit.c(wc_width, wc_height)))
 		
-		pushViewport(vplayout(2, 1))
-		plot_wordcloud(data_component$GPR$gpr1$Term.name, -log10(data_component$GPR$gpr1$P.value), data_component$GPR$gpr1$Colors, algorithm = "leftside")
-		popViewport()
-		
-		pushViewport(vplayout(2, 2))
-		plot_wordcloud(data_component$GPR$gpr2$Term.name, -log10(data_component$GPR$gpr2$P.value), data_component$GPR$gpr2$Colors, algorithm = "rightside")
-		popViewport()
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc1, 2, 1)
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc2, 2, 2)
 	}
+	
 		
-	# Pop wordcloud layout
-	popViewport()
+	gtable_component = gtable::gtable_add_grob(gtable_component, gtable_aw, 3, 1)
+	gtable_component = gtable::gtable_add_padding(gtable_component, unit(0.5, "lines"))
 	
-	# Pop wordcloud and arrow vp 
-	popViewport()
-	
-	# Pop Layout
-	popViewport()
+	return(gtable_component)
+
 }
 
 plot_motor = function(gosummaries, plot_panel, legend = T, par = list(fontsize = 10, panel_height = 5, panel_width = 405), filename = NA){
-	# Define layout parameters 
-	grid.newpage()
-	gp = list(fontsize = par$fontsize)
-	pushViewport(viewport(gp = do.call(gpar, gp)))
 	
 	# Calculate dimensions for the picture components
 	component_dimensions = calc_components_dimensions(gosummaries, par, legend)
@@ -741,12 +722,20 @@ plot_motor = function(gosummaries, plot_panel, legend = T, par = list(fontsize =
 	
 	legend_width = max(grobWidth(panel_legend), grobWidth(wordcloud_legend))
 	
+	
+	
+	
 	# Open connection to file if filename specified
 	if(!is.na(filename)){
 		width = convertWidth((component_dimensions$component_width + legend_width)  , "inches", valueOnly = T) * 1.05
 		height = convertHeight(sum(component_dimensions$component_heights), "inches", valueOnly = T) * 1.05
 		open_file_con(filename, width, height)
 	}
+	
+	
+	
+	
+	
 	
 	# Define layout parameters
 	grid.newpage()
