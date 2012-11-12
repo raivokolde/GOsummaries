@@ -527,7 +527,7 @@ open_file_con = function(filename, width, height){
 ##
 
 ## Raw plotting functions
-calc_component_dimensions = function(component, par, legend){
+calc_component_dimensions = function(component, par){
 	# Wordcloud height
 	nr = max(laply(component$GPR, nrow))
 	if(length(component$GPR) > 1){
@@ -547,48 +547,27 @@ calc_component_dimensions = function(component, par, legend){
 		wc_height = unit(wc_height, "lines"),
 		
 		panel_width = unit(par$panel_width, "points"),
-		percentage_width = NULL,
+		percentage_width = max(grobWidth(textGrob(unlist(strsplit(component$Percentage, "\n")), gp = gpar(par$fontsize)))),
 		wc_width = unit(par$panel_width / length(component$GPR), "points")
 	)
 	
 	return(res)
 }
 
-calc_components_dimensions = function(gosummaries, par, legend){
+calc_components_dimensions = function(gosummaries, par){
 	component_dims = list()
-	component_heights = unit(0, "npc") 
-	
-	# Calculate percentage slot width
-	n = max(laply(gosummaries, function(x) nchar(max(unlist(strsplit(x$Percentage, "\n"))))))
-	if(n > 0){
-		percentage_width = unit(1.3, "grobwidth", textGrob(paste(rep("k", max(3, n)), collapse = ""), gp = gpar(fontsize = par$fontsize)))
-	}
-	else{
-		percentage_width = unit(0.2, "cm")
-	}
 	
 	for(i in seq_along(gosummaries)){
-		dims = calc_component_dimensions(gosummaries[[i]], par, legend)
-		dims$percentage_width = percentage_width
-		
-		component_heights = unit.c(component_heights,  dims$title_height + dims$panel_height + dims$arrows_height + dims$wc_height + unit(1, "lines"))
-		
-		component_dims[[i]] = dims
+		component_dims[[i]] = calc_component_dimensions(gosummaries[[i]], par)
 	}
 	
-	# Calculate percentage slot width
-	
-	component_heights = component_heights[-1]
-	
-	component_width = component_dims[[1]]$panel_width + percentage_width
-	
-	return(list(component_dims = component_dims, component_heights = component_heights, component_width = component_width))
+	return(component_dims)
 }
 
 gen_legend = function(legend_data, par){
 	n = length(legend_data$colors)
 	# Create Grobs
-	title = textGrob(legend_data$title, y = 1, x = 0, just = c(0, 1), gp = gpar(fontface = "bold", cex = 0.8))
+	title = textGrob(legend_data$title, y = 1, x = 0, just = c(0, 1), gp = gpar(fontsize = par$fontsize, fontface = "bold", cex = 0.8))
 	
 	rect_height = unit(1.4 * par$fontsize, "points")
 	yy = unit(1, "npc") - unit(0.8, "lines") - (0:(n - 1)) * rect_height
@@ -598,7 +577,7 @@ gen_legend = function(legend_data, par){
 	gl = gList()
 	length = c(rep(0, n), convertWidth(grobWidth(title), "in"))
 	for(i in 1:n){
-		gl[[i]] = textGrob(legend_data$labels[[i]], x = rect_height + unit(3, "points"), y = yyy[i], hjust = 0, gp = gpar(cex = 0.8))
+		gl[[i]] = textGrob(legend_data$labels[[i]], x = rect_height + unit(3, "points"), y = yyy[i], hjust = 0, gp = gpar(cex = 0.8, fontsize = par$fontsize))
 		length[i] = convertWidth(grobWidth(gl[[i]]), "in")
 	}
 	
@@ -705,10 +684,16 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 
 }
 
-plot_motor = function(gosummaries, plot_panel, legend = T, par = list(fontsize = 10, panel_height = 5, panel_width = 405), filename = NA){
+plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_height = 5, panel_width = 405), filename = NA){
 	
 	# Calculate dimensions for the picture components
-	component_dimensions = calc_components_dimensions(gosummaries, par, legend)
+	component_dimensions = calc_components_dimensions(gosummaries, par)
+	
+	# Create component grobs
+	components = list()
+	for(i in seq_along(gosummaries)){
+		components[[i]] = plot_component(gosummaries[[i]], plot_panel, par, component_dimensions[[i]])
+	}
 	
 	# Create legends and their dimensions 
 	if(par$panel_height != 0){
@@ -720,59 +705,47 @@ plot_motor = function(gosummaries, plot_panel, legend = T, par = list(fontsize =
 	
 	wordcloud_legend = gen_wordcloud_legend(gosummaries, par)
 	
-	legend_width = max(grobWidth(panel_legend), grobWidth(wordcloud_legend))
+	gtable_legend = gtable::gtable(max(grobWidth(panel_legend), grobWidth(wordcloud_legend)), unit.c(grobHeight(panel_legend), grobHeight(wordcloud_legend)), vp = viewport(x = 0, y = 0, just = c(0, 0)))
+	gtable_legend = gtable::gtable_add_grob(gtable_legend, panel_legend, 1, 1)
+	gtable_legend = gtable::gtable_add_grob(gtable_legend, wordcloud_legend, 2, 1)
 	
 	
+	# Create gtable layout for the whole figure
+	widths = unit.c(max(do.call(unit.c, lapply(components, gtable::gtable_width))), gtable::gtable_width(gtable_legend))
+	heights = do.call(unit.c, lapply(components, gtable::gtable_height))
 	
+	gtable_full = gtable::gtable(widths, heights)
+	
+	# Add components
+	for(i in 1:length(components)){
+		gtable_full = gtable::gtable_add_grob(gtable_full, components[[i]], i, 1)
+	}
+	
+	# Add legend 
+	# hpl = grobHeight(panel_legend)
+	# 
+	# pushViewport(vplayout(seq_along(gosummaries), 2))
+	# pushViewport(viewport(x = unit(0, "npc"), y = unit(1, "npc") - unit(1.5, "lines"), height = hpl, width = grobWidth(panel_legend),  just = c(0, 1)))
+	# grid.draw(panel_legend)
+	# popViewport()
+	# 
+	# pushViewport(viewport(x = unit(0.5, "lines") + unit(2, "mm"), y = unit(1, "npc") - unit(ifelse(as.numeric(convertUnit(hpl, "cm")) > 0, 2.5, 1.5), "lines") - hpl, height = grobHeight(wordcloud_legend), width = grobWidth(wordcloud_legend), just = c(0, 1)))
+	# grid.draw(wordcloud_legend)
+	# popViewport()
+	# popViewport()
+	gtable_full = gtable::gtable_add_grob(gtable_full, gtable_legend, 1, 2, length(components))
+	
+	gtable_full <<- gtable::gtable_add_padding(gtable_full, unit(0.5, "lines"))
 	
 	# Open connection to file if filename specified
 	if(!is.na(filename)){
-		width = convertWidth((component_dimensions$component_width + legend_width)  , "inches", valueOnly = T) * 1.05
-		height = convertHeight(sum(component_dimensions$component_heights), "inches", valueOnly = T) * 1.05
+		width = convertWidth(gtable::gtable_width(gtable_full)  , "inches", valueOnly = T) 
+		height = convertHeight(gtable::gtable_height(gtable_full)  , "inches", valueOnly = T) 
 		open_file_con(filename, width, height)
 	}
 	
-	
-	
-	
-	
-	
-	# Define layout parameters
-	grid.newpage()
-	gp = list(fontsize = par$fontsize)
-	pushViewport(viewport(gp = do.call(gpar, gp)))
-	
-	# Create viewport for padding 
-	pushViewport(viewport(width = (component_dimensions$component_width + legend_width)  * 1.05, height = sum(component_dimensions$component_heights) * 1.05))
-	
-	# Create layout of the picture
-	pushViewport(viewport(layout = grid.layout(nrow = length(gosummaries), ncol = 2, widths = unit.c(component_dimensions$component_width, legend_width), heights = component_dimensions$component_heights)))
-	
-	# Draw components
-	for(i in seq_along(gosummaries)){
-		pushViewport(vplayout(i, 1))
-		plot_component(gosummaries[[i]], plot_panel, par, component_dimensions$component_dims[[i]])
-		popViewport()
-	}
-	
-	# Draw legends
-	hpl = grobHeight(panel_legend)
-	
-	pushViewport(vplayout(seq_along(gosummaries), 2))
-	pushViewport(viewport(x = unit(0, "npc"), y = unit(1, "npc") - unit(1.5, "lines"), height = hpl, width = grobWidth(panel_legend),  just = c(0, 1)))
-	grid.draw(panel_legend)
-	popViewport()
-	
-	pushViewport(viewport(x = unit(0.5, "lines") + unit(2, "mm"), y = unit(1, "npc") - unit(ifelse(as.numeric(convertUnit(hpl, "cm")) > 0, 2.5, 1.5), "lines") - hpl, height = grobHeight(wordcloud_legend), width = grobWidth(wordcloud_legend), just = c(0, 1)))
-	grid.draw(wordcloud_legend)
-	popViewport()
-	popViewport()
-	
-	# Pop layout viewport
-	popViewport()
-	
-	# Pop padding viewport
-	popViewport()
+	# Draw
+	grid.draw(gtable_full)
 	
 	# Close connection if filename specified
 	if(!is.na(filename)){
@@ -1063,7 +1036,7 @@ plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))],  pan
 	# Take the panel plot to proper format 
 	plot_panel = panelize_ggplot2(panel_plot, panel_customize, panel_par)
 	
-	plot_motor(x, plot_panel = plot_panel, legend = T, par = par, filename = filename)
+	plot_motor(x, plot_panel = plot_panel, par = par, filename = filename)
 }
 
 ##
