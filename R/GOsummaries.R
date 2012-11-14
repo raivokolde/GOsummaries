@@ -450,7 +450,7 @@ panelize_ggplot2 = function(plot_function, customize_function, par){
 		p = ggplot_gtable(ggplot_build(customize_function(plot_function(data, fontsize, par), par)))
 		
 		if(legend){
-			return(gtable_filter(p, "guide-box")$grob[[1]])
+			return(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]][2:5, 2:5])
 		}
 		else{
 			return(gtable::gtable_filter(p, "panel"))
@@ -491,7 +491,7 @@ calc_component_dimensions = function(component, par){
 	# Wordcloud height
 	nr = max(laply(component$GPR, nrow))
 	if(length(component$GPR) > 1){
-		wc_height = ifelse(nr > 3, max(nr / 4.5, 3), nr)
+		wc_height = ifelse(nr > 3, max(nr / 5.5, 3), nr)
 		arrows_height = 1.5
 	}
 	else{
@@ -500,11 +500,12 @@ calc_component_dimensions = function(component, par){
 	}
 	
 	# Compile results
+	lines_in_points = par$fontsize * 1.445
 	res = list(
-		title_height = unit(1.5, "lines"),
-		panel_height = unit(par$panel_height, "lines"),
-		arrows_height = unit(arrows_height, "lines"),
-		wc_height = unit(wc_height, "lines"),
+		title_height = unit(1.5 * lines_in_points, "points"),
+		panel_height = unit(par$panel_height * lines_in_points, "points"),
+		arrows_height = unit(arrows_height * lines_in_points, "points"),
+		wc_height = unit(wc_height * lines_in_points, "points"),
 		
 		panel_width = unit(par$panel_width, "points"),
 		percentage_width = max(do.call(unit.c, lapply(lapply(as.list(strsplit(component$Percentage, "\n")[[1]]), textGrob, gp = gpar(fontsize = par$fontsize, cex = 0.8)), grobWidth))) * 1.25,
@@ -531,7 +532,7 @@ gen_legend = function(legend_data, par){
 	
 	# rect_height = unit(1.7 * par$fontsize, "points")
 	rect_height = unit(6.096, "mm")
-	yy = unit(1, "npc") - unit(0.8, "lines") - (0:(n - 1)) * rect_height
+	yy = unit(1, "npc") - unit(0.8 * par$fontsize * 1.445, "points") - (0:(n - 1)) * rect_height
 	boxes = rectGrob(x = 0, y = yy, height = rect_height, width = rect_height, just = c(0, 1), gp = gpar(col = 0, fill = legend_data$colors))
 	
 	yyy = yy - rect_height * 0.65
@@ -543,7 +544,7 @@ gen_legend = function(legend_data, par){
 	}
 	
 	# Calculate size
-	height = unit(0.8, "lines") + n * rect_height
+	height = unit(0.8 * par$fontsize * 1.445, "points") + n * rect_height
 	width = rect_height + unit(3, "points") + unit(max(length), "in")
 	 
 	# Put together a frame
@@ -668,7 +669,7 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 	
 		
 	gtable_component = gtable::gtable_add_grob(gtable_component, gtable_aw, 3, 1, name = "arrows-wordcloud")
-	gtable_component = gtable::gtable_add_padding(gtable_component, unit(c(0, 0, 0.5, 0), "lines"))
+	gtable_component = gtable::gtable_add_padding(gtable_component, unit(c(0, 0, 0.5 * par$fontsize * 1.445, 0), "points"))
 	
 	return(gtable_component)
 
@@ -706,9 +707,9 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	wl_width = grobWidth(wordcloud_legend)
 	
 	legend_width = max(pl_width, wl_width)
-	legend_height = unit.c(pl_height, unit(1, "lines"), wl_height)
+	legend_height = unit.c(pl_height, unit(0.5 * par$fontsize * 1.445, "points"), wl_height)
 	vp = viewport( 
-		y = unit(1, "npc") - unit(1.5, "lines"), 
+		y = unit(1, "npc") - unit(1.5 * par$fontsize * 1.445, "points"), 
 		height = sum(legend_height),
 		just = c(0.5, 1)
 	)
@@ -727,7 +728,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 		name = "panel-legend"
 	)
 	
-	panel_legend = editGrob(wordcloud_legend, vp = viewport(x = unit(0, "npc"), just = c(0, 0.5)))
+	wordcloud_legend = editGrob(wordcloud_legend, vp = viewport(x = unit(0, "npc") + unit(3, "mm"), just = c(0, 0.5)))
 	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
 		wordcloud_legend, 
 		t = 3, 
@@ -752,7 +753,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	gtable_full = gtable::gtable_add_grob(gtable_full, gtable_legend, 1, 2, length(components), name = "legend")
 	
 	# Add padding
-	gtable_full = gtable::gtable_add_padding(gtable_full, unit(0.5, "lines"))
+	gtable_full = gtable::gtable_add_padding(gtable_full, unit(0.5 * par$fontsize * 1.445, "points"))
 	
 	# Open connection to file if filename specified
 	if(!is.na(filename)){
