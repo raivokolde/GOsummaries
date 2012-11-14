@@ -431,40 +431,6 @@ adjust_wordcloud_appearance = function(gosummaries, term_length = 35, wordcloud_
 }
 ##
 
-## GGplot utility functions (uses some functions from unreleased gtable package, if released should be moved to that)
-is.gtable = function(x) {
-  inherits(x, "gtable")
-}
-
-gtable_trim = function(x) {
-  stopifnot(is.gtable(x))
-  
-  w = range(x$layout$l, x$layout$r)
-  h = range(x$layout$t, x$layout$b)
-  
-  x$widths = x$widths[seq.int(w[1], w[2])]
-  x$heights = x$heights[seq.int(h[1], h[2])]
-  
-  x$layout$l = x$layout$l - w[1] + 1
-  x$layout$r = x$layout$r - w[1] + 1
-  x$layout$t = x$layout$t - h[1] + 1
-  x$layout$b = x$layout$b - h[1] + 1
-  
-  x
-}
-
-gtable_filter = function(x, pattern, fixed = FALSE, trim = TRUE) {
-  
-  matches = grepl(pattern, x$layout$name, fixed = fixed)
-  x$layout = x$layout[matches, , drop = FALSE]
-  x$grobs = x$grobs[matches]
-  
-  if (trim) x = gtable_trim(x)
-  
-  return(x)
-}
-
-
 ## Define zeroGrob
 zeroGrob = function(){
 	grob(cl = "zeroGrob", name = "NULL")
@@ -482,18 +448,10 @@ panelize_ggplot2 = function(plot_function, customize_function, par){
 		p = ggplot_gtable(ggplot_build(customize_function(plot_function(data, fontsize, par), par)))
 		
 		if(legend){
-			index = grepl("guide-box", p$layout$name, fixed = FALSE)
-			if(sum(index) == 0) return(zeroGrob())
-			a = p$grobs[[which(index)]]
-			width = p$widths[p$layout$l[index]]
-			# height = unit(length(getGrob(a, gPath = "key", grep = TRUE, global = T)) / 2 * 1.4 * fontsize, "points") + unit(1, "lines")
-			height = a$heights[2] - unit(3, "mm")
-			fg = frameGrob()
-			fg = packGrob(fg, a, width = width, height = height)
-			return(fg)
+			return(gtable_filter(p, "guide-box")$grob[[1]]$grobs[[1]][2:5, 2:5])
 		}
 		else{
-			return(gtable_filter(p, "panel"))
+			return(gtable::gtable_filter(p, "panel"))
 		}
 	}
 	
@@ -547,7 +505,7 @@ calc_component_dimensions = function(component, par){
 		wc_height = unit(wc_height, "lines"),
 		
 		panel_width = unit(par$panel_width, "points"),
-		percentage_width = max(grobWidth(textGrob(unlist(strsplit(component$Percentage, "\n")), gp = gpar(par$fontsize)))),
+		percentage_width = max(do.call(unit.c, lapply(lapply(as.list(strsplit(component$Percentage, "\n")[[1]]), textGrob, gp = gpar(fontsize = par$fontsize, cex = 0.8)), grobWidth))) * 1.25,
 		wc_width = unit(par$panel_width / length(component$GPR), "points")
 	)
 	
@@ -569,7 +527,8 @@ gen_legend = function(legend_data, par){
 	# Create Grobs
 	title = textGrob(legend_data$title, y = 1, x = 0, just = c(0, 1), gp = gpar(fontsize = par$fontsize, fontface = "bold", cex = 0.8))
 	
-	rect_height = unit(1.4 * par$fontsize, "points")
+	# rect_height = unit(1.7 * par$fontsize, "points")
+	rect_height = unit(6.096, "mm")
 	yy = unit(1, "npc") - unit(0.8, "lines") - (0:(n - 1)) * rect_height
 	boxes = rectGrob(x = 0, y = yy, height = rect_height, width = rect_height, just = c(0, 1), gp = gpar(col = 0, fill = legend_data$colors))
 	
@@ -637,11 +596,17 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 	# Create gtable
 	heights = with(component_dims, unit.c(title_height, panel_height, arrows_height + wc_height))
 	widths = with(component_dims, unit.c(panel_width, percentage_width))
+	
 	gtable_component = gtable::gtable(widths, heights)
 	
 	
 	# Add title
-	title = textGrob(x = 0, hjust = 0, data_component$Title, gp = gpar(fontface = "bold", fontsize = par$fontsize))
+	title = textGrob(x = 0, 
+		hjust = 0, 
+		label = data_component$Title, 
+		gp = gpar(fontface = "bold", fontsize = par$fontsize)
+	)
+	
 	gtable_component = gtable::gtable_add_grob(gtable_component, title, 1, 1)
 	
 	# Add plot
@@ -652,16 +617,30 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 		}
 	
 	# Add percentage
-	p = textGrob(data_component$Percentage, x = 0.1, y = 1, vjust = 1, hjust = 0, gp = gpar(fontsize = par$fontsize * 0.8))
+	p = textGrob(data_component$Percentage, 
+		x = 0.1, 
+		y = 1, 
+		vjust = 1, 
+		hjust = 0, 
+		gp = gpar(fontsize = par$fontsize, cex = 0.8)
+	)
+	
 	gtable_component = gtable::gtable_add_grob(gtable_component, p, 2, 2)
 	
 	# Arrows and wordclouds
 	heights = with(component_dims, unit.c(arrows_height, wc_height))
 	widths = with(component_dims, rep(wc_width, length(data_component$GPR)))
+	
 	gtable_aw = gtable::gtable(widths, heights)
 	
 	if(length(data_component$GPR) == 1){
-		wc = plot_wordcloud(data_component$GPR$gpr1$Term.name, -log10(data_component$GPR$gpr1$P.value), data_component$GPR$gpr1$Colors, algorithm = "leftside", dimensions = with(component_dims, unit.c(wc_width, wc_height)))
+		wc = plot_wordcloud(words = data_component$GPR$gpr1$Term.name,
+			freq = -log10(data_component$GPR$gpr1$P.value), 
+			color = data_component$GPR$gpr1$Colors, 
+			algorithm = "leftside", 
+			dimensions = with(component_dims, unit.c(wc_width, wc_height))
+		)
+		
 		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc, 2, 1)
 	}
 	
@@ -669,8 +648,18 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "first", par), 1, 1)
 		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "last", par), 1, 2)
 		
-		wc1 = plot_wordcloud(data_component$GPR$gpr1$Term.name, -log10(data_component$GPR$gpr1$P.value), data_component$GPR$gpr1$Colors, algorithm = "leftside", dimensions = with(component_dims, unit.c(wc_width, wc_height)))
-		wc2 = plot_wordcloud(data_component$GPR$gpr2$Term.name, -log10(data_component$GPR$gpr2$P.value), data_component$GPR$gpr2$Colors, algorithm = "rightside", dimensions = with(component_dims, unit.c(wc_width, wc_height)))
+		wc1 = plot_wordcloud(words = data_component$GPR$gpr1$Term.name,
+			freq = -log10(data_component$GPR$gpr1$P.value), 
+			color = data_component$GPR$gpr1$Colors, 
+			algorithm = "leftside", 
+			dimensions = with(component_dims, unit.c(wc_width, wc_height))
+		)
+		wc2 = plot_wordcloud(words = data_component$GPR$gpr2$Term.name,
+			freq = -log10(data_component$GPR$gpr2$P.value), 
+			color = data_component$GPR$gpr2$Colors, 
+			algorithm = "rightside", 
+			dimensions = with(component_dims, unit.c(wc_width, wc_height))
+		)
 		
 		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc1, 2, 1)
 		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc2, 2, 2)
@@ -678,7 +667,7 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 	
 		
 	gtable_component = gtable::gtable_add_grob(gtable_component, gtable_aw, 3, 1)
-	gtable_component = gtable::gtable_add_padding(gtable_component, unit(0.5, "lines"))
+	gtable_component = gtable::gtable_add_padding(gtable_component, unit(c(0, 0, 0.5, 0), "lines"))
 	
 	return(gtable_component)
 
@@ -692,10 +681,14 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	# Create component grobs
 	components = list()
 	for(i in seq_along(gosummaries)){
-		components[[i]] = plot_component(gosummaries[[i]], plot_panel, par, component_dimensions[[i]])
+		components[[i]] = plot_component(data_component = gosummaries[[i]], 
+			plot_panel = plot_panel, 
+			par = par, 
+			component_dims = component_dimensions[[i]]
+		)
 	}
 	
-	# Create legends and their dimensions 
+	# Create legends 
 	if(par$panel_height != 0){
 		panel_legend = plot_panel(gosummaries[[1]]$Data, par$fontsize, legend = T)
 	}
@@ -705,9 +698,40 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	
 	wordcloud_legend = gen_wordcloud_legend(gosummaries, par)
 	
-	gtable_legend = gtable::gtable(max(grobWidth(panel_legend), grobWidth(wordcloud_legend)), unit.c(grobHeight(panel_legend), grobHeight(wordcloud_legend)), vp = viewport(x = 0, y = 0, just = c(0, 0)))
-	gtable_legend = gtable::gtable_add_grob(gtable_legend, panel_legend, 1, 1)
-	gtable_legend = gtable::gtable_add_grob(gtable_legend, wordcloud_legend, 2, 1)
+	# Calculate legend dimensions to create gtable for it
+	pl_height = gtable::gtable_height(panel_legend)
+	pl_width = gtable::gtable_width(panel_legend)
+	wl_height = grobHeight(wordcloud_legend)
+	wl_width = grobWidth(wordcloud_legend)
+	
+	legend_width = max(pl_width, wl_width)
+	legend_height = unit.c(pl_height, unit(1, "lines"), wl_height)
+	vp = viewport( 
+		y = unit(1, "npc") - unit(1.5, "lines"), 
+		height = sum(legend_height),
+		just = c(0.5, 1)
+	)
+	
+	gtable_legend = gtable::gtable(
+		width = legend_width, 
+		height = legend_height, 
+		vp = vp
+	)
+	
+	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
+		grobs = gTree(children  = gList(panel_legend), 
+		vp = viewport(x = unit(0, "npc"), 
+			just = c(0, 0.5))), 
+		t = 1, 
+		l = 1
+	)
+	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
+		grobs = gTree(children  = gList(wordcloud_legend), 
+			vp = viewport(x = unit(0, "npc"), 
+				just = c(0, 0.5))), 
+		t = 3, 
+		l = 1
+	)
 	
 	
 	# Create gtable layout for the whole figure
@@ -721,21 +745,11 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 		gtable_full = gtable::gtable_add_grob(gtable_full, components[[i]], i, 1)
 	}
 	
-	# Add legend 
-	# hpl = grobHeight(panel_legend)
-	# 
-	# pushViewport(vplayout(seq_along(gosummaries), 2))
-	# pushViewport(viewport(x = unit(0, "npc"), y = unit(1, "npc") - unit(1.5, "lines"), height = hpl, width = grobWidth(panel_legend),  just = c(0, 1)))
-	# grid.draw(panel_legend)
-	# popViewport()
-	# 
-	# pushViewport(viewport(x = unit(0.5, "lines") + unit(2, "mm"), y = unit(1, "npc") - unit(ifelse(as.numeric(convertUnit(hpl, "cm")) > 0, 2.5, 1.5), "lines") - hpl, height = grobHeight(wordcloud_legend), width = grobWidth(wordcloud_legend), just = c(0, 1)))
-	# grid.draw(wordcloud_legend)
-	# popViewport()
-	# popViewport()
+	# Add legend
 	gtable_full = gtable::gtable_add_grob(gtable_full, gtable_legend, 1, 2, length(components))
 	
-	gtable_full <<- gtable::gtable_add_padding(gtable_full, unit(0.5, "lines"))
+	# Add padding
+	gtable_full = gtable::gtable_add_padding(gtable_full, unit(0.5, "lines"))
 	
 	# Open connection to file if filename specified
 	if(!is.na(filename)){
@@ -751,6 +765,8 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	if(!is.na(filename)){
 		dev.off()
 	}
+	
+	return(gtable_full)
 }
 ##
 
@@ -1036,7 +1052,7 @@ plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))],  pan
 	# Take the panel plot to proper format 
 	plot_panel = panelize_ggplot2(panel_plot, panel_customize, panel_par)
 	
-	plot_motor(x, plot_panel = plot_panel, par = par, filename = filename)
+	invisible(plot_motor(x, plot_panel = plot_panel, par = par, filename = filename))
 }
 
 ##
