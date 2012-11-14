@@ -1,3 +1,5 @@
+
+
 ## Dummydata object
 dummydata = function(gl, max){
 	res = list( 
@@ -448,7 +450,7 @@ panelize_ggplot2 = function(plot_function, customize_function, par){
 		p = ggplot_gtable(ggplot_build(customize_function(plot_function(data, fontsize, par), par)))
 		
 		if(legend){
-			return(gtable_filter(p, "guide-box")$grob[[1]]$grobs[[1]][2:5, 2:5])
+			return(gtable_filter(p, "guide-box")$grob[[1]])
 		}
 		else{
 			return(gtable::gtable_filter(p, "panel"))
@@ -641,12 +643,12 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 			dimensions = with(component_dims, unit.c(wc_width, wc_height))
 		)
 		
-		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc, 2, 1)
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc, 2, 1, name = "wordcloud")
 	}
 	
 	if(length(data_component$GPR) == 2){
-		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "first", par), 1, 1)
-		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "last", par), 1, 2)
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "first", par), 1, 1, name = "arrow-left")
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "last", par), 1, 2, name = "arrow-right")
 		
 		wc1 = plot_wordcloud(words = data_component$GPR$gpr1$Term.name,
 			freq = -log10(data_component$GPR$gpr1$P.value), 
@@ -661,12 +663,12 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 			dimensions = with(component_dims, unit.c(wc_width, wc_height))
 		)
 		
-		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc1, 2, 1)
-		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc2, 2, 2)
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc1, 2, 1, name = "wordcloud-left")
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc2, 2, 2, name = "wordcloud-right")
 	}
 	
 		
-	gtable_component = gtable::gtable_add_grob(gtable_component, gtable_aw, 3, 1)
+	gtable_component = gtable::gtable_add_grob(gtable_component, gtable_aw, 3, 1, name = "arrows-wordcloud")
 	gtable_component = gtable::gtable_add_padding(gtable_component, unit(c(0, 0, 0.5, 0), "lines"))
 	
 	return(gtable_component)
@@ -723,14 +725,16 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 		vp = viewport(x = unit(0, "npc"), 
 			just = c(0, 0.5))), 
 		t = 1, 
-		l = 1
+		l = 1,
+		name = "panel-legend"
 	)
 	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
 		grobs = gTree(children  = gList(wordcloud_legend), 
 			vp = viewport(x = unit(0, "npc"), 
 				just = c(0, 0.5))), 
 		t = 3, 
-		l = 1
+		l = 1,
+		name = "wordcloud-legend"
 	)
 	
 	
@@ -742,11 +746,11 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	
 	# Add components
 	for(i in 1:length(components)){
-		gtable_full = gtable::gtable_add_grob(gtable_full, components[[i]], i, 1)
+		gtable_full = gtable::gtable_add_grob(gtable_full, components[[i]], i, 1, name = paste("Component", i, sep = "-"))
 	}
 	
 	# Add legend
-	gtable_full = gtable::gtable_add_grob(gtable_full, gtable_legend, 1, 2, length(components))
+	gtable_full = gtable::gtable_add_grob(gtable_full, gtable_legend, 1, 2, length(components), name = "legend")
 	
 	# Add padding
 	gtable_full = gtable::gtable_add_padding(gtable_full, unit(0.5, "lines"))
