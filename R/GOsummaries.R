@@ -601,7 +601,6 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 	
 	gtable_component = gtable::gtable(widths, heights)
 	
-	
 	# Add title
 	title = textGrob(x = 0, 
 		hjust = 0, 
@@ -720,18 +719,17 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 		vp = vp
 	)
 	
+	panel_legend = editGrob(panel_legend, vp = viewport(x = unit(0, "npc"), just = c(0, 0.5)))
 	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
-		grobs = gTree(children  = gList(panel_legend), 
-		vp = viewport(x = unit(0, "npc"), 
-			just = c(0, 0.5))), 
+		grobs = panel_legend, 
 		t = 1, 
 		l = 1,
 		name = "panel-legend"
 	)
+	
+	panel_legend = editGrob(wordcloud_legend, vp = viewport(x = unit(0, "npc"), just = c(0, 0.5)))
 	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
-		grobs = gTree(children  = gList(wordcloud_legend), 
-			vp = viewport(x = unit(0, "npc"), 
-				just = c(0, 0.5))), 
+		wordcloud_legend, 
 		t = 3, 
 		l = 1,
 		name = "wordcloud-legend"
@@ -746,6 +744,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	
 	# Add components
 	for(i in 1:length(components)){
+		components[[i]] = editGrob(components[[i]], vp = viewport(x = 0, width = gtable::gtable_width(components[[i]]), just = c(0, 0.5)))
 		gtable_full = gtable::gtable_add_grob(gtable_full, components[[i]], i, 1, name = paste("Component", i, sep = "-"))
 	}
 	
