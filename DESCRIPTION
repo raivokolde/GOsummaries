@@ -17,7 +17,8 @@ Imports:
     grid,
     gProfileR,
     reshape2,
-    limma
+    limma,
+    gtable
 LinkingTo: Rcpp
 Collate:
     'GOsummaries-package.r'

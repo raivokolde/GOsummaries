@@ -32,6 +32,7 @@
 #' @import gProfileR
 #' @import reshape2
 #' @import limma
+#' @import gtable
 #' 
 #' @useDynLib GOsummaries 
 #' 

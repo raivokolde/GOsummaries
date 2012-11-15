@@ -6,7 +6,8 @@
     max_min = c(1, 0.1), scale = 0.4, min.freq = 3,
     max.words = Inf, random.order = FALSE,
     colors = "black", random.colors = FALSE,
-    algorithm = "circle", tryfit = T, add = F)
+    algorithm = "circle", tryfit = T, add = F, grob = F,
+    dimensions = unit(c(1, 1), "npc"))
 }
 \arguments{
   \item{words}{vector of words to draw}
@@ -48,6 +49,12 @@
   values of scale parameter until everything fits}
 
   \item{add}{if TRUE adds the picture to existing plot.}
+
+  \item{grob}{if TRUE returns the text grob instead of
+  drawing it}
+
+  \item{dimensions}{a two element vector of units giving
+  the width and height of the word cloud respectively}
 }
 \description{
   General \code{grid} based wordcloud drawing function

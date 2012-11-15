@@ -6,7 +6,7 @@
   gosummaries(x, ...)
 
   \method{gosummaries}{default} (x, organism = "hsapiens",
-    go_branches = c("BP", "KEGG", "REAC"),
+    go_branches = c("BP", "ke", "re"),
     p_value_threshold = 0.01, min_size = 50,
     max_size = 1000, max_signif = 40, ordered_query = T,
     ...)
@@ -23,7 +23,7 @@
 
   \item{go_branches}{GO tree branches and pathway databases
   as denoted in g:Profiler (Possible values: BP, CC, MF,
-  KEGG, REAC)}
+  ke, re)}
 
   \item{p_value_threshold}{threshold for p-values that are
   corrected for multiple testing}
