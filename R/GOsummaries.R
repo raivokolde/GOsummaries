@@ -60,19 +60,10 @@ add_dummydata.gosummaries = function(gosummaries){
 #' There can be a lot of results for a typical GO enrichment analysis but usually these 
 #' tend to be pretty redundant. Since one can fit only a small number of categories into 
 #' a word cloud we have to bring down the number of categories to show an reduce the 
-#' redundancy. For this we apply an algortihm that selects from groups of related 
-#' categories only the ones with the best p-values. The algorithm works as follows. 
-#' \itemize{
-#'   \item Delete all the results where category size is smaller than \code{min_size}, 
-#' larger than \code{max_size}, enrichment p-value is larger than 
-#' \code{p_value_threshold} or the category does not belong to one of the 
-#' \code{go_branches}.
-#'   \item Map all the remaining results back to the GO graph and find connected 
-#' components.
-#'   \item From each connected component retain the category with smallest p-value. 
-#'   \item If more than \code{max_signif} categories are still present return 
-#' \code{max_signif} ones with the best p-values
-#' } 
+#' redundancy. For this we use hierarchical filtering option \"moderate\" in g:Profiler. In g:Profiler 
+#' the categories are grouped together when they share one or more enriched parents. The \"moderate\" 
+#' option selects the most significant category from each of such groups. (See more at 
+#' http://biit.cs.ut.ee/gprofiler/)   
 #' 
 #' The slots of the object can be filled with custom information using a function 
 #' \code{\link{add_to_slot.gosummaries}}. 
@@ -92,7 +83,7 @@ add_dummydata.gosummaries = function(gosummaries){
 #' @param x list of arrays of gene names (or list of lists of arrays of gene names)
 #' @param organism the organism that the gene lists correspond to. The format should be 
 #' as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
-#' @param \dots Description of parameter 
+#' @param \dots additional parameters for gprofiler function 
 #' @return   A gosummaries type of object
 #' 
 #' @seealso \code{\link{gosummaries.kmeans}}, 
@@ -109,11 +100,12 @@ gosummaries = function(x, ...){
 }
 
 #' @param go_branches GO tree branches and pathway databases as denoted in g:Profiler (Possible values: BP, CC, MF, ke, re) 
-#' @param p_value_threshold threshold for p-values that are corrected for multiple testing
-#' @param min_size minimal size of functional category to be considered
-#' @param max_size maximal size of functional category to be considered
+#' @param max_p_value threshold for p-values that are corrected for multiple testing
+#' @param min_set_size minimal size of functional category to be considered
+#' @param max_set_size maximal size of functional category to be considered
 #' @param max_signif maximal number of categories returned per query
 #' @param ordered_query logical showing if the lists are ordered or not (it determines if the ordered query algorithm is used in g:Profiler)
+#' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
 #'  # Example1
@@ -122,7 +114,7 @@ gosummaries = function(x, ...){
 #' @method gosummaries default
 #' @S3method gosummaries default
 #' @export
-gosummaries.default = function(x, organism = "hsapiens", go_branches = c("BP", "ke", "re"), p_value_threshold = 1e-2, min_size = 50, max_size = 1000, max_signif = 40, ordered_query = T, ...){
+gosummaries.default = function(x, organism = "hsapiens", go_branches = c("BP", "ke", "re"), max_p_value = 1e-2, min_set_size = 50, max_set_size = 1000, max_signif = 40, ordered_query = T, hier_filtering = "moderate", ...){
 	components = 1:length(x)
 	
 	# Find the number of lists per component (assumed to be the same over components)
@@ -164,7 +156,7 @@ gosummaries.default = function(x, organism = "hsapiens", go_branches = c("BP", "
 	class(res) = "gosummaries"
 	
 	res = add_dummydata.gosummaries(res)
-	res = annotate.gosummaries(res, organism = organism, go_branches = go_branches, p_value_threshold = p_value_threshold, min_size = min_size, max_size = max_size, max_signif = max_signif, ordered_query = ordered_query)
+	res = annotate.gosummaries(res, organism = organism, go_branches = go_branches, max_p_value = max_p_value, min_set_size = min_set_size, max_set_size = max_set_size, max_signif = max_signif, ordered_query = ordered_query, hier_filtering = hier_filtering, ...)
 	
 	return(res)
 } 
@@ -230,30 +222,11 @@ add_to_slot.gosummaries = function(x, slot, values){
 ##
 
 ## Annotate gosummaries with g:Profiler
-filter_gprofiler_default = function(gpr, go_branches = c("BP", "KEGG", "REAC"), p_value_threshold, min_size, max_size, max_signif){
-	gpr = gpr[gpr$domain %in% go_branches,]
-	
-	if(nrow(gpr) == 0) return(gpr)
-	
-	gpr$sg = 0
-	gpr$sg[which(gpr$term.size > max_size | gpr$relative.depth == 1)]= 1
-	gpr$sg2 = cumsum(gpr$sg)
-	gpr = gpr[gpr$term.size <= max_size,]
-	gpr = ddply(gpr, "sg2", function(x) x[which.min(x$p.value),, drop = F])
-	
-	gpr = ddply(gpr, "query.number", function(x){
-		x[order(x$p.value), ][1:min(max_signif, nrow(x)),]
-	})
-	
-	return(gpr)
-}
-
-filter_gprofiler_min_pvalue = function(gpr, go_branches = c("BP", "KEGG", "REAC"), p_value_threshold, min_size, max_size, max_signif){
-	gpr = gpr[gpr$domain %in% go_branches,]
-	
-	gpr = gpr[gpr$term.size > min_size & gpr$term.size < max_size & gpr$p.value < p_value_threshold, ]
+filter_gprofiler = function(gpr, go_branches, min_set_size, max_signif){
+	gpr = gpr[gpr$domain %in% go_branches & gpr$term.size > min_set_size, ]
 	
 	gpr = ddply(gpr, "query.number", function(x) {
+		x = x[order(x$p.value),]
 		rank = rank(x$p.value)
 		return(x[rank <= max_signif, ])
 	})
@@ -261,23 +234,7 @@ filter_gprofiler_min_pvalue = function(gpr, go_branches = c("BP", "KEGG", "REAC"
 	return(gpr)
 }
 
-filter_gprofiler = function(gpr, go_branches = c("BP", "KEGG", "REAC"), p_value_threshold, min_size, max_size, max_signif, heuristic = "default"){
-	res = switch(heuristic, 
-		default=filter_gprofiler_default(gpr, go_branches = go_branches, p_value_threshold = p_value_threshold, min_size = min_size, max_size = max_size, max_signif = max_signif), 
-		min_pvalue=filter_gprofiler_min_pvalue(gpr, go_branches = go_branches, p_value_threshold = p_value_threshold, min_size = min_size, max_size = max_size, max_signif = max_signif))
-	
-	return(res)
-}
-
-adjust_gprofiler_output = function(gpr){
-	for(i in c("query.number", "significant", "p.value", "term.size", "query.size", "overlap.size", "precision", "recall", "subgraph.number", "relative.depth")){
-		gpr[[i]] = as.numeric(as.character(gpr[[i]]))
-	}
-	
-	return(gpr)
-}
-
-annotate.gosummaries = function(gosummaries, organism, components = 1:length(gosummaries), go_branches, p_value_threshold, min_size, max_size, max_signif, ordered_query, go_pruning_heuristic = "default"){
+annotate.gosummaries = function(gosummaries, organism, components = 1:length(gosummaries), go_branches, min_set_size, max_p_value, max_set_size, max_signif, ordered_query, hier_filtering, ...){
 	
 	if(!is.gosummaries(gosummaries)) stop("Function requires a gosummaries type of  object")
 	
@@ -296,12 +253,11 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	}
 	
 	# Run g:Profiler analysis 
-	gpr = gprofiler(query = gl, organism = organism, ordered_query = ordered_query)
+	gpr = gProfileR::gprofiler(query = gl, organism = organism, ordered_query = ordered_query, max_set_size = 1000, hier_filtering = hier_filtering, max_p_value = max_p_value, ...)
 	
 	# Clean and filter the results
 	gpr$query.number = as.numeric(as.character(gpr$query.number))
-	gpr = adjust_gprofiler_output(gpr)
-	gpr = filter_gprofiler(gpr, go_branches = go_branches, p_value_threshold = p_value_threshold, min_size = min_size, max_size = max_size, max_signif = max_signif, heuristic = go_pruning_heuristic)
+	gpr = filter_gprofiler(gpr, go_branches = go_branches, min_set_size = min_set_size, max_signif = max_signif)
 	gpr = gpr[, c("query.number", "term.id", "p.value", "term.name")]
 	colnames(gpr) = c("query.number", "Term.id", "P.value", "Term.name")
 
@@ -433,39 +389,7 @@ adjust_wordcloud_appearance = function(gosummaries, term_length = 35, wordcloud_
 }
 ##
 
-## Define zeroGrob
-zeroGrob = function(){
-	grob(cl = "zeroGrob", name = "NULL")
-}
-widthDetails.zeroGrob = 
-heightDetails.zeroGrob = 
-grobWidth.zeroGrob = 
-grobHeight.zeroGrob = function(x) unit(0, "cm")
-drawDetails.zeroGrob = function(x, recording) {}
-is.zero <- function(x) identical(x, zeroGrob())
-##
-
-panelize_ggplot2 = function(plot_function, customize_function, par){
-	res = function(data, fontsize, legend = F){
-		p = ggplot_gtable(ggplot_build(customize_function(plot_function(data, fontsize, par), par)))
-		
-		if(legend){
-			return(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]][2:5, 2:5])
-		}
-		else{
-			return(gtable::gtable_filter(p, "panel"))
-		}
-	}
-	
-	return(res)
-} 
-##
-
 ## Plotting utility functions
-vplayout = function(x, y){
-	return(viewport(layout.pos.row = x, layout.pos.col = y))
-}
-
 open_file_con = function(filename, width, height){
 	# Get file type
 	r = regexpr("\\.[a-zA-Z]*$", filename)
@@ -484,6 +408,21 @@ open_file_con = function(filename, width, height){
 	
 	f(filename, width = width, height = height)
 }
+
+panelize_ggplot2 = function(plot_function, customize_function, par){
+	res = function(data, fontsize, legend = F){
+		p = ggplot_gtable(ggplot_build(customize_function(plot_function(data, fontsize, par), par)))
+		
+		if(legend){
+			return(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]][2:5, 2:5])
+		}
+		else{
+			return(gtable::gtable_filter(p, "panel"))
+		}
+	}
+	
+	return(res)
+} 
 ##
 
 ## Raw plotting functions
@@ -585,7 +524,7 @@ plot_wordcloud = function(words, freq, color, algorithm, dimensions){
 	if(length(words) > 0){
 		return(plotWordcloud(words, freq, colors = color, random.order = F, min.freq = -Inf, rot.per = 0, scale = 0.85, max_min = c(1, 0), algorithm = algorithm, add = F, grob = T, dimensions = dimensions))
 	}
-	return(zeroGrob())
+	return(ggplot2::zeroGrob())
 }
 
 plot_arrow = function(end, par){
@@ -695,7 +634,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 		panel_legend = plot_panel(gosummaries[[1]]$Data, par$fontsize, legend = T)
 	}
 	else{
-		panel_legend = zeroGrob()
+		panel_legend = ggplot2::zeroGrob()
 	}
 	
 	wordcloud_legend = gen_wordcloud_legend(gosummaries, par)
