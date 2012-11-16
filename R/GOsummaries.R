@@ -393,6 +393,19 @@ adjust_wordcloud_appearance = function(gosummaries, term_length = 35, wordcloud_
 ##
 
 ## Plotting utility functions
+
+## Define zeroGrob
+zeroGrob = function(){
+	grob(cl = "zeroGrob", name = "NULL")
+}
+widthDetails.zeroGrob = 
+heightDetails.zeroGrob = 
+grobWidth.zeroGrob = 
+grobHeight.zeroGrob = function(x) unit(0, "cm")
+drawDetails.zeroGrob = function(x, recording) {}
+is.zero <- function(x) identical(x, zeroGrob())
+##
+
 open_file_con = function(filename, width, height){
 	# Get file type
 	r = regexpr("\\.[a-zA-Z]*$", filename)
@@ -415,10 +428,13 @@ open_file_con = function(filename, width, height){
 panelize_ggplot2 = function(plot_function, customize_function, par){
 	res = function(data, fontsize, legend = F){
 		p = ggplot_gtable(ggplot_build(customize_function(plot_function(data, fontsize, par), par)))
-		pl <<- p
+		
 		if(legend){
-			if(any(grepl("guide-box", p$layout$name)))
-				return(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]][2:5, 2:5])
+			if(any(grepl("guide-box", p$layout$name))){
+				nc = ncol(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]])
+				nr = nrow(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]])
+				return(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]][2:(nr - 1), 2:(nc - 1)])
+			}
 			else
 				return(gtable(widths = unit(0, "cm"), height = unit(0, "cm")))
 		}
@@ -530,7 +546,7 @@ plot_wordcloud = function(words, freq, color, algorithm, dimensions){
 	if(length(words) > 0){
 		return(plotWordcloud(words, freq, colors = color, random.order = F, min.freq = -Inf, rot.per = 0, scale = 0.85, max_min = c(1, 0), algorithm = algorithm, add = F, grob = T, dimensions = dimensions))
 	}
-	return(ggplot2::zeroGrob())
+	return(zeroGrob())
 }
 
 plot_arrow = function(end, par){
@@ -554,14 +570,18 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 		gp = gpar(fontface = "bold", fontsize = par$fontsize)
 	)
 	
-	gtable_component = gtable::gtable_add_grob(gtable_component, title, 1, 1)
+	gtable_component = gtable::gtable_add_grob(gtable_component, title, 1, 1, clip = "off")
 	
 	# Add plot
 	if(par$panel_height != 0){
-			p = plot_panel(data_component$Data, par$fontsize)
-			b = rectGrob(gp = gpar(lwd = 1.5, col = "grey40"))
-			gtable_component = gtable::gtable_add_grob(gtable_component, gList(p, b), 2, 1)
-		}
+		p = plot_panel(data_component$Data, par$fontsize)
+	}
+	else{
+		p = zeroGrob()
+	}
+	b = rectGrob(gp = gpar(lwd = 1.5, col = "grey40", fill = NA))
+	
+	gtable_component = gtable::gtable_add_grob(gtable_component, gTree(children = gList(p, b)), 2, 1, clip = "off")
 	
 	# Add percentage
 	p = textGrob(data_component$Percentage, 
@@ -572,7 +592,7 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 		gp = gpar(fontsize = par$fontsize, cex = 0.8)
 	)
 	
-	gtable_component = gtable::gtable_add_grob(gtable_component, p, 2, 2)
+	gtable_component = gtable::gtable_add_grob(gtable_component, p, 2, 2, clip = "off")
 	
 	# Arrows and wordclouds
 	heights = with(component_dims, unit.c(arrows_height, wc_height))
@@ -592,8 +612,8 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 	}
 	
 	if(length(data_component$GPR) == 2){
-		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "first", par), 1, 1, name = "arrow-left")
-		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "last", par), 1, 2, name = "arrow-right")
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "first", par), 1, 1, name = "arrow-left", clip = "off")
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "last", par), 1, 2, name = "arrow-right", clip = "off")
 		
 		wc1 = plot_wordcloud(words = data_component$GPR$gpr1$Term.name,
 			freq = -log10(data_component$GPR$gpr1$P.value), 
@@ -638,9 +658,12 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	# Create legends 
 	if(par$panel_height != 0){
 		panel_legend = plot_panel(gosummaries[[1]]$Data, par$fontsize, legend = T)
+		if(convertHeight(gtable::gtable_height(panel_legend), "cm", valueOnly = T) != 0){
+			panel_legend = gtable::gtable_add_padding(panel_legend, unit(c(0, 0, 0.5 * par$fontsize * 1.445, 0), "points"))
+		}
 	}
 	else{
-		panel_legend = ggplot2::zeroGrob()
+		panel_legend = gtable(widths = unit(0, "cm"), height = unit(0, "cm"))
 	}
 	
 	wordcloud_legend = gen_wordcloud_legend(gosummaries, par)
@@ -652,7 +675,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	wl_width = grobWidth(wordcloud_legend)
 	
 	legend_width = max(pl_width, wl_width)
-	legend_height = unit.c(pl_height, unit(0.5 * par$fontsize * 1.445, "points"), wl_height)
+	legend_height = unit.c(pl_height, wl_height)
 	vp = viewport( 
 		y = unit(1, "npc") - unit(1.5 * par$fontsize * 1.445, "points"), 
 		height = sum(legend_height),
@@ -670,15 +693,17 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 		grobs = panel_legend, 
 		t = 1, 
 		l = 1,
-		name = "panel-legend"
+		name = "panel-legend", 
+		clip = "off"
 	)
 	
 	wordcloud_legend = editGrob(wordcloud_legend, vp = viewport(x = unit(0, "npc") + unit(3, "mm"), just = c(0, 0.5)))
 	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
 		wordcloud_legend, 
-		t = 3, 
+		t = 2, 
 		l = 1,
-		name = "wordcloud-legend"
+		name = "wordcloud-legend", 
+		clip = "off"
 	)
 	
 	
@@ -944,11 +969,21 @@ customize = function(p, par){
 #' @method plot gosummaries
 #' 
 #' @export
-plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))],  panel_plot = NULL, panel_customize = NULL, panel_par = list(), panel_height = 5, fontsize = 10, term_length = 35, wordcloud_colors = c("grey70", "grey10"), filename = NA, ...){
+plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))], classes = NA, panel_plot = NULL, panel_customize = NULL, panel_par = list(), panel_height = 5, fontsize = 10, term_length = 35, wordcloud_colors = c("grey70", "grey10"), filename = NA, ...){
 	
 	# Check input
 	if(!is.gosummaries(x)) stop("Function requires an object of gosummaries type")
 	if(any(!(as.character(components) %in% names(x)))) stop("Selected components are not present in data")
+	
+	# Add classes to panel_par
+	if(!is.na(classes)){
+		if(!(classes %in% colnames(x[[1]]$Data))){
+			stop("Classes variable has to be present in the data.frame in the component Data slot")
+		}
+		else{
+			panel_par[["classes"]] = classes
+		}
+	}
 	
 	# Take out components of interest
 	x = x[as.character(components)]
@@ -1164,7 +1199,7 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 		g1 = paste(rownames(x$contrasts)[x$contrasts[, i] < 0], collapse = ", ")
 		g2 = paste(rownames(x$contrasts)[x$contrasts[, i] > 0], collapse = ", ")
 		
-		title = sprintf("%s VS %s", g1, g2)
+		title = sprintf("G1: %s; G2: %s", g1, g2)
 		perc[[i]] = sprintf("G1 > G2: %d\nG1 < G2: %d", length(gl_down), length(gl_up))
 		
 		gl[[title]] = list(
