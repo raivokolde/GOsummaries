@@ -6,10 +6,10 @@
   gosummaries(x, ...)
 
   \method{gosummaries}{default} (x, organism = "hsapiens",
-    go_branches = c("BP", "ke", "re"),
-    p_value_threshold = 0.01, min_size = 50,
-    max_size = 1000, max_signif = 40, ordered_query = T,
-    ...)
+    go_branches = c("BP", "ke", "re"), max_p_value = 0.01,
+    min_set_size = 50, max_set_size = 1000,
+    max_signif = 40, ordered_query = T,
+    hier_filtering = "moderate", ...)
 }
 \arguments{
   \item{x}{list of arrays of gene names (or list of lists
@@ -19,20 +19,21 @@
   correspond to. The format should be as follows:
   "hsapiens", "mmusculus", "scerevisiae", etc.}
 
-  \item{\dots}{Description of parameter}
+  \item{\dots}{additional parameters for gprofiler
+  function}
 
   \item{go_branches}{GO tree branches and pathway databases
   as denoted in g:Profiler (Possible values: BP, CC, MF,
   ke, re)}
 
-  \item{p_value_threshold}{threshold for p-values that are
+  \item{max_p_value}{threshold for p-values that are
   corrected for multiple testing}
 
-  \item{min_size}{minimal size of functional category to be
-  considered}
+  \item{min_set_size}{minimal size of functional category
+  to be considered}
 
-  \item{max_size}{maximal size of functional category to be
-  considered}
+  \item{max_set_size}{maximal size of functional category
+  to be considered}
 
   \item{max_signif}{maximal number of categories returned
   per query}
@@ -40,6 +41,10 @@
   \item{ordered_query}{logical showing if the lists are
   ordered or not (it determines if the ordered query
   algorithm is used in g:Profiler)}
+
+  \item{hier_filtering}{a type of hierarchical filtering
+  used when reducing the number of g:Profiler results (see
+  \code{\link{gprofiler}} for further information)}
 }
 \value{
   A gosummaries type of object
@@ -86,19 +91,12 @@
   Since one can fit only a small number of categories into
   a word cloud we have to bring down the number of
   categories to show an reduce the redundancy. For this we
-  apply an algortihm that selects from groups of related
-  categories only the ones with the best p-values. The
-  algorithm works as follows. \itemize{ \item Delete all
-  the results where category size is smaller than
-  \code{min_size}, larger than \code{max_size}, enrichment
-  p-value is larger than \code{p_value_threshold} or the
-  category does not belong to one of the
-  \code{go_branches}.  \item Map all the remaining results
-  back to the GO graph and find connected components.
-  \item From each connected component retain the category
-  with smallest p-value.  \item If more than
-  \code{max_signif} categories are still present return
-  \code{max_signif} ones with the best p-values }
+  use hierarchical filtering option \"moderate\" in
+  g:Profiler. In g:Profiler the categories are grouped
+  together when they share one or more enriched parents.
+  The \"moderate\" option selects the most significant
+  category from each of such groups. (See more at
+  http://biit.cs.ut.ee/gprofiler/)
 
   The slots of the object can be filled with custom
   information using a function

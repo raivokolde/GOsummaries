@@ -104,7 +104,10 @@ gosummaries = function(x, ...){
 #' @param min_set_size minimal size of functional category to be considered
 #' @param max_set_size maximal size of functional category to be considered
 #' @param max_signif maximal number of categories returned per query
-#' @param ordered_query logical showing if the lists are ordered or not (it determines if the ordered query algorithm is used in g:Profiler)
+#' @param ordered_query logical showing if the lists are ordered or not (it determines if the ordered 
+#' query algorithm is used in g:Profiler)
+#' @param hier_filtering a type of hierarchical filtering used when reducing the number of g:Profiler 
+#' results (see \code{\link{gprofiler}} for further information) 
 #' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
@@ -412,9 +415,12 @@ open_file_con = function(filename, width, height){
 panelize_ggplot2 = function(plot_function, customize_function, par){
 	res = function(data, fontsize, legend = F){
 		p = ggplot_gtable(ggplot_build(customize_function(plot_function(data, fontsize, par), par)))
-		
+		pl <<- p
 		if(legend){
-			return(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]][2:5, 2:5])
+			if(any(grepl("guide-box", p$layout$name)))
+				return(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]][2:5, 2:5])
+			else
+				return(gtable(widths = unit(0, "cm"), height = unit(0, "cm")))
 		}
 		else{
 			return(gtable::gtable_filter(p, "panel"))
@@ -840,7 +846,7 @@ panel_histogram = function(data, fontsize = 10, par){
 		p = qplot(x, geom = "bar", fill = data[, par$classes], binwidth = (max(data$x) - min(data$x)) / 20, data = data) 
 	}
 	else{
-		p = qplot(x, geom = "bar", data = data) + geom_rug()
+		p = qplot(x, geom = "bar", data = data)
 	}
 	p = p + theme_bw(base_size = fontsize)
 	
