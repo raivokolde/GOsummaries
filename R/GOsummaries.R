@@ -493,10 +493,10 @@ gen_legend = function(legend_data, par){
 	
 	# rect_height = unit(1.7 * par$fontsize, "points")
 	rect_height = unit(6.096, "mm")
-	yy = unit(1, "npc") - unit(0.8 * par$fontsize * 1.445, "points") - (0:(n - 1)) * rect_height
+	yy = unit(1, "npc") - unit(0.8 * par$fontsize * 1.1, "points") - (0:(n - 1)) * rect_height
 	boxes = rectGrob(x = 0, y = yy, height = rect_height, width = rect_height, just = c(0, 1), gp = gpar(col = 0, fill = legend_data$colors))
 	
-	yyy = yy - rect_height * 0.65
+	yyy = yy - rect_height * 0.5
 	gl = gList()
 	length = c(rep(0, n), convertWidth(grobWidth(title), "in"))
 	for(i in 1:n){
@@ -688,7 +688,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 		vp = vp
 	)
 	
-	panel_legend = editGrob(panel_legend, vp = viewport(x = unit(0, "npc"), just = c(0, 0.5)))
+	panel_legend = editGrob(panel_legend, vp = viewport(x = unit(0, "npc"), width = pl_width, just = c(0, 0.5)))
 	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
 		grobs = panel_legend, 
 		t = 1, 
@@ -697,7 +697,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 		clip = "off"
 	)
 	
-	wordcloud_legend = editGrob(wordcloud_legend, vp = viewport(x = unit(0, "npc") + unit(3, "mm"), just = c(0, 0.5)))
+	wordcloud_legend = editGrob(wordcloud_legend, vp = viewport(x = unit(0, "npc"), width = wl_width, just = c(0, 0.5)))
 	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
 		wordcloud_legend, 
 		t = 2, 
