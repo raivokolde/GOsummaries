@@ -50,7 +50,24 @@
   displayed
 }
 \examples{
-# Example1
+data(tissue_example)
+
+# Do the t-test comparisons
+mm = model.matrix(~ factor(tissue_example$annot$Tissue) - 1)
+colnames(mm) = make.names(levels(factor(tissue_example$annot$Tissue)))
+
+contrast = limma::makeContrasts(brain - cell.line, hematopoietic.system - muscle, cell.line - hematopoietic.system, levels = colnames(mm))
+
+fit = limma::lmFit(tissue_example$exp, mm)
+fit = limma::contrasts.fit(fit, contrast)
+fit = limma::eBayes(fit)
+
+gs_limma = gosummaries(fit)
+gs_limma_exp = gosummaries(fit, exp = tissue_example$exp, annotation = tissue_example$annot)
+
+plot(gs_limma)
+plot(gs_limma, panel_height = 0)
+plot(gs_limma_exp, classes = "Tissue")
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

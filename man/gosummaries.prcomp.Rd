@@ -55,7 +55,12 @@
   and negative weights.
 }
 \examples{
-# Example1
+data(tissue_example)
+
+pcr = prcomp(t(tissue_example$exp))
+gs_pca = gosummaries(pcr, annotation = tissue_example$annot)
+
+plot(gs_pca, classes = "Tissue")
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

@@ -27,7 +27,12 @@
   Functions to interact with gosummaries object
 }
 \examples{
-#Example1
+data(gs_kmeans)
+
+# Add new title to the components
+gs_kmeans_new = add_to_slot.gosummaries(gs_kmeans, "Title", as.list(paste("K-means cluster", 1:length(gs_kmeans))))
+
+print(gs_kmeans_new)
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

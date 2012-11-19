@@ -119,8 +119,38 @@
   k-means, limma and PCA results.
 }
 \examples{
-# Example1
-# Example1
+# Define gene lists
+genes1 = c("203485_at", "209469_at", "209470_s_at", "203999_at", "205358_at", "203130_s_at",
+"210222_s_at", "202508_s_at", "203001_s_at", "207957_s_at", "203540_at", "203000_at", "219619_at",
+"221805_at", "214046_at", "213135_at", "203889_at", "209990_s_at", "210016_at", "202507_s_at",
+"209839_at", "204953_at", "209167_at", "209685_s_at",  "211276_at", "202391_at", "205591_at",
+"201313_at")
+genes2 = c("201890_at", "202503_s_at", "204170_s_at", "201291_s_at", "202589_at", "218499_at",
+"209773_s_at", "204026_s_at", "216237_s_at", "202546_at", "218883_s_at", "204285_s_at",
+"208659_at", "201292_at", "201664_at")
+
+
+gl1 = list(List1 = genes1,  List2 = genes2) # One list per component
+gl2 = list(List = list(genes1, genes2)) # Two lists per component
+
+# Construct gosummaries objects
+gs1 = gosummaries(gl1)
+gs2 = gosummaries(gl2)
+
+plot(gs1, fontsize = 8)
+plot(gs2, fontsize = 8)
+
+# Changing slot contents using using addToSlot.gosummaries
+gs1 = add_to_slot.gosummaries(gs1, "Title", list("Neurons", "Cell lines"))
+
+# Adding expression data
+data(tissue_example)
+
+gs1 = add_expression.gosummaries(gs1, exp = tissue_example$exp, annotation = tissue_example$annot)
+gs2 = add_expression.gosummaries(gs2, exp = tissue_example$exp, annotation = tissue_example$annot)
+
+plot(gs1, panel_par = list(classes = "Tissue"), fontsize = 8)
+plot(gs2, panel_par = list(classes = "Tissue"), fontsize = 8)
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

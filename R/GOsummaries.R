@@ -91,7 +91,39 @@ add_dummydata.gosummaries = function(gosummaries){
 #' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
-#'  # Example1
+#' # Define gene lists 
+#' genes1 = c("203485_at", "209469_at", "209470_s_at", "203999_at", "205358_at", "203130_s_at", 
+#' "210222_s_at", "202508_s_at", "203001_s_at", "207957_s_at", "203540_at", "203000_at", "219619_at",
+#' "221805_at", "214046_at", "213135_at", "203889_at", "209990_s_at", "210016_at", "202507_s_at", 
+#' "209839_at", "204953_at", "209167_at", "209685_s_at",  "211276_at", "202391_at", "205591_at", 
+#' "201313_at")
+#' genes2 = c("201890_at", "202503_s_at", "204170_s_at", "201291_s_at", "202589_at", "218499_at", 
+#' "209773_s_at", "204026_s_at", "216237_s_at", "202546_at", "218883_s_at", "204285_s_at", 
+#' "208659_at", "201292_at", "201664_at")
+#' 
+#' 
+#' gl1 = list(List1 = genes1,  List2 = genes2) # One list per component
+#' gl2 = list(List = list(genes1, genes2)) # Two lists per component
+#' 
+#' # Construct gosummaries objects
+#' gs1 = gosummaries(gl1)
+#' gs2 = gosummaries(gl2)
+#' 
+#' plot(gs1, fontsize = 8)
+#' plot(gs2, fontsize = 8)
+#' 
+#' # Changing slot contents using using addToSlot.gosummaries 
+#' gs1 = add_to_slot.gosummaries(gs1, "Title", list("Neurons", "Cell lines"))
+#' 
+#' # Adding expression data
+#' data(tissue_example)
+#' 
+#' gs1 = add_expression.gosummaries(gs1, exp = tissue_example$exp, annotation = tissue_example$annot)
+#' gs2 = add_expression.gosummaries(gs2, exp = tissue_example$exp, annotation = tissue_example$annot)
+#'
+#' plot(gs1, panel_par = list(classes = "Tissue"), fontsize = 8)
+#' plot(gs2, panel_par = list(classes = "Tissue"), fontsize = 8)
+#' 
 #' 
 #' @rdname gosummaries
 #' @export
@@ -110,8 +142,6 @@ gosummaries = function(x, ...){
 #' results (see \code{\link{gprofiler}} for further information) 
 #' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
-#' @examples
-#'  # Example1
 #' 
 #' @rdname gosummaries
 #' @method gosummaries default
@@ -209,7 +239,12 @@ print.gosummaries = function(x, ...){
 #' @param values list of values where each element corresponds to one component
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
-#'  #Example1
+#' data(gs_kmeans)
+#' 
+#' # Add new title to the components
+#' gs_kmeans_new = add_to_slot.gosummaries(gs_kmeans, "Title", as.list(paste("K-means cluster", 1:length(gs_kmeans))))
+#' 
+#' print(gs_kmeans_new)
 #' 
 #' @rdname add_to_slot.gosummaries
 #' @export
@@ -302,10 +337,22 @@ padz = function(x, n=max(nchar(x))) gsub(" ", "0", formatC(x, width=n))
 #' with column names of \code{exp}
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
-#'  # Example1
 #' 
+#' data(gs_limma)
+#' data(tissue_example)
+#' 
+#' # Add just expression without annotations
+#' gs_limma_exp1 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp)
+#' 
+#' print(gs_limma_exp1)
+#' 
+#' # Add just expression without annotations
+#' gs_limma_exp2 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp, annotation = tissue_example$annot)
+#' 
+#' print(gs_limma_exp1)
+#'
 #' @export
-add_expression.gosummaries = function(gosummaries, exp, annotation){
+add_expression.gosummaries = function(gosummaries, exp, annotation = NULL){
 	if(!is.gosummaries(gosummaries)) stop("Function requires a gosummaries type object")
 	
 	if(!all(colnames(exp) %in% rownames(annotation)) & !is.null(annotation)) 
@@ -467,10 +514,10 @@ calc_component_dimensions = function(component, par){
 		panel_height = unit(par$panel_height * lines_in_points, "points"),
 		arrows_height = unit(arrows_height * lines_in_points, "points"),
 		wc_height = unit(wc_height * lines_in_points, "points"),
-		
-		panel_width = unit(par$panel_width, "points"),
+	
+		panel_width = unit(par$panel_width * lines_in_points, "points"),
 		percentage_width = max(do.call(unit.c, lapply(lapply(as.list(strsplit(component$Percentage, "\n")[[1]]), textGrob, gp = gpar(fontsize = par$fontsize, cex = 0.8)), grobWidth))) * 1.25,
-		wc_width = unit(par$panel_width / length(component$GPR), "points")
+		wc_width = unit(par$panel_width * lines_in_points / length(component$GPR), "points")
 	)
 	
 	return(res)
@@ -787,7 +834,7 @@ panel_crossbar = function(data, fontsize = 10, par){
 #' panel function one only has to make sure that it matches the data given in the Data 
 #' slot of the gosummaries object.
 #' 
-#' @param data the data from Data slot of the go sumaries object
+#' @param data the data from Data slot of the gosummaries object
 #' @param fontsize fontsize in points, mainly used to ensure that the legend fontsizes 
 #' match
 #' @param par additional parameters for drawing the plot, given as list. These functions 
@@ -916,7 +963,15 @@ customize_dummy = function(p, par){
 #' @return  a ggplot2 plot object with added customizations
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
-#'  # Example1
+#' data(gs_limma_exp)
+#' 
+#' cust = function(p, par){
+#' 	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 1)
+#' 	return(p)
+#' }
+#' 
+#' plot(gs_limma_exp, classes = "Tissue", panel_plot = panel_boxplot, panel_customize = cust, fontsize = 8) 
+#'  
 #' 
 #' @export
 customize = function(p, par){
@@ -951,6 +1006,7 @@ customize = function(p, par){
 #' @param panel_par list of arguments passed on to \code{panel_plot} function
 #' @param panel_height panel height as number of lines, with given \code{fontsize}. If 
 #' set to 0 no panel is drawn. 
+#' @param panel_width panel width in lines of text
 #' @param fontsize font size used throughout the figure in points
 #' @param term_length maximum length of the dispalyed GO categories in characters, 
 #' longer names are cropped to this size
@@ -964,12 +1020,40 @@ customize = function(p, par){
 #' @param \dots not used
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
-#'  # Example1
+#' data(gs_limma)
+#' 
+#' # Default plot
+#' plot(gs_limma, fontsize = 8)
+#' 
+#' # Omitting the panel area 
+#' plot(gs_limma, panel_height = 0, fontsize = 8)
+#' 
+#' # Selecting only certain components
+#' plot(gs_limma, components = as.character(c(1, 3)), fontsize = 8)
+#' 
+#' # Cutting the longer terms shorter (see the effect on the right wordcloud on first component)
+#' plot(gs_limma, term_length = 20) 
+#' 
+#' # Change wordcloud colors
+#' plot(gs_limma, term_length = 20, wordcloud_colors = c("#C6DBEF", "#08306B"))
+#' 
+#' # Adjust panel plot type (see panel_boxplot help for options)
+#' data(gs_kmeans)
+#' 
+#' plot(gs_kmeans, panel_plot = panel_violin, classes = "Tissue", components = c("1", "2"))
+#' plot(gs_kmeans, panel_plot = panel_violin_box, classes = "Tissue", components = c("1", "2"))
+#' 
+#' # Adjust colorscheme for plot (see customize help for more information) 
+#' cust = function(p, par){
+#' 	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 2)
+#' 	return(p)
+#' }
+#' plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = c("1", "2"))
 #' 
 #' @method plot gosummaries
 #' 
 #' @export
-plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))], classes = NA, panel_plot = NULL, panel_customize = NULL, panel_par = list(), panel_height = 5, fontsize = 10, term_length = 35, wordcloud_colors = c("grey70", "grey10"), filename = NA, ...){
+plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))], classes = NA, panel_plot = NULL, panel_customize = NULL, panel_par = list(), panel_height = 5, panel_width = 30, fontsize = 10, term_length = 35, wordcloud_colors = c("grey70", "grey10"), filename = NA, ...){
 	
 	# Check input
 	if(!is.gosummaries(x)) stop("Function requires an object of gosummaries type")
@@ -1029,7 +1113,7 @@ plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))], clas
 	par = list(
 		fontsize = fontsize, 
 		panel_height = panel_height, 
-		panel_width = 1.35 * fontsize * term_length, 
+		panel_width = panel_width, 
 		wordcloud_colors = wordcloud_colors
 	)
 	
@@ -1078,7 +1162,12 @@ plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))], clas
 #' @return  A gosummaries object.
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
-#' # Example1
+#' data(tissue_example)
+#' 
+#' pcr = prcomp(t(tissue_example$exp))
+#' gs_pca = gosummaries(pcr, annotation = tissue_example$annot)
+#' 
+#' plot(gs_pca, classes = "Tissue")
 #' 
 #' @method gosummaries prcomp
 #' @S3method gosummaries prcomp
@@ -1129,7 +1218,18 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:6, n_genes = 
 #' @return  A gosummaries object.
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
-#' # Example1
+#' data(tissue_example)
+#' 
+#' # Filter genes and perform k-means
+#' sd = apply(tissue_example$exp, 1, sd)
+#' exp2 = tissue_example$exp[sd > 0.75,]
+#' exp2 = exp2 - apply(exp2, 1, mean)
+#' kmr = kmeans(exp2, centers = 6, iter.max = 100)
+#' 
+#' # Create gosummaries object  
+#' gs_kmeans = gosummaries(kmr, exp = exp2, annotation = tissue_example$annot)
+#' plot(gs_kmeans, panel_height = 0, components = c("1", "2", "3"))
+#' plot(gs_kmeans, classes = "Tissue", components = c("1", "2", "3"))
 #' 
 #' @method gosummaries kmeans
 #' @S3method gosummaries kmeans
@@ -1179,7 +1279,26 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 #' @return A gosummaries object.
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
-#' # Example1
+#' 
+#' data(tissue_example)
+#' 
+#' # Do the t-test comparisons
+#' mm = model.matrix(~ factor(tissue_example$annot$Tissue) - 1)
+#' colnames(mm) = make.names(levels(factor(tissue_example$annot$Tissue)))
+#' 
+#' contrast = limma::makeContrasts(brain - cell.line, hematopoietic.system - muscle, cell.line - hematopoietic.system, levels = colnames(mm))
+#' 
+#' fit = limma::lmFit(tissue_example$exp, mm)
+#' fit = limma::contrasts.fit(fit, contrast)
+#' fit = limma::eBayes(fit)
+#' 
+#' gs_limma = gosummaries(fit)
+#' gs_limma_exp = gosummaries(fit, exp = tissue_example$exp, annotation = tissue_example$annot)
+#' 
+#' plot(gs_limma)
+#' plot(gs_limma, panel_height = 0)
+#' plot(gs_limma_exp, classes = "Tissue")
+#'
 #' 
 #' @method gosummaries MArrayLM
 #' @S3method gosummaries MArrayLM 
@@ -1191,7 +1310,7 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 	gl = list()
 	perc = list()
 	for(i in components){
-		tt = topTable(x, coef = i, p.value = p.value, lfc = lfc, adjust.method = adjust.method, number = Inf)
+		tt = limma::topTable(x, coef = i, p.value = p.value, lfc = lfc, adjust.method = adjust.method, number = Inf)
 		
 		gl_up = as.character(tt$ID[tt$logFC > 0])
 		gl_down = as.character(tt$ID[tt$logFC < 0])
@@ -1220,112 +1339,3 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 	return(gosummaries)
 }
 
-
-
-##
-# 
-# ## Test Examples
-# # PCA
-# library(AnnotatedPCA)
-# library(gProfileR)
-# data(lukk_small)
-# pcr = prcomp(t(lukk_small$exp))
-# 
-# gp = gosummaries(pcr, annotation = lukk_small$annot)
-# plot(gp)
-# 
-# # Kmeans
-# sd = apply(lukk_small$exp, 1, sd)
-# exp2 = lukk_small$exp[sd > 0.75,]
-# exp2 = exp2 - apply(exp2, 1, mean)
-# kmr2 = kmeans(exp2, centers = 6, iter.max = 100)
-# 
-# gp = gosummaries(kmr2)
-# plot(gp)
-# 
-# gp = gosummaries(kmr2, exp = exp2)
-# plot(gp)
-# 
-# gp = gosummaries(kmr2, exp = exp2, annotation = lukk_small$annot)
-# plot(gp)
-# 
-# # Limma
-# require(limma)
-# 
-# mm = model.matrix(~ lukk_small$annot$Tissue - 1)
-# colnames(mm) = make.names(levels(factor(lukk_small$annot$Tissue)))
-# 
-# contrast = makeContrasts(brain - cell.line, hematopoietic.system - muscle, cell.line - hematopoietic.system, levels = colnames(mm))
-# 
-# fit = lmFit(lukk_small$exp, mm)
-# fit = contrasts.fit(fit, contrast)
-# fit = eBayes(fit)
-# 
-# gp_dumb = gosummaries(fit)
-# plot(gp_dumb)
-# 
-# gp = gosummaries(fit, exp = lukk_small$exp, annotation = lukk_small$annot)
-# plot(gp, panel_par = list(classes = "Tissue"))
-# ##
-# 
-# 
-# ## Ciesci
-# setwd("~/Raivo/Projects/GOsummaries/CaseStudies")
-# 
-# exp = read.table("Data/ciesci_exp.tsv", sep = "\t")
-# rownames(exp) = str_replace(rownames(exp), "_at", "")
-# ann = read.table("Data/ciesci_ann.txt", sep = "\t", head = T, row.names = 1)
-# ann = ann[colnames(exp), ]
-# ann$Group = factor(ann$Group, c("mca_1", "pam_2", "msc_3", "carb_4"))
-# exp = exp[, order(ann$Cancer_stage)]
-# ann = ann[order(ann$Cancer_stage),]
-# 
-# customize_ciesci = function(p, par){
-# 	p = p + scale_fill_discrete(par$classes, c = 80, l = 70, h.start = 30)
-# 	return(p)
-# }
-# 
-# # PCA
-# pcr = prcomp(t(exp))
-# 
-# gp = gosummaries(pcr, annotation = ann, organism = "mmusculus")
-# plot(gp, components = 1:3, panel_par = list(classes = "Group"), panel_customize = customize_ciesci, filename = "~/Desktop/GPplus/pca.pdf")
-
-# # K-means
-# sd = apply(exp, 1, sd)
-# exp2 = exp[sd > 0.75,]
-# exp2 = exp2 - apply(exp2, 1, mean)
-# kmr2 = kmeans(exp2, centers = 6, iter.max = 100)
-# 
-# gp = gosummaries(kmr2, exp = exp2, annotation = ann, organism = "mmusculus")
-# # plot(gp, panel_height = 0, filename = "~/Desktop/GPplus/kmeans_0.pdf")
-# plot(gp, panel_par = list(classes = "Group"), panel_customize = customize_ciesci, filename = "~/Desktop/GPplus/kmeans.pdf")
-# 
-# # Limma 
-# 
-# library(limma)
-# mm = model.matrix(~ ann$Group - 1)
-# colnames(mm) = levels(ann$Group)
-# 
-# contrast = makeContrasts(pam_2 - mca_1, msc_3 - pam_2, carb_4 - msc_3, levels = colnames(mm))
-# 
-# fit = lmFit(exp, mm)
-# fit = contrasts.fit(fit, contrast)
-# fit = eBayes(fit)
-# 
-# gp = gosummaries(fit, exp = exp2, annotation = ann, organism = "mmusculus")
-# 
-# plot(gp, panel_height = 0, filename = "~/Desktop/GPplus/limma_0.pdf")
-# plot(gp, panel_par = list(classes = "Group"), panel_customize = customize_ciesci, filename = "~/Desktop/GPplus/limma.pdf")
-# 
-# gp = add_dummydata.gosummaries(gp)
-# plot(gp, panel_height = 3, panel_par = list(classes = "Group"), filename = "~/Desktop/GPplus/limma_bar.pdf")
-# 
-# 
-# 
-# 
-# 
-# ##
-# 
-# 
-# 

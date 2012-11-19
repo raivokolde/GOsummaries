@@ -11,7 +11,7 @@
   panel_violin_box(data, fontsize = 10, par)
 }
 \arguments{
-  \item{data}{the data from Data slot of the go sumaries
+  \item{data}{the data from Data slot of the gosummaries
   object}
 
   \item{fontsize}{fontsize in points, mainly used to ensure

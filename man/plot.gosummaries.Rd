@@ -4,8 +4,9 @@
 \usage{
   \method{plot}{gosummaries} (x,
     components = names(x)[1:min(10, length(x))],
-    panel_plot = NULL, panel_customize = NULL,
-    panel_par = list(), panel_height = 5, fontsize = 10,
+    classes = NA, panel_plot = NULL,
+    panel_customize = NULL, panel_par = list(),
+    panel_height = 5, panel_width = 30, fontsize = 10,
     term_length = 35,
     wordcloud_colors = c("grey70", "grey10"),
     filename = NA, ...)
@@ -28,6 +29,8 @@
 
   \item{panel_height}{panel height as number of lines, with
   given \code{fontsize}. If set to 0 no panel is drawn.}
+
+  \item{panel_width}{panel width in lines of text}
 
   \item{fontsize}{font size used throughout the figure in
   points}
@@ -70,7 +73,35 @@
   boxplot of expression values.
 }
 \examples{
-# Example1
+data(gs_limma)
+
+# Default plot
+plot(gs_limma, fontsize = 8)
+
+# Omitting the panel area
+plot(gs_limma, panel_height = 0, fontsize = 8)
+
+# Selecting only certain components
+plot(gs_limma, components = as.character(c(1, 3)), fontsize = 8)
+
+# Cutting the longer terms shorter (see the effect on the right wordcloud on first component)
+plot(gs_limma, term_length = 20)
+
+# Change wordcloud colors
+plot(gs_limma, term_length = 20, wordcloud_colors = c("#C6DBEF", "#08306B"))
+
+# Adjust panel plot type (see panel_boxplot help for options)
+data(gs_kmeans)
+
+plot(gs_kmeans, panel_plot = panel_violin, classes = "Tissue", components = c("1", "2"))
+plot(gs_kmeans, panel_plot = panel_violin_box, classes = "Tissue", components = c("1", "2"))
+
+# Adjust colorscheme for plot (see customize help for more information)
+cust = function(p, par){
+	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 2)
+	return(p)
+}
+plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = c("1", "2"))
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

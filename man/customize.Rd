@@ -21,7 +21,14 @@
   plot.gosummaries to see how to write one yourself.
 }
 \examples{
-# Example1
+data(gs_limma_exp)
+
+cust = function(p, par){
+	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 1)
+	return(p)
+}
+
+plot(gs_limma_exp, classes = "Tissue", panel_plot = panel_boxplot, panel_customize = cust, fontsize = 8)
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

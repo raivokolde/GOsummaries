@@ -2,7 +2,8 @@
 \alias{add_expression.gosummaries}
 \title{Add expression data to gosummaries object}
 \usage{
-  add_expression.gosummaries(gosummaries, exp, annotation)
+  add_expression.gosummaries(gosummaries, exp,
+    annotation = NULL)
 }
 \arguments{
   \item{gosummaries}{a gosummaries object}
@@ -31,7 +32,18 @@
   colors. }
 }
 \examples{
-# Example1
+data(gs_limma)
+data(tissue_example)
+
+# Add just expression without annotations
+gs_limma_exp1 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp)
+
+print(gs_limma_exp1)
+
+# Add just expression without annotations
+gs_limma_exp2 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp, annotation = tissue_example$annot)
+
+print(gs_limma_exp1)
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>
