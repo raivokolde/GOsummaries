@@ -9,7 +9,7 @@ Title: Word cloud summaries of GO enrichment analysis
 Author: Raivo Kolde <rkolde@gmail.com>
 Maintainer: Raivo Kolde <rkolde@gmail.com>
 Depends:
-    R (>= 2.13),
+    R (>= 2.15),
     ggplot2,
     Rcpp
 Imports:
