@@ -26,6 +26,51 @@ add_dummydata.gosummaries = function(gosummaries){
 ##
 
 ## gosummaries object constructor and related functions
+
+gosummaries_base = function(x){
+	components = 1:length(x)
+	
+	# Find the number of lists per component (assumed to be the same over components)
+	if(is.list(x[[1]])){
+		k = 2
+	}
+	else{
+		k = 1
+	}
+	
+	# Create the resulting data structure
+	res = list()
+	
+	for(i in components){
+		comp = list(
+			Title = names(x)[i],
+			Gene_lists = NULL,
+			GPR = NULL,
+			Data = NULL,
+			Percentage = NULL,
+			Organism = NULL
+		)
+		
+		if(k == 1){
+			comp$Gene_lists = list(gl1 = x[[i]])
+			comp$GPR = list(gpr1 = NULL)
+			comp$Percentage = sprintf("n: %d", length(x[[i]]))
+		}
+		
+		if(k == 2){
+			comp$Gene_lists = list(gl1 = x[[i]][[1]], gl2 = x[[i]][[2]])
+			comp$GPR = list(gpr1 = NULL, gpr2 = NULL)
+			comp$Percentage = sprintf("Up: %d\nDown: %d", length(x[[i]][[2]]), length(x[[i]][[1]]))
+		}
+		
+		res[[as.character(components[i])]] = comp
+	}
+	
+	class(res) = "gosummaries"
+	
+	return(res)
+}
+
  
 #' Constructor for gosummaries object
 #' 
@@ -148,46 +193,12 @@ gosummaries = function(x, ...){
 #' @S3method gosummaries default
 #' @export
 gosummaries.default = function(x, organism = "hsapiens", go_branches = c("BP", "ke", "re"), max_p_value = 1e-2, min_set_size = 50, max_set_size = 1000, max_signif = 40, ordered_query = T, hier_filtering = "moderate", ...){
-	components = 1:length(x)
 	
-	# Find the number of lists per component (assumed to be the same over components)
-	if(is.list(x[[1]])){
-		k = 2
-	}
-	else{
-		k = 1
-	}
+	# Create basic structure
+	res = gosummaries_base(x)
+	res = add_to_slot.gosummaries(res, "Organism", as.list(rep(organism, length(res))))
 	
-	# Create the resulting data structure
-	res = list()
-	
-	for(i in components){
-		comp = list(
-			Title = names(x)[i],
-			Gene_lists = NULL,
-			GPR = NULL,
-			Data = NULL,
-			Percentage = NULL,
-			Organism = organism
-		)
-		
-		if(k == 1){
-			comp$Gene_lists = list(gl1 = x[[i]])
-			comp$GPR = list(gpr1 = NULL)
-			comp$Percentage = sprintf("n: %d", length(x[[i]]))
-		}
-		
-		if(k == 2){
-			comp$Gene_lists = list(gl1 = x[[i]][[1]], gl2 = x[[i]][[2]])
-			comp$GPR = list(gpr1 = NULL, gpr2 = NULL)
-			comp$Percentage = sprintf("Up: %d\nDown: %d", length(x[[i]][[2]]), length(x[[i]][[1]]))
-		}
-		
-		res[[as.character(components[i])]] = comp
-	}
-	
-	class(res) = "gosummaries"
-	
+	# Add data and annotations
 	res = add_dummydata.gosummaries(res)
 	res = annotate.gosummaries(res, organism = organism, go_branches = go_branches, max_p_value = max_p_value, min_set_size = min_set_size, max_set_size = max_set_size, max_signif = max_signif, ordered_query = ordered_query, hier_filtering = hier_filtering, ...)
 	
@@ -291,13 +302,13 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	}
 	
 	# Run g:Profiler analysis 
-	gpr = gProfileR::gprofiler(query = gl, organism = organism, ordered_query = ordered_query, max_set_size = 1000, hier_filtering = hier_filtering, max_p_value = max_p_value, ...)
+	gpr = gProfileR::gprofiler(query = gl, organism = organism, ordered_query = ordered_query, max_set_size = max_set_size, hier_filtering = hier_filtering, max_p_value = max_p_value, ...)
 	
 	# Clean and filter the results
 	gpr$query.number = as.numeric(as.character(gpr$query.number))
 	gpr = filter_gprofiler(gpr, go_branches = go_branches, min_set_size = min_set_size, max_signif = max_signif)
-	gpr = gpr[, c("query.number", "term.id", "p.value", "term.name")]
-	colnames(gpr) = c("query.number", "Term.id", "P.value", "Term.name")
+	gpr = gpr[, c("query.number", "p.value", "term.name")]
+	colnames(gpr) = c("query.number", "P.value", "Term.name")
 
 	k = 1
 	for(i in seq_along(components)){
@@ -915,7 +926,7 @@ panel_violin_box = function(data, fontsize = 10, par){
 ## Panel functions for pca data
 panel_histogram = function(data, fontsize = 10, par){
 	if(!is.null(par$classes)){
-		p = qplot(x, geom = "bar", fill = data[, par$classes], binwidth = (max(data$x) - min(data$x)) / 20, data = data) 
+		p = qplot(x, geom = "bar", fill = data[, par$classes], binwidth = (max(data$x) - min(data$x)) / 20, data = data, colour = I("grey70")) 
 	}
 	else{
 		p = qplot(x, geom = "bar", data = data)
@@ -930,7 +941,7 @@ panel_histogram = function(data, fontsize = 10, par){
 panel_dummy = function(data, fontsize = 10, par){
 	if(nrow(data$mat) == 1){
 		colors = "#336699"
-		p = qplot(1, y, geom = "bar", stat = "identity", data = data$mat, fill = x, width = I(0.6), ylim = c(0, data$max), xlim = c(0.5, 1.5)) + scale_fill_manual(values = colors) + theme_bw(base_size = fontsize) + opts(legend.position = "none") + coord_flip()
+		p = qplot(1, y, geom = "bar", stat = "identity", data = data$mat, fill = x, width = I(0.6), ylim = c(0, data$max), xlim = c(0.5, 1.5)) + scale_fill_manual(values = colors) + theme_bw(base_size = fontsize) + theme(legend.position = "none") + coord_flip()
 	} 
 	
 	if(nrow(data$mat) == 2){
@@ -1018,6 +1029,8 @@ customize = function(p, par){
 #' bmp, jpeg. Even if the plot does not fit into the plotting window, the file size is 
 #' calculated so that the plot would fit there.
 #' @param \dots not used
+#' 
+#' @value The \code{\link{gtable}} object containing the figure
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
 #' data(gs_limma)
