@@ -35,7 +35,7 @@ cat("\nLimma default")
 plot(gs_limma, filename = "limma_default.pdf")
 
 cat("\nLimma default, panel_height = 0")
-plot(gs_limma, filename = "limma_default_ph0.pdf")
+plot(gs_limma, filename = "limma_default_ph0.pdf", panel_height = 0)
 
 cat("\nLimma default, panel_height = 10")
 plot(gs_limma, filename = "limma_default_10.pdf")

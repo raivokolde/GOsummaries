@@ -274,7 +274,7 @@ add_to_slot.gosummaries = function(x, slot, values){
 filter_gprofiler = function(gpr, go_branches, min_set_size, max_signif){
 	gpr = gpr[gpr$domain %in% go_branches & gpr$term.size > min_set_size, ]
 	
-	gpr = ddply(gpr, "query.number", function(x) {
+	gpr = plyr::ddply(gpr, "query.number", function(x) {
 		x = x[order(x$p.value),]
 		rank = rank(x$p.value)
 		return(x[rank <= max_signif, ])
@@ -373,7 +373,7 @@ add_expression.gosummaries = function(gosummaries, exp, annotation = NULL){
 		a = list()
 		for(j in seq_along(gosummaries[[i]]$Gene_lists)){
 			e = data.frame(exp[gosummaries[[i]]$Gene_lists[[j]], ])
-			d = melt(e)
+			d = reshape2::melt(e)
 			colnames(d) = c("ID", "y")
 			d$x = paste(j, padz(match(d$ID, colnames(e))), d$ID, sep = "")
 			a[[j]] = d
@@ -431,12 +431,12 @@ shorten_strings = function(strings, max){
 }
 
 adjust_wordcloud_appearance = function(gosummaries, term_length = 35, wordcloud_colors = c("grey70", "grey10")){
-	if(all(is.null(ldply(gosummaries, function(x){ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]))){
+	if(all(is.null(plyr::ldply(gosummaries, function(x){plyr::ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]))){
 		return(gosummaries)
 	}
 	
 	
-	best_pval = -log10(min(ldply(gosummaries, function(x){ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]))
+	best_pval = -log10(min(plyr::ldply(gosummaries, function(x){plyr::ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]))
 	
 	for(i in seq_along(gosummaries)){
 		# Shorten GO names
@@ -485,16 +485,16 @@ open_file_con = function(filename, width, height){
 
 panelize_ggplot2 = function(plot_function, customize_function, par){
 	res = function(data, fontsize, legend = F){
-		p = ggplot_gtable(ggplot_build(customize_function(plot_function(data, fontsize, par), par)))
+		p = ggplot2::ggplot_gtable(ggplot2::ggplot_build(customize_function(plot_function(data, fontsize, par), par)))
 		
 		if(legend){
 			if(any(grepl("guide-box", p$layout$name))){
-				nc = ncol(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]])
-				nr = nrow(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]])
-				return(gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]][2:(nr - 1), 2:(nc - 1)])
+				nc = ncol(gtable::gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]])
+				nr = nrow(gtable::gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]])
+				return(gtable::gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]][2:(nr - 1), 2:(nc - 1)])
 			}
 			else
-				return(gtable(widths = unit(0, "cm"), height = unit(0, "cm")))
+				return(gtable::gtable(widths = unit(0, "cm"), heights = unit(0, "cm")))
 		}
 		else{
 			return(gtable::gtable_filter(p, "panel"))
@@ -508,7 +508,7 @@ panelize_ggplot2 = function(plot_function, customize_function, par){
 ## Raw plotting functions
 calc_component_dimensions = function(component, par){
 	# Wordcloud height
-	nr = max(laply(component$GPR, nrow))
+	nr = max(plyr::laply(component$GPR, nrow))
 	if(length(component$GPR) > 1){
 		wc_height = ifelse(nr > 3, max(nr / 5.5, 3), nr)
 		arrows_height = 1.5
@@ -585,7 +585,7 @@ gen_wordcloud_legend = function(gosummaries, par){
 	legend_data$colors = colorRampPalette(rev(par$wordcloud_colors))(3)
 	
 	# Calculate p-value breakpoints
-	best_pval = -log10(min(ldply(gosummaries, function(x){ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]))	
+	best_pval = -log10(min(plyr::ldply(gosummaries, function(x){plyr::ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]))	
 	
 	breaks = grid.pretty(c(0, best_pval))
 	if(length(breaks) %% 2 == 0){
@@ -721,7 +721,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 		}
 	}
 	else{
-		panel_legend = gtable(widths = unit(0, "cm"), height = unit(0, "cm"))
+		panel_legend = gtable::gtable(widths = unit(0, "cm"), heights = unit(0, "cm"))
 	}
 	
 	wordcloud_legend = gen_wordcloud_legend(gosummaries, par)
@@ -811,17 +811,17 @@ panel_crossbar = function(data, fontsize = 10, par){
 	}
 	
 	if(!is.null(par$classes)){
-		p = qplot(x = x, y = y, geom = "crossbar", stat = "summary", width = 0.7, fun.data = qq, fill = data[, par$classes], data = data) + geom_bar(aes(x = 1, y = 0, fill = data[, par$classes]), stat = "identity")
+		p = ggplot2::qplot(x = data$x, y = data$y, geom = "crossbar", stat = "summary", width = 0.7, fun.data = qq, fill = data[, par$classes]) + ggplot2::geom_bar(aes(x = 1, y = 0, fill = data[, par$classes]), stat = "identity")
 	}
 	else{
-		p = qplot(x = x, y = y, geom = "crossbar", stat = "summary", width = 0.7, fun.data = qq, data = data)
+		p = ggplot2::qplot(x = data$x, y = data$y, geom = "crossbar", stat = "summary", width = 0.7, fun.data = qq)
 	}
 	
 	if(inherits(data, "twoListExpData")){
-		p = p + geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
+		p = p + ggplot2::geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
 	}
 	
-	p = p + theme_bw(base_size = fontsize)
+	p = p + ggplot2::theme_bw(base_size = fontsize)
 	
 	return(p)
 }
@@ -868,17 +868,17 @@ panel_boxplot = function(data, fontsize = 10, par){
 	
 	}
 	if(!is.null(par$classes)){
-			p = qplot(x = x, y = y, geom = "boxplot", stat = "summary", fun.data = qq, fill = data[, par$classes], width = 0.7, data = data) 
+			p = ggplot2::qplot(x = data$x, y = data$y, geom = "boxplot", stat = "summary", fun.data = qq, fill = data[, par$classes], width = 0.7) 
 	}
 	else{
-			p = qplot(x = x, y = y, geom = "boxplot", stat = "summary", fun.data = qq, width = 0.7, data = data) 
+			p = ggplot2::qplot(x = data$x, y = data$y, geom = "boxplot", stat = "summary", fun.data = qq, width = 0.7) 
 	}
 	
 	if(inherits(data, "twoListExpData")){
-		p = p + geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
+		p = p + ggplot2::geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
 	}
 	
-	p = p + theme_bw(base_size = fontsize)
+	p = p + ggplot2::theme_bw(base_size = fontsize)
 	
 	return(p)
 }
@@ -887,17 +887,17 @@ panel_boxplot = function(data, fontsize = 10, par){
 #' @export
 panel_violin = function(data, fontsize = 10, par){
 	if(!is.null(par$classes)){
-			p = qplot(x, y, geom = "violin", fill = data[, par$classes], colour = I(NA), data = data)
+			p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", fill = data[, par$classes], colour = I(NA))
 	}
 	else{
-			p = qplot(x, y, geom = "violin", colour = I(NA), fill = I("gray30"), data = data) 
+			p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", colour = I(NA), fill = I("gray30")) 
 	}
 	
 	if(inherits(data, "twoListExpData")){
-		p = p + geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
+		p = p + ggplot2::geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
 	}
 	
-	p = p + theme_bw(base_size = fontsize)
+	p = p + ggplot2::theme_bw(base_size = fontsize)
 	
 	return(p)
 }
@@ -906,17 +906,17 @@ panel_violin = function(data, fontsize = 10, par){
 #' @export
 panel_violin_box = function(data, fontsize = 10, par){
 	if(!is.null(par$classes)){
-			p = qplot(x, y, geom = "violin", fill = data[, par$classes], colour = I(NA), data = data) + geom_boxplot(fill = NA, outlier.size = 0.25, size = I(0.1), width = 0.7)
+			p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", fill = data[, par$classes], colour = I(NA)) + ggplot2::geom_boxplot(fill = NA, outlier.size = 0.25, size = I(0.1), width = 0.7)
 	}
 	else{
-			p = qplot(x, y, geom = "violin", colour = I(NA), data = data) + geom_boxplot(fill = NA, outlier.size = 0.25, size = I(0.1), width = 0.7)
+			p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", colour = I(NA)) + ggplot2::geom_boxplot(fill = NA, outlier.size = 0.25, size = I(0.1), width = 0.7)
 	}
 	
 	if(inherits(data, "twoListExpData")){
-		p = p + geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
+		p = p + ggplot2::geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
 	}
 	
-	p = p + theme_bw(base_size = fontsize)
+	p = p + ggplot2::theme_bw(base_size = fontsize)
 	
 	return(p)
 }
@@ -926,12 +926,12 @@ panel_violin_box = function(data, fontsize = 10, par){
 ## Panel functions for pca data
 panel_histogram = function(data, fontsize = 10, par){
 	if(!is.null(par$classes)){
-		p = qplot(x, geom = "bar", fill = data[, par$classes], binwidth = (max(data$x) - min(data$x)) / 20, data = data, colour = I("grey70")) 
+		p = ggplot2::qplot(data$x, geom = "bar", fill = data[, par$classes], binwidth = (max(data$x) - min(data$x)) / 20, colour = I("grey70")) 
 	}
 	else{
-		p = qplot(x, geom = "bar", data = data)
+		p = ggplot2::qplot(data$x, geom = "bar", binwidth = (max(data$x) - min(data$x)) / 20, data = data)
 	}
-	p = p + theme_bw(base_size = fontsize)
+	p = p + ggplot2::theme_bw(base_size = fontsize)
 	
 	return(p)
 }
@@ -941,14 +941,14 @@ panel_histogram = function(data, fontsize = 10, par){
 panel_dummy = function(data, fontsize = 10, par){
 	if(nrow(data$mat) == 1){
 		colors = "#336699"
-		p = qplot(1, y, geom = "bar", stat = "identity", data = data$mat, fill = x, width = I(0.6), ylim = c(0, data$max), xlim = c(0.5, 1.5)) + scale_fill_manual(values = colors) + theme_bw(base_size = fontsize) + theme(legend.position = "none") + coord_flip()
+		p = ggplot2::qplot(1, data$mat$y, geom = "bar", stat = "identity", fill = data$mat$x, width = I(0.6), ylim = c(0, data$max), xlim = c(0.5, 1.5)) + ggplot2::scale_fill_manual(values = colors) + ggplot2::theme_bw(base_size = fontsize) + ggplot2::theme(legend.position = "none") + ggplot2::coord_flip()
 	} 
 	
 	if(nrow(data$mat) == 2){
 		colors = c("#336699", "#990033")
 		data$mat$y[1] = -data$mat$y[1]
 		data$mat$x = factor(data$mat$x, labels = c("G1 > G2", "G1 < G2"))
-		p = qplot(1, y, geom = "bar", stat = "identity", position = "identity", data = data$mat, fill = x, ylim = c(-data$max, data$max), width = I(0.6), xlim = c(0.5, 1.5)) + scale_fill_manual("Regulation direction", values = colors) + theme_bw(base_size = fontsize)  + coord_flip()
+		p = ggplot2::qplot(1, data$mat$y, geom = "bar", stat = "identity", position = "identity", fill = data$mat$x, ylim = c(-data$max, data$max), width = I(0.6), xlim = c(0.5, 1.5)) + ggplot2::scale_fill_manual("Regulation direction", values = colors) + ggplot2::theme_bw(base_size = fontsize)  + ggplot2::coord_flip()
 	}
 	
 	return(p)
@@ -986,7 +986,7 @@ customize_dummy = function(p, par){
 #' 
 #' @export
 customize = function(p, par){
-	p = p + scale_fill_discrete(par$classes)
+	p = p + ggplot2::scale_fill_discrete(par$classes)
 	return(p)
 }
 ##
@@ -1011,6 +1011,7 @@ customize = function(p, par){
 #' @param x a gosummaries object
 #' @param components names of the gosummaries components to draw. The names are usually 
 #' numbers 1:n in character format.
+#' @param classes name of the variable from annotation data.frame that defines the colors in the plot
 #' @param panel_plot plotting function for panel  
 #' @param panel_customize customization function for the panel plot, menat for making 
 #' small changes like changing colour scheme
@@ -1030,7 +1031,7 @@ customize = function(p, par){
 #' calculated so that the plot would fit there.
 #' @param \dots not used
 #' 
-#' @value The \code{\link{gtable}} object containing the figure
+#' @return The \code{\link{gtable}} object containing the figure
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
 #' data(gs_limma)
@@ -1045,23 +1046,23 @@ customize = function(p, par){
 #' plot(gs_limma, components = as.character(c(1, 3)), fontsize = 8)
 #' 
 #' # Cutting the longer terms shorter (see the effect on the right wordcloud on first component)
-#' plot(gs_limma, term_length = 20) 
+#' plot(gs_limma, term_length = 20, fontsize = 8) 
 #' 
 #' # Change wordcloud colors
-#' plot(gs_limma, term_length = 20, wordcloud_colors = c("#C6DBEF", "#08306B"))
+#' plot(gs_limma, term_length = 20, wordcloud_colors = c("#C6DBEF", "#08306B"), fontsize = 8)
 #' 
 #' # Adjust panel plot type (see panel_boxplot help for options)
 #' data(gs_kmeans)
 #' 
-#' plot(gs_kmeans, panel_plot = panel_violin, classes = "Tissue", components = c("1", "2"))
-#' plot(gs_kmeans, panel_plot = panel_violin_box, classes = "Tissue", components = c("1", "2"))
+#' plot(gs_kmeans, panel_plot = panel_violin, classes = "Tissue", components = c("1", "2"), fontsize = 8)
+#' plot(gs_kmeans, panel_plot = panel_violin_box, classes = "Tissue", components = c("1", "2"), fontsize = 8)
 #' 
 #' # Adjust colorscheme for plot (see customize help for more information) 
 #' cust = function(p, par){
 #' 	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 2)
 #' 	return(p)
 #' }
-#' plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = c("1", "2"))
+#' plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = c("1", "2"), fontsize = 8)
 #' 
 #' @method plot gosummaries
 #' 
@@ -1241,8 +1242,8 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:6, n_genes = 
 #' 
 #' # Create gosummaries object  
 #' gs_kmeans = gosummaries(kmr, exp = exp2, annotation = tissue_example$annot)
-#' plot(gs_kmeans, panel_height = 0, components = c("1", "2", "3"))
-#' plot(gs_kmeans, classes = "Tissue", components = c("1", "2", "3"))
+#' plot(gs_kmeans, panel_height = 0, components = c("1", "2", "3"), fontsize = 8)
+#' plot(gs_kmeans, classes = "Tissue", components = c("1", "2", "3"), fontsize = 8)
 #' 
 #' @method gosummaries kmeans
 #' @S3method gosummaries kmeans
@@ -1308,9 +1309,9 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 #' gs_limma = gosummaries(fit)
 #' gs_limma_exp = gosummaries(fit, exp = tissue_example$exp, annotation = tissue_example$annot)
 #' 
-#' plot(gs_limma)
-#' plot(gs_limma, panel_height = 0)
-#' plot(gs_limma_exp, classes = "Tissue")
+#' plot(gs_limma, fontsize = 8)
+#' plot(gs_limma, panel_height = 0, fontsize = 8)
+#' plot(gs_limma_exp, classes = "Tissue", fontsize = 8)
 #'
 #' 
 #' @method gosummaries MArrayLM

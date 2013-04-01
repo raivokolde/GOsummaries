@@ -18,6 +18,9 @@
   draw. The names are usually numbers 1:n in character
   format.}
 
+  \item{classes}{name of the variable from annotation
+  data.frame that defines the colors in the plot}
+
   \item{panel_plot}{plotting function for panel}
 
   \item{panel_customize}{customization function for the
@@ -53,6 +56,9 @@
   plot would fit there.}
 
   \item{\dots}{not used}
+}
+\value{
+  The \code{\link{gtable}} object containing the figure
 }
 \description{
   The function to draw a GOsummaries figure based on a
