@@ -55,8 +55,8 @@ kmr = kmeans(exp2, centers = 6, iter.max = 100)
 
 # Create gosummaries object
 gs_kmeans = gosummaries(kmr, exp = exp2, annotation = tissue_example$annot)
-plot(gs_kmeans, panel_height = 0, components = c("1", "2", "3"))
-plot(gs_kmeans, classes = "Tissue", components = c("1", "2", "3"))
+plot(gs_kmeans, panel_height = 0, components = 1:3, fontsize = 8)
+plot(gs_kmeans, classes = "Tissue", components = 1:3, fontsize = 8)
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

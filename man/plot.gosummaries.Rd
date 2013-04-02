@@ -3,11 +3,10 @@
 \title{Plot the GOsummaries figure}
 \usage{
   \method{plot}{gosummaries} (x,
-    components = names(x)[1:min(10, length(x))],
-    classes = NA, panel_plot = NULL,
-    panel_customize = NULL, panel_par = list(),
-    panel_height = 5, panel_width = 30, fontsize = 10,
-    term_length = 35,
+    components = 1:min(10, length(x)), classes = NA,
+    panel_plot = NULL, panel_customize = NULL,
+    panel_par = list(), panel_height = 5, panel_width = 30,
+    fontsize = 10, term_length = 35,
     wordcloud_colors = c("grey70", "grey10"),
     filename = NA, ...)
 }
@@ -15,8 +14,7 @@
   \item{x}{a gosummaries object}
 
   \item{components}{names of the gosummaries components to
-  draw. The names are usually numbers 1:n in character
-  format.}
+  draw.}
 
   \item{classes}{name of the variable from annotation
   data.frame that defines the colors in the plot}
@@ -88,26 +86,26 @@ plot(gs_limma, fontsize = 8)
 plot(gs_limma, panel_height = 0, fontsize = 8)
 
 # Selecting only certain components
-plot(gs_limma, components = as.character(c(1, 3)), fontsize = 8)
+plot(gs_limma, components = c(1, 3), fontsize = 8)
 
 # Cutting the longer terms shorter (see the effect on the right wordcloud on first component)
-plot(gs_limma, term_length = 20)
+plot(gs_limma, term_length = 20, fontsize = 8)
 
 # Change wordcloud colors
-plot(gs_limma, term_length = 20, wordcloud_colors = c("#C6DBEF", "#08306B"))
+plot(gs_limma, term_length = 20, wordcloud_colors = c("#C6DBEF", "#08306B"), fontsize = 8)
 
 # Adjust panel plot type (see panel_boxplot help for options)
 data(gs_kmeans)
 
-plot(gs_kmeans, panel_plot = panel_violin, classes = "Tissue", components = c("1", "2"))
-plot(gs_kmeans, panel_plot = panel_violin_box, classes = "Tissue", components = c("1", "2"))
+plot(gs_kmeans, panel_plot = panel_violin, classes = "Tissue", components = 1:2, fontsize = 8)
+plot(gs_kmeans, panel_plot = panel_violin_box, classes = "Tissue", components = 1:2, fontsize = 8)
 
 # Adjust colorscheme for plot (see customize help for more information)
 cust = function(p, par){
 	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 2)
 	return(p)
 }
-plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = c("1", "2"))
+plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = 1:2, fontsize = 8)
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

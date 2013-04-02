@@ -40,7 +40,7 @@ gs_limma_exp1 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp)
 
 print(gs_limma_exp1)
 
-# Add just expression without annotations
+# Add expression with annotations
 gs_limma_exp2 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp, annotation = tissue_example$annot)
 
 print(gs_limma_exp1)

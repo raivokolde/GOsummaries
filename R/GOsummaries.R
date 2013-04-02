@@ -63,7 +63,7 @@ gosummaries_base = function(x){
 			comp$Percentage = sprintf("Up: %d\nDown: %d", length(x[[i]][[2]]), length(x[[i]][[1]]))
 		}
 		
-		res[[as.character(components[i])]] = comp
+		res[[i]] = comp
 	}
 	
 	class(res) = "gosummaries"
@@ -287,8 +287,6 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	
 	if(!is.gosummaries(gosummaries)) stop("Function requires a gosummaries type of  object")
 	
-	components = as.character(components)
-	
 	#Compile gene lists 
 	gl = NULL
 	for(i in seq_along(components)){
@@ -312,9 +310,9 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 
 	k = 1
 	for(i in seq_along(components)){
-		for(j in seq_along(gosummaries[[components[i]]]$GPR)){
+		for(j in seq_along(gosummaries[[i]]$GPR)){
 			lname = paste("gpr", j, sep = "")
-			gosummaries[[components[i]]]$GPR[[lname]] = gpr[gpr$query.number == k, -1] 
+			gosummaries[[i]]$GPR[[lname]] = gpr[gpr$query.number == k, -1] 
 			k = k + 1
 		}
 	}
@@ -856,8 +854,6 @@ panel_crossbar = function(data, fontsize = 10, par){
 #' of a gosummaries object. The legend and the actual plots for the panels are extracted 
 #' later from the figure produced by this function.
 #' @author  Raivo Kolde <rkolde@@gmail.com>
-#' @examples
-#'  # Example1
 #' 
 #' @rdname panel_boxplot
 #' @export
@@ -1009,8 +1005,7 @@ customize = function(p, par){
 #' differential expression it draws the boxplot of expression values.   
 #'
 #' @param x a gosummaries object
-#' @param components names of the gosummaries components to draw. The names are usually 
-#' numbers 1:n in character format.
+#' @param components names of the gosummaries components to draw. 
 #' @param classes name of the variable from annotation data.frame that defines the colors in the plot
 #' @param panel_plot plotting function for panel  
 #' @param panel_customize customization function for the panel plot, menat for making 
@@ -1043,7 +1038,7 @@ customize = function(p, par){
 #' plot(gs_limma, panel_height = 0, fontsize = 8)
 #' 
 #' # Selecting only certain components
-#' plot(gs_limma, components = as.character(c(1, 3)), fontsize = 8)
+#' plot(gs_limma, components = c(1, 3), fontsize = 8)
 #' 
 #' # Cutting the longer terms shorter (see the effect on the right wordcloud on first component)
 #' plot(gs_limma, term_length = 20, fontsize = 8) 
@@ -1054,24 +1049,24 @@ customize = function(p, par){
 #' # Adjust panel plot type (see panel_boxplot help for options)
 #' data(gs_kmeans)
 #' 
-#' plot(gs_kmeans, panel_plot = panel_violin, classes = "Tissue", components = c("1", "2"), fontsize = 8)
-#' plot(gs_kmeans, panel_plot = panel_violin_box, classes = "Tissue", components = c("1", "2"), fontsize = 8)
+#' plot(gs_kmeans, panel_plot = panel_violin, classes = "Tissue", components = 1:2, fontsize = 8)
+#' plot(gs_kmeans, panel_plot = panel_violin_box, classes = "Tissue", components = 1:2, fontsize = 8)
 #' 
 #' # Adjust colorscheme for plot (see customize help for more information) 
 #' cust = function(p, par){
 #' 	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 2)
 #' 	return(p)
 #' }
-#' plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = c("1", "2"), fontsize = 8)
+#' plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = 1:2, fontsize = 8)
 #' 
 #' @method plot gosummaries
 #' 
 #' @export
-plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))], classes = NA, panel_plot = NULL, panel_customize = NULL, panel_par = list(), panel_height = 5, panel_width = 30, fontsize = 10, term_length = 35, wordcloud_colors = c("grey70", "grey10"), filename = NA, ...){
+plot.gosummaries = function(x, components = 1:min(10, length(x)), classes = NA, panel_plot = NULL, panel_customize = NULL, panel_par = list(), panel_height = 5, panel_width = 30, fontsize = 10, term_length = 35, wordcloud_colors = c("grey70", "grey10"), filename = NA, ...){
 	
 	# Check input
 	if(!is.gosummaries(x)) stop("Function requires an object of gosummaries type")
-	if(any(!(as.character(components) %in% names(x)))) stop("Selected components are not present in data")
+	if(any(!(components %in% 1:length(x)))) stop("Selected components are not present in data")
 	
 	# Add classes to panel_par
 	if(!is.na(classes)){
@@ -1084,7 +1079,7 @@ plot.gosummaries = function(x, components = names(x)[1:min(10, length(x))], clas
 	}
 	
 	# Take out components of interest
-	x = x[as.character(components)]
+	x = x[components]
 	if(length(x) < 1) stop("No components selected")
 	
 	# Add wordcloud colors and adjust the string length
@@ -1242,8 +1237,8 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:6, n_genes = 
 #' 
 #' # Create gosummaries object  
 #' gs_kmeans = gosummaries(kmr, exp = exp2, annotation = tissue_example$annot)
-#' plot(gs_kmeans, panel_height = 0, components = c("1", "2", "3"), fontsize = 8)
-#' plot(gs_kmeans, classes = "Tissue", components = c("1", "2", "3"), fontsize = 8)
+#' plot(gs_kmeans, panel_height = 0, components = 1:3, fontsize = 8)
+#' plot(gs_kmeans, classes = "Tissue", components = 1:3, fontsize = 8)
 #' 
 #' @method gosummaries kmeans
 #' @S3method gosummaries kmeans

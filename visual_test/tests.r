@@ -1,7 +1,7 @@
 library(GOsummaries)
-load_all("GOsummaries")
+load_all(package("GOsummaries"))
 
-setwd("/Users/Kolde/Raivo/Projects/GOsummaries/GOsummaries/visual_test/vtest/")
+setwd("/Users/kolde/Raivo/Projects/GOsummaries/GOsummaries/visual_test/vtest/")
 
 dirname = date()
 system(sprintf("mkdir '%s'", dirname))
