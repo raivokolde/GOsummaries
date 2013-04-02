@@ -12,3 +12,19 @@ R/.DS_Store
 *.o
 
 *.o
+
+*.out
+
+*.log
+
+*.fdb_latexmk
+
+*.blg
+
+*.bbl
+
+*.aux
+
+*.gz
+
+*.toc

@@ -1,0 +1,165 @@
+\documentclass[a4paper]{article}
+\special{papersize=210mm,297mm}
+
+\usepackage[top=2in, bottom=2in, left=3cm,right=3cm]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\begin{document}
+
+%\VignetteIndexEntry{Using demi}
+%\VignetteKeyword{demi,DEMIExperiment,DEMIClust,DEMIDiff,DEMIPathway}
+
+\title{GOsummaries basics}
+\author{Raivo Kolde \texttt{rkolde@gmail.com}}
+\date{\today}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+\label{s:introduction}
+\texttt{GOsummaries} is a package to visualise Gene Ontology (GO) enrichment analysis results on gene lists arising from different analyses such clustering or PCA. The significant GO categories are visualised as word clouds that can be combined with different plots summarising the underlying data.
+
+\section{Elements of a \texttt{GOsummaries} plot}
+\label{s:elements}
+
+Figure \ref{fig:gs} shows an example of plot generated with \texttt{GOsummaries} package. All the \texttt{GOsummaries} plots have more or less the same layout, however, the elements are adjusted corresponding to the underlying analysis. The plot is built of components (Fig \ref{fig:gs}A) that represent a gene list or a pair of gene lists as in Fig \ref{fig:gs}. Each component is composed of two parts the word cloud(s) (Fig \ref{fig:gs}E), representing the GO annotations of the gene lists, and a panel (Fig \ref{fig:gs}C) that displays the underlying data experimental data. In this case the panel shows the expression values of the corresponding genes. There are also slots for the component title (Fig \ref{fig:gs}B) and some additional information about the gene lists (Fig \ref{fig:gs}D). 
+
+In the word clouds the sizes of the GO categories indicate the strength of enrichment, relative to the other results of the same query. To make global comparison of the strength of enrichment possible we use different shades of grey.   
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=140mm]{GS.pdf}
+	\caption{Elements of a GO summaries figure}
+	\label{fig:gs}
+\end{figure}
+
+\section{Usage of \texttt{GOsummaries}}
+\label{s:usage}
+In most cases the \texttt{GOsummaries} figures can be created using only two commands: \texttt{gosummaries} to create the object that has all the necessary information for drawing the plot and \texttt{plot.gosummaries} to actually draw the plot.
+
+The \texttt{gosummaries} function requires a set of gene lists as an input. It applies GO enrichment analysis to these gene lists using g:Profiler (http://biit.cs.ut.ee/gprofiler/) web toolkit and saves the results into a \texttt{gosummaries} object. Then one can add experimental data and configure the slots for additional information. 
+
+However, this can be somewhat complicated. Therefore, we have provided several convenience functions to that generate the \texttt{gosummaries} objects based on the output of the most common analyses. We have functions \texttt{gosummaries.kmeans},\texttt{gosummaries.prcomp} and \texttt{gosummaries.MArrayLM}, for k-means clustering, principal component analysis (PCA) and linear models with \texttt{limma}. These functions extract the gene lists right from the corresponding objects, run the GO enrichment and optionally add the experimental data in the right format. 
+
+The \texttt{gosummaries} can be plotted using the \texttt{plot} function. The figures might not fit into the plotting window, since the plot has to have rather strict layout to be readable. Therefore, it is advisable to write it into a file (file name can be given as a parameter). 
+
+Creating a simplest \texttt{GOsummaries} plot, starting from the gene lists goes as follows (example taken from \texttt{?GOsummaries}):
+
+\begin{verbatim}
+	> # Define gene lists
+	> genes1 = c("203485_at", "209469_at", "209470_s_at", "203999_at", 
+	"205358_at", "203130_s_at", "210222_s_at", "202508_s_at", "203001_s_at", 
+	"207957_s_at", "203540_at", "203000_at", "219619_at","221805_at",
+	 "214046_at", "213135_at", "203889_at", "209990_s_at", "210016_at", 
+	"202507_s_at","209839_at", "204953_at", "209167_at", "209685_s_at",  
+	"211276_at", "202391_at", "205591_at","201313_at")
+	> genes2 = c("201890_at", "202503_s_at", "204170_s_at", "201291_s_at", 
+	"202589_at", "218499_at", "209773_s_at", "204026_s_at", "216237_s_at", 
+	"202546_at", "218883_s_at", "204285_s_at", "208659_at", "201292_at", 
+	"201664_at")
+	> 
+	> gl = list(List = list(genes1, genes2)) # Two lists per component
+	> 
+	> # Construct gosummaries objects
+	> gs = gosummaries(gl)
+	> 
+	> plot(gs, fontsize = 8)
+\end{verbatim}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=140mm]{ex1.pdf}
+	\caption{Simplest GO summaries figure.}
+	\label{fig:ex1}
+\end{figure}
+
+In this example we had only the gene lists and no additional data to display in panel. In these situations \texttt{GOsummaries} displays by default just the number of genes. 
+
+These gene lists can be also displayed as separate components if the input gene list would have been constructed a bit differently.
+
+\begin{verbatim}
+	> gl = list(List1 = genes1, List2 = genes2)
+\end{verbatim}
+
+\subsection{Configuring the GO analysis}  
+Main task for the \texttt{gosummaries} function is to perform the GO enrichment analysis. To be able to fit the GO enrichment results into the word cloud, we have to reduce their number quite a bit.  We have defined some default parameters for this. Still, there might be a need to adjust those parameters. These parameters apply to all versions of the \texttt{gosummaries} function.   
+
+In the first step we throw out results from less interesting GO branches. For example, by default we throw out results from Molecular Function and Cellular Component branch, since the results are often not as interesting. But this behaviour can be changed using the \texttt{go\_branches} parameter. 
+
+Then we throw out categories that are either too big or too small, since very small categories might not describe the gene list as a whole and very large categories on contrary can be too generic. The exact values for these parameters can be controlled by parameters \texttt{min\_set\_size} and \texttt{max\_set\_size}
+
+Finally we have set an upper limit for the number of categories to display, this can be changed using \texttt{max\_signif} parameter. Of course, one can change also the p-value threshold with \texttt{max\_p\_value}.
+
+It is also important to note that we assume, that the gene lists are ordered. If they are not then the option \texttt{ordered\_query} should be set to FALSE. 
+
+\subsection{Adding expression data}
+In case of clustering and differential expression there is an option to display expression data alongside the word clouds (see Figure \label{fig:gs}). In there, each boxplot represents the distribution of expression values of the genes in the  current list in one particular sample. If samples correspond to different classes, tissues or treatments then it can be shown with different colours.
+
+In \texttt{gosummaries.kmeans} and \texttt{gosummaries.MArrayLM} we have special parameters to add the expression data and its annotations: \texttt{exp} and \texttt{annotation}. The \texttt{exp} variable takes in an expression matrix, where rows correspond to genes and columns to samples. The correct expression values are extracted, based on the row names. Therefore, gene names in the gene list have to be present in the expression matrix. The \texttt{annotation} parameter accepts a \texttt{data.frame} where each row describes one sample. Therefore, the column names of \texttt{exp} have to be present in the row names of \texttt{annotation}.
+
+Here is an example of adding the expression data:
+
+\begin{verbatim}
+> data(tissue_example)
+> 
+> # Filter genes and perform k-means
+> sd = apply(tissue_example$exp, 1, sd)
+> exp2 = tissue_example$exp[sd > 0.75,]
+> exp2 = exp2 - apply(exp2, 1, mean)
+> kmr = kmeans(exp2, centers = 6, iter.max = 100)
+> 
+> # Create gosummaries object
+> exp2[1:6, 1:5]
+            GSM123197.CEL 356362160.CEL GSM123234.CEL 356360072.CEL
+1294_at        -0.4670833    -0.7170833    -0.9470833    -0.5270833
+1405_i_at      -0.8975000    -1.1775000    -0.5875000    -0.9275000
+200002_at      -0.3045833    -0.8645833    -0.6345833    -0.7145833
+200003_s_at    -0.5841667    -1.0541667    -0.8141667    -0.8741667
+200005_at      -1.0491667    -0.3991667    -0.7791667    -1.0291667
+200008_s_at    -0.5475000    -0.5275000    -0.8775000    -0.1675000
+            356362624.CEL
+1294_at        -0.6870833
+1405_i_at      -1.4975000
+200002_at      -0.9745833
+200003_s_at    -0.8241667
+200005_at      -0.6591667
+200008_s_at    -0.5675000
+> head(tissue_example$annot)
+              Tissue                              Meta15   Meta4
+GSM123197.CEL  brain solid tissue non neoplastic disease disease
+356362160.CEL  brain solid tissue non neoplastic disease disease
+GSM123234.CEL  brain                 normal solid tissue  normal
+356360072.CEL  brain solid tissue non neoplastic disease disease
+356362624.CEL  brain                 normal solid tissue  normal
+356367950.CEL  brain                 normal solid tissue  normal
+> 
+> gs_kmeans = gosummaries(kmr, exp = exp2, annotation = tissue_example$annot)
+\end{verbatim}
+
+If one wants to add expression data to a custom \texttt{gosummaries} object then it is possible to use a function \texttt{add\_expression.gosummaries} that adds the expression data to an existing \texttt{gosummaries} object. The other parameters  \texttt{exp} and \texttt{annotation} work as described above. For example, if we want to add expression data to the \texttt{gosummaries} object from the first example, we can write.
+
+\begin{verbatim}
+> data(tissue_example)
+> gs_exp = add_expression.gosummaries(gs, exp = tissue_example$exp, 
+annotation = tissue_example$annot)
+Using  as id variables
+Using  as id variables
+> plot(gs_exp, classes = "Tissue")
+\end{verbatim}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=140mm]{ex2.pdf}
+	\caption{\texttt{GOsummaries} figure with added expression data.}
+	\label{fig:ex2}
+\end{figure}
+
+\subsection{Configuring the plot appearance}
+
+
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

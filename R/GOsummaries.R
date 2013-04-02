@@ -357,7 +357,7 @@ padz = function(x, n=max(nchar(x))) gsub(" ", "0", formatC(x, width=n))
 #' 
 #' print(gs_limma_exp1)
 #' 
-#' # Add just expression without annotations
+#' # Add expression with annotations
 #' gs_limma_exp2 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp, annotation = tissue_example$annot)
 #' 
 #' print(gs_limma_exp1)
@@ -948,7 +948,7 @@ panel_dummy = function(data, fontsize = 10, par){
 		colors = c("#336699", "#990033")
 		data$mat$y[1] = -data$mat$y[1]
 		data$mat$x = factor(data$mat$x, labels = c("G1 > G2", "G1 < G2"))
-		p = ggplot2::qplot(1, data$mat$y, geom = "bar", stat = "identity", position = "identity", fill = data$mat$x, ylim = c(-data$max, data$max), width = I(0.6), xlim = c(0.5, 1.5)) + ggplot2::scale_fill_manual("Regulation direction", values = colors) + ggplot2::theme_bw(base_size = fontsize)  + ggplot2::coord_flip()
+		p = ggplot2::qplot(1, data$mat$y, geom = "bar", stat = "identity", position = "identity", fill = data$mat$x, ylim = c(-data$max, data$max), width = I(0.6), xlim = c(0.5, 1.5)) + ggplot2::scale_fill_manual("Regulation direction", values = colors) + ggplot2::theme_bw(base_size = fontsize) + ggplot2::theme(legend.position = "none") + ggplot2::coord_flip()
 	}
 	
 	return(p)
