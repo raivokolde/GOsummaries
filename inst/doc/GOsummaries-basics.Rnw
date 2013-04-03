@@ -156,10 +156,29 @@ Using  as id variables
 \end{figure}
 
 \subsection{Configuring the plot appearance}
+The layout of the plot is fixed. However, it is still possible to configure some parameters. For example, the proportions of the panel area with parameters \texttt{panel\_height} and \texttt{panel\_width}. The unit for these measures is lines of text. Using these units keeps the proportions of the plot similar even if we change the \texttt{fontsize}. The panel height parameter is most useful if one wants to omit the panel area completely. Then one can set the \texttt{panel\_height} to 0. 
 
+The content of the panels is drawn by the function that is specified in the \texttt{panel\_plot} parameter. If one uses the built in functions, such as \texttt{gosummaries.prcomp}, \texttt{gosummaries.kmeans}, etc. then the most suitable panel drawing function is selected automatically. Without any expression data, only the number of genes is displayed in there. In case of PCA, we display projection of the values to the principal component as histogram. For clustering and differential expression we show the boxplots of the expression in different samples. Instead of boxplot, one can use also the violin plot (\texttt{panel\_violin}) or combination of boxplot and violin plot (\texttt{panel\_violin\_box}).
 
+All the panel drawing functions basically generate a \texttt{ggplot2} plot based on the \texttt{Data} slot in a component of \texttt{gosummaires} object. From there we extract the plot area to display in panel and also the legend. In principle it is possible to define your own functions, as long as its input and output are match our functions and it conforms to the data in the \texttt{Data} slot in the components of \texttt{gosummaires} object. See the help of \texttt{panel\_boxplot} and the source of these functions for more information.
 
-\bibliographystyle{plain}
-\bibliography{references}
+If one wants to make smaller changes to the panels, such as, change the colour scheme, then for this we have easier means than defining new panel function. With the parameter \texttt{panel\_customize} one can specify a function that modifies the plot created with the \texttt{panel\_plot} function. For example the default function \texttt{customize} looks like this.
+
+\begin{verbatim}
+function(p, par){
+	p = p + ggplot2::scale_fill_discrete(par$classes)
+	return(p)
+}
+\end{verbatim}
+
+To select a different colour scheme one can modify that function and and give it to the \texttt{plot.gosummaires} function.
+\begin{verbatim}
+cust = function(p, par){
+	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 2)
+	return(p)
+}
+plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, 
+classes = "Tissue", components = 1:2)
+\end{verbatim}
 
 \end{document}

@@ -13,8 +13,7 @@
 \arguments{
   \item{x}{a gosummaries object}
 
-  \item{components}{names of the gosummaries components to
-  draw.}
+  \item{components}{index for the components to draw.}
 
   \item{classes}{name of the variable from annotation
   data.frame that defines the colors in the plot}

@@ -1005,7 +1005,7 @@ customize = function(p, par){
 #' differential expression it draws the boxplot of expression values.   
 #'
 #' @param x a gosummaries object
-#' @param components names of the gosummaries components to draw. 
+#' @param components index for the components to draw. 
 #' @param classes name of the variable from annotation data.frame that defines the colors in the plot
 #' @param panel_plot plotting function for panel  
 #' @param panel_customize customization function for the panel plot, menat for making 

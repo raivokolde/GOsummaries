@@ -54,9 +54,6 @@
   the data given in the Data slot of the gosummaries
   object.
 }
-\examples{
-# Example1
-}
 \author{
   Raivo Kolde <rkolde@gmail.com>
 }
