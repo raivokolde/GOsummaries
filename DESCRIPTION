@@ -1,10 +1,10 @@
 Package: GOsummaries
-Version: 0.2
+Version: 1.0
 License: GPL (>= 2)
-Description: A package to visualize Gene Ontology (GO) enrichment analysis
+Description: A package to visualise Gene Ontology (GO) enrichment analysis
     results on gene lists arising from different analyses such clustering or
     PCA. The significant GO categories are visualised as word clouds that can
-    be combined with different plots summarizing the underlying data.
+    be combined with different plots summarising the underlying data.
 Title: Word cloud summaries of GO enrichment analysis
 Author: Raivo Kolde <rkolde@gmail.com>
 Maintainer: Raivo Kolde <rkolde@gmail.com>
