@@ -119,6 +119,7 @@
   k-means, limma and PCA results.
 }
 \examples{
+\dontrun{
 # Define gene lists
 genes1 = c("203485_at", "209469_at", "209470_s_at", "203999_at", "205358_at", "203130_s_at",
 "210222_s_at", "202508_s_at", "203001_s_at", "207957_s_at", "203540_at", "203000_at", "219619_at",
@@ -151,6 +152,7 @@ gs2 = add_expression.gosummaries(gs2, exp = tissue_example$exp, annotation = tis
 
 plot(gs1, panel_par = list(classes = "Tissue"), fontsize = 8)
 plot(gs2, panel_par = list(classes = "Tissue"), fontsize = 8)
+}
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

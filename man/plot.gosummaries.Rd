@@ -76,6 +76,7 @@
   boxplot of expression values.
 }
 \examples{
+\dontrun{
 data(gs_limma)
 
 # Default plot
@@ -105,6 +106,8 @@ cust = function(p, par){
 	return(p)
 }
 plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = 1:2, fontsize = 8)
+
+}
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

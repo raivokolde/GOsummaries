@@ -45,6 +45,7 @@
   usually not too specific either.
 }
 \examples{
+\dontrun{
 data(tissue_example)
 
 # Filter genes and perform k-means
@@ -57,6 +58,7 @@ kmr = kmeans(exp2, centers = 6, iter.max = 100)
 gs_kmeans = gosummaries(kmr, exp = exp2, annotation = tissue_example$annot)
 plot(gs_kmeans, panel_height = 0, components = 1:3, fontsize = 8)
 plot(gs_kmeans, classes = "Tissue", components = 1:3, fontsize = 8)
+}
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

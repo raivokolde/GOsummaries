@@ -136,6 +136,7 @@ gosummaries_base = function(x){
 #' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
+#' \dontrun{
 #' # Define gene lists 
 #' genes1 = c("203485_at", "209469_at", "209470_s_at", "203999_at", "205358_at", "203130_s_at", 
 #' "210222_s_at", "202508_s_at", "203001_s_at", "207957_s_at", "203540_at", "203000_at", "219619_at",
@@ -168,7 +169,7 @@ gosummaries_base = function(x){
 #'
 #' plot(gs1, panel_par = list(classes = "Tissue"), fontsize = 8)
 #' plot(gs2, panel_par = list(classes = "Tissue"), fontsize = 8)
-#' 
+#' }
 #' 
 #' @rdname gosummaries
 #' @export
@@ -346,7 +347,7 @@ padz = function(x, n=max(nchar(x))) gsub(" ", "0", formatC(x, width=n))
 #' with column names of \code{exp}
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
-#' 
+#' \dontrun{
 #' data(gs_limma)
 #' data(tissue_example)
 #' 
@@ -359,7 +360,7 @@ padz = function(x, n=max(nchar(x))) gsub(" ", "0", formatC(x, width=n))
 #' gs_limma_exp2 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp, annotation = tissue_example$annot)
 #' 
 #' print(gs_limma_exp1)
-#'
+#' }
 #' @export
 add_expression.gosummaries = function(gosummaries, exp, annotation = NULL){
 	if(!is.gosummaries(gosummaries)) stop("Function requires a gosummaries type object")
@@ -970,6 +971,7 @@ customize_dummy = function(p, par){
 #' @return  a ggplot2 plot object with added customizations
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
+#' \dontrun{
 #' data(gs_limma_exp)
 #' 
 #' cust = function(p, par){
@@ -978,7 +980,7 @@ customize_dummy = function(p, par){
 #' }
 #' 
 #' plot(gs_limma_exp, classes = "Tissue", panel_plot = panel_boxplot, panel_customize = cust, fontsize = 8) 
-#'  
+#' } 
 #' 
 #' @export
 customize = function(p, par){
@@ -1029,6 +1031,7 @@ customize = function(p, par){
 #' @return The \code{\link{gtable}} object containing the figure
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
+#' \dontrun{
 #' data(gs_limma)
 #' 
 #' # Default plot
@@ -1059,6 +1062,7 @@ customize = function(p, par){
 #' }
 #' plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = 1:2, fontsize = 8)
 #' 
+#' }
 #' @method plot gosummaries
 #' 
 #' @export
@@ -1171,12 +1175,14 @@ plot.gosummaries = function(x, components = 1:min(10, length(x)), classes = NA, 
 #' @return  A gosummaries object.
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
+#' \dontrun{
 #' data(tissue_example)
 #' 
 #' pcr = prcomp(t(tissue_example$exp))
 #' gs_pca = gosummaries(pcr, annotation = tissue_example$annot)
 #' 
 #' plot(gs_pca, classes = "Tissue")
+#' }
 #' 
 #' @method gosummaries prcomp
 #' @S3method gosummaries prcomp
@@ -1227,6 +1233,7 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:6, n_genes = 
 #' @return  A gosummaries object.
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
+#' \dontrun{
 #' data(tissue_example)
 #' 
 #' # Filter genes and perform k-means
@@ -1239,6 +1246,7 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:6, n_genes = 
 #' gs_kmeans = gosummaries(kmr, exp = exp2, annotation = tissue_example$annot)
 #' plot(gs_kmeans, panel_height = 0, components = 1:3, fontsize = 8)
 #' plot(gs_kmeans, classes = "Tissue", components = 1:3, fontsize = 8)
+#' }
 #' 
 #' @method gosummaries kmeans
 #' @S3method gosummaries kmeans
@@ -1289,6 +1297,7 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
 #' 
+#' \dontrun{
 #' data(tissue_example)
 #' 
 #' # Do the t-test comparisons
@@ -1307,7 +1316,7 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 #' plot(gs_limma, fontsize = 8)
 #' plot(gs_limma, panel_height = 0, fontsize = 8)
 #' plot(gs_limma_exp, classes = "Tissue", fontsize = 8)
-#'
+#' }
 #' 
 #' @method gosummaries MArrayLM
 #' @S3method gosummaries MArrayLM 

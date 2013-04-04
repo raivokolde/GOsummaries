@@ -32,6 +32,7 @@
   colors. }
 }
 \examples{
+\dontrun{
 data(gs_limma)
 data(tissue_example)
 
@@ -44,6 +45,7 @@ print(gs_limma_exp1)
 gs_limma_exp2 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp, annotation = tissue_example$annot)
 
 print(gs_limma_exp1)
+}
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

@@ -50,6 +50,7 @@
   displayed
 }
 \examples{
+\dontrun{
 data(tissue_example)
 
 # Do the t-test comparisons
@@ -68,6 +69,7 @@ gs_limma_exp = gosummaries(fit, exp = tissue_example$exp, annotation = tissue_ex
 plot(gs_limma, fontsize = 8)
 plot(gs_limma, panel_height = 0, fontsize = 8)
 plot(gs_limma_exp, classes = "Tissue", fontsize = 8)
+}
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>

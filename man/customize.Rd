@@ -21,6 +21,7 @@
   plot.gosummaries to see how to write one yourself.
 }
 \examples{
+\dontrun{
 data(gs_limma_exp)
 
 cust = function(p, par){
@@ -29,6 +30,7 @@ cust = function(p, par){
 }
 
 plot(gs_limma_exp, classes = "Tissue", panel_plot = panel_boxplot, panel_customize = cust, fontsize = 8)
+}
 }
 \author{
   Raivo Kolde <rkolde@gmail.com>
