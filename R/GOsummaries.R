@@ -430,12 +430,14 @@ shorten_strings = function(strings, max){
 }
 
 adjust_wordcloud_appearance = function(gosummaries, term_length = 35, wordcloud_colors = c("grey70", "grey10")){
-	if(all(is.null(plyr::ldply(gosummaries, function(x){plyr::ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]))){
+	pvals = plyr::ldply(gosummaries, function(x){plyr::ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]
+	
+	if(length(pvals) == 0){
 		return(gosummaries)
 	}
 	
-	
-	best_pval = -log10(min(plyr::ldply(gosummaries, function(x){plyr::ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]))
+	print("blah")
+	best_pval = -log10(min(pvals))
 	
 	for(i in seq_along(gosummaries)){
 		# Shorten GO names
@@ -584,7 +586,13 @@ gen_wordcloud_legend = function(gosummaries, par){
 	legend_data$colors = colorRampPalette(rev(par$wordcloud_colors))(3)
 	
 	# Calculate p-value breakpoints
-	best_pval = -log10(min(plyr::ldply(gosummaries, function(x){plyr::ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]))	
+	pvals = plyr::ldply(gosummaries, function(x){plyr::ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]
+	
+	if(length(pvals) == 0){
+		return(zeroGrob())
+	}
+	
+	best_pval = -log10(min(pvals))	
 	
 	breaks = grid.pretty(c(0, best_pval))
 	if(length(breaks) %% 2 == 0){
@@ -782,6 +790,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	# Add padding
 	gtable_full = gtable::gtable_add_padding(gtable_full, unit(0.5 * par$fontsize * 1.445, "points"))
 	
+	a <<- gtable_full
 	# Open connection to file if filename specified
 	if(!is.na(filename)){
 		width = convertWidth(gtable::gtable_width(gtable_full)  , "inches", valueOnly = T) 

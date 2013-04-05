@@ -7,8 +7,8 @@
 
 \begin{document}
 
-%\VignetteIndexEntry{Using demi}
-%\VignetteKeyword{demi,DEMIExperiment,DEMIClust,DEMIDiff,DEMIPathway}
+%\VignetteIndexEntry{GOsummaries basics}
+%\VignetteKeyword{gosummaries}
 
 \title{GOsummaries basics}
 \author{Raivo Kolde \texttt{rkolde@gmail.com}}
