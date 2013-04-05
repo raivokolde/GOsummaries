@@ -436,7 +436,6 @@ adjust_wordcloud_appearance = function(gosummaries, term_length = 35, wordcloud_
 		return(gosummaries)
 	}
 	
-	print("blah")
 	best_pval = -log10(min(pvals))
 	
 	for(i in seq_along(gosummaries)){
@@ -589,7 +588,7 @@ gen_wordcloud_legend = function(gosummaries, par){
 	pvals = plyr::ldply(gosummaries, function(x){plyr::ldply(x$GPR, function(y) data.frame(y$P.value))})[,2]
 	
 	if(length(pvals) == 0){
-		return(zeroGrob())
+		return(rectGrob(width = unit(0.0001, "cm"), height = unit(0.0001, "cm")))
 	}
 	
 	best_pval = -log10(min(pvals))	
@@ -790,7 +789,6 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	# Add padding
 	gtable_full = gtable::gtable_add_padding(gtable_full, unit(0.5 * par$fontsize * 1.445, "points"))
 	
-	a <<- gtable_full
 	# Open connection to file if filename specified
 	if(!is.na(filename)){
 		width = convertWidth(gtable::gtable_width(gtable_full)  , "inches", valueOnly = T) 
