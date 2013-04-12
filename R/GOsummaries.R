@@ -1207,7 +1207,7 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:6, n_genes = 
 	
 	cat("Annotating functionally\n")
 	gosummaries = gosummaries.default(gl, ...)
-	gosummaries = add_to_slot.gosummaries(gosummaries, "Percentage", paste(round(x$sdev[components] / sum(x$sdev) * 100), "%", sep = ""))
+	gosummaries = add_to_slot.gosummaries(gosummaries, "Percentage", paste(round((x$sdev ** 2)[components] / sum(x$sdev ** 2) * 100), "%", sep = ""))
 	gosummaries = add_pca.gosummaries(gosummaries, x, annotation)
 	
 	return(gosummaries)
