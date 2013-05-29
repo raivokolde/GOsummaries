@@ -730,7 +730,12 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 		panel_legend = gtable::gtable(widths = unit(0, "cm"), heights = unit(0, "cm"))
 	}
 	
-	wordcloud_legend = gen_wordcloud_legend(gosummaries, par)
+	if(par$wordcloud_colors[1] == par$wordcloud_colors[2]){
+		wordcloud_legend = gtable::gtable(widths = unit(0.001, "cm"), heights = unit(0.001, "cm"))
+	}
+	else{
+		wordcloud_legend = gen_wordcloud_legend(gosummaries, par)
+	}
 	
 	# Calculate legend dimensions to create gtable for it
 	pl_height = gtable::gtable_height(panel_legend)
@@ -1028,7 +1033,8 @@ customize = function(p, par){
 #' longer names are cropped to this size
 #' @param wordcloud_colors two element vector of colors to define color scheme for 
 #' displaying the enrichment p-values across the wordclouds. First element defines the 
-#' color for category with worst p-value and the second for the word with the best.
+#' color for category with worst p-value and the second for the word with the best. Set 
+#' the same value for both if you want to remove the color scale and the legend. 
 #' @param filename file path where to save the picture. Filetype is decided by the 
 #' extension in the path. Currently following formats are supported: png, pdf, tiff, 
 #' bmp, jpeg. Even if the plot does not fit into the plotting window, the file size is 
