@@ -930,6 +930,48 @@ panel_violin_box = function(data, fontsize = 10, par){
 	return(p)
 }
 
+combine_classes = function(data, par){
+	if(inherits(data, "twoListExpData")){
+		data[, par$classes] = factor(data[, par$classes])
+		new_x = paste(substr(data[, "x"], 1, 1), data[, par$classes])
+		n_levels = length(levels(data[, par$classes]))
+		levels = paste(rep(1:2, times = c(n_levels, n_levels)), levels(data[, par$classes]))
+		
+		data$x = factor(new_x, levels = levels)
+	}
+	else{
+		data$x = data[, par$classes]
+	}
+	
+	return(data)
+}
+
+
+panel_boxplot_classes = function(data, fontsize = 10, par){
+	data = combine_classes(data, par)
+	
+	p = panel_boxplot(data, fontsize, par)
+	
+	return(p)
+}
+
+panel_violin_classes = function(data, fontsize = 10, par){
+	data = combine_classes(data, par)
+	
+	p = panel_violin(data, fontsize, par)
+	
+	return(p)
+}
+
+panel_violin_box_classes = function(data, fontsize = 10, par){
+	data = combine_classes(data, par)
+	
+	p = panel_violin_box(data, fontsize, par)
+	
+	return(p)
+}
+
+
 ##
 
 ## Panel functions for pca data
