@@ -6,7 +6,7 @@ An R package that visualizes the GO enrichment results as word clouds and arrang
 ## Installation
 The package is available ar CRAN, so the installation can be done as usual. 
 ```s
-install.packages(\"GOsummaries\")`
+install.packages("GOsummaries")`
 ```
 
 More comprehensive user guide can be found in the [vignette](http://cran.r-project.org/web/packages/GOsummaries/vignettes/GOsummaries-basics.pdf).
@@ -22,7 +22,7 @@ pcr = prcomp(t(tissue_example$exp))
 gs_pca = gosummaries(pcr, annotation = tissue_example$annot)
 
 # Plot
-plot(gs_pca, classes = \"Tissue\")
+plot(gs_pca, classes = "Tissue")
 ```
 ![pca](http://raivokolde.github.com/GOsummaries/images/pca.png)
 
