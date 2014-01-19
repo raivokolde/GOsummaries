@@ -26,7 +26,6 @@ add_dummydata.gosummaries = function(gosummaries){
 ##
 
 ## gosummaries object constructor and related functions
-
 gosummaries_base = function(x){
 	components = 1:length(x)
 	
@@ -320,6 +319,10 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	
 	return(gosummaries)
 }
+
+
+
+
 
 ##
 
