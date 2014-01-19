@@ -60,14 +60,6 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	# Create the data frame for words
 	d = data.frame(words, freq)
 	
-	# Order words according to frequencies
-	ord = order(-d$freq)
-	d = d[ord, ]
-	
-	# Filter the words and frequencies
-	d = d[1:nrow(d) <= max.words, ]
-	d = d[d$freq >= min.freq, ]
-	
 	# Create colors
 	if(length(colors) == 1){
 		d$colors = colors
@@ -81,6 +73,14 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	else{
 		d$colors = rep(colorRampPalette(rev(colors))(length(unique(d$freq))), table(d$freq))
 	}
+	
+	# Order words according to frequencies
+	ord = order(-d$freq)
+	d = d[ord, ]
+	
+	# Filter the words and frequencies
+	d = d[1:nrow(d) <= max.words, ]
+	d = d[d$freq >= min.freq, ]
 	
 	# Randomize order
 	if(random.order){
