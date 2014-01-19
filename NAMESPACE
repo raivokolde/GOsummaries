@@ -1,4 +1,5 @@
 S3method(gosummaries,MArrayLM)
+S3method(gosummaries,custom)
 S3method(gosummaries,default)
 S3method(gosummaries,kmeans)
 S3method(gosummaries,prcomp)

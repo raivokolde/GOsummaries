@@ -1,5 +1,6 @@
 \name{gosummaries}
 \alias{gosummaries}
+\alias{gosummaries.custom}
 \alias{gosummaries.default}
 \title{Constructor for gosummaries object}
 \usage{
@@ -10,6 +11,9 @@
     min_set_size = 50, max_set_size = 1000,
     max_signif = 40, ordered_query = T,
     hier_filtering = "moderate", ...)
+
+  \method{gosummaries}{custom} (x = NULL, go_res = NULL,
+    organism = "hsapiens", ...)
 }
 \arguments{
   \item{x}{list of arrays of gene names (or list of lists
@@ -45,6 +49,9 @@
   \item{hier_filtering}{a type of hierarchical filtering
   used when reducing the number of g:Profiler results (see
   \code{\link{gprofiler}} for further information)}
+
+  \item{go_res}{precalculated GO enrichment results (see
+  Details)}
 }
 \value{
   A gosummaries type of object
@@ -61,14 +68,14 @@
   "component" has the slots as follows: \itemize{ \item
   \bold{Title}: title string of the component. (Default:
   the names of the gene lists) \item \bold{Gene_lists}:
-  list of one or two gene lists with names gl1 (and gl2 if
-  present).  \item \bold{GPR}: g:Profiler results based on
-  the Gene_lists slot.  \item \bold{Data}: the related data
-  (expression values, PCA rotation, ...) that is used to
-  draw the "panel" i.e. theplot above the wordclouds. In
-  principle there is no limitation what kind of data is
-  there as far as the function that is provided to draw
-  that in \code{\link{plot.gosummaries}} can use it.  \item
+  list of one or two gene lists \item \bold{GPR}:
+  g:Profiler results based on the Gene_lists slot.  \item
+  \bold{Data}: the related data (expression values, PCA
+  rotation, ...) that is used to draw the "panel" i.e.
+  theplot above the wordclouds. In principle there is no
+  limitation what kind of data is there as far as the
+  function that is provided to draw that in
+  \code{\link{plot.gosummaries}} can use it.  \item
   \bold{Percentage}: a text that is drawn on the right top
   corner of every component. In case of PCA this is the
   percentage of variation the component explains, by

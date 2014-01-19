@@ -43,7 +43,8 @@
   define color scheme for displaying the enrichment
   p-values across the wordclouds. First element defines the
   color for category with worst p-value and the second for
-  the word with the best.}
+  the word with the best. Set the same value for both if
+  you want to remove the color scale and the legend.}
 
   \item{filename}{file path where to save the picture.
   Filetype is decided by the extension in the path.

@@ -1,7 +1,5 @@
-
-
 ## Dummydata object
-dummydata = function(gl, max){
+dummyData = function(gl, max){
 	res = list( 
 		mat = data.frame(x = factor(1:length(gl)), y = unlist(lapply(gl, length))),
 		max = max
@@ -17,24 +15,58 @@ is.dummyData = function(x) inherits(x, "dummyData")
 add_dummydata.gosummaries = function(gosummaries){
 	max = max(unlist(lapply(gosummaries, function(x) lapply(x$Gene_lists, length))))
 	for(i in seq_along(gosummaries)){
-		gosummaries[[i]]$Data = dummydata(gosummaries[[i]]$Gene_lists, max)
+		gosummaries[[i]]$Data = dummyData(gosummaries[[i]]$Gene_lists, max)
 	}
 	
 	return(gosummaries)
 }
-
 ##
 
 ## gosummaries object constructor and related functions
-gosummaries_base = function(x){
-	components = 1:length(x)
-	
-	# Find the number of lists per component (assumed to be the same over components)
-	if(is.list(x[[1]])){
-		k = 2
+gosummaries_base = function(gl = NULL, go_res = NULL){
+	# Check the input parameters for consistency
+	if(is.null(gl) & is.null(go_res)){
+		stop("Either gene lists or the GO results have to be specified")
 	}
-	else{
-		k = 1
+	
+	if(!is.null(gl) & !is.null(go_res)){
+		# Find length of the components
+		if(length(gl) != length(go_res)){
+			stop("The gene lists and GO results have to have the same length")
+		}
+		
+		components = 1:length(gl)
+		
+		# Find the number of lists per component (assumed to be the same over components)
+		gl_k = ifelse(is.list(gl[[1]]), 2, 1) 
+		go_res_k = ifelse(is.list(go_res[[1]]) & !is.data.frame(go_res[[1]]), 2, 1)
+		
+		if(gl_k != go_res_k){
+			stop("The gene lists and the GO results have to have a similar structure")
+		}
+		else{
+			k = gl_k
+		}
+		
+		# Check if the names in the gene list and Go results are the same
+		if(!identical(names(gl), names(go_res))){
+			stop("The gene lists and the GO results have to have same names")
+		}
+		else{
+			names = names(gl)
+		}
+	}
+	
+	if(!is.null(gl) & is.null(go_res)){
+		components = 1:length(gl)
+		k = ifelse(is.list(gl[[1]]), 2, 1) 
+		names = names(gl)
+	}
+	
+	if(is.null(gl) & !is.null(go_res)){
+		components = 1:length(go_res)
+		k = ifelse(is.list(go_res[[1]]) & !is.data.frame(go_res[[1]]), 2, 1)
+		names = names(go_res)
 	}
 	
 	# Create the resulting data structure
@@ -42,24 +74,23 @@ gosummaries_base = function(x){
 	
 	for(i in components){
 		comp = list(
-			Title = names(x)[i],
+			Title = names[i],
 			Gene_lists = NULL,
-			GPR = NULL,
+			GPR = switch(k, list(gpr1 = go_res[[i]]), list(gpr1 = go_res[[i]][[1]], gpr2 = go_res[[i]][[2]])),
 			Data = NULL,
-			Percentage = NULL,
+			Percentage = " ",
 			Organism = NULL
 		)
 		
-		if(k == 1){
-			comp$Gene_lists = list(gl1 = x[[i]])
-			comp$GPR = list(gpr1 = NULL)
-			comp$Percentage = sprintf("n: %d", length(x[[i]]))
-		}
-		
-		if(k == 2){
-			comp$Gene_lists = list(gl1 = x[[i]][[1]], gl2 = x[[i]][[2]])
-			comp$GPR = list(gpr1 = NULL, gpr2 = NULL)
-			comp$Percentage = sprintf("Up: %d\nDown: %d", length(x[[i]][[2]]), length(x[[i]][[1]]))
+		if(!is.null(gl)){
+			if(k == 1){
+				comp$Gene_lists = list(gl1 = gl[[i]])
+				comp$Percentage = sprintf("n: %d", length(gl[[i]]))
+			}
+			else{
+				comp$Gene_lists = list(gl1 = gl[[i]][[1]], gl2 = gl[[i]][[2]])
+				comp$Percentage = sprintf("G1: %d\nG2: %d", length(gl[[i]][[2]]), length(gl[[i]][[1]]))
+			}
 		}
 		
 		res[[i]] = comp
@@ -69,6 +100,14 @@ gosummaries_base = function(x){
 	
 	return(res)
 }
+
+# gosummaries_base()
+# gosummaries_base(list(Tere = "A"))
+# gosummaries_base(list(Tere = list("A", "B")))
+# gosummaries_base(NULL, list(Tere = data.frame(Term.name = "ime", P.value = "muna")))
+# gosummaries_base(list(Tere = "A"), list(Tere = data.frame(Term.name = "ime", P.value = "muna")))
+# gosummaries_base(list(Tere = "A"), list(Tore = data.frame(Term.name = "ime", P.value = "muna")))
+# gosummaries_base(list(Tere = list("A", "B")), list(Tere = data.frame(Term.name = "ime", P.value = "muna")))
 
  
 #' Constructor for gosummaries object
@@ -82,8 +121,7 @@ gosummaries_base = function(x){
 #' \itemize{
 #'   \item \bold{Title}: title string of the component. (Default: the names of the gene 
 #' lists)
-#'   \item \bold{Gene_lists}: list of one or two gene lists with names gl1 (and gl2 if 
-#' present).
+#'   \item \bold{Gene_lists}: list of one or two gene lists
 #'   \item \bold{GPR}: g:Profiler results based on the Gene_lists slot. 
 #'   \item \bold{Data}: the related data (expression values, PCA rotation, ...) that is 
 #' used to draw the "panel" i.e. theplot above the wordclouds. In principle there is no 
@@ -195,12 +233,30 @@ gosummaries = function(x, ...){
 gosummaries.default = function(x, organism = "hsapiens", go_branches = c("BP", "ke", "re"), max_p_value = 1e-2, min_set_size = 50, max_set_size = 1000, max_signif = 40, ordered_query = T, hier_filtering = "moderate", ...){
 	
 	# Create basic structure
-	res = gosummaries_base(x)
+	res = gosummaries_base(gl = x)
 	res = add_to_slot.gosummaries(res, "Organism", as.list(rep(organism, length(res))))
 	
 	# Add data and annotations
 	res = add_dummydata.gosummaries(res)
 	res = annotate.gosummaries(res, organism = organism, go_branches = go_branches, max_p_value = max_p_value, min_set_size = min_set_size, max_set_size = max_set_size, max_signif = max_signif, ordered_query = ordered_query, hier_filtering = hier_filtering, ...)
+	
+	return(res)
+}
+
+#' @param go_res precalculated GO enrichment results (see Details)
+#' @rdname gosummaries
+#' @method gosummaries custom
+#' @S3method gosummaries custom
+#' @export
+gosummaries.custom = function(x = NULL, go_res = NULL, organism = "hsapiens", ...){
+	# Create basic structure
+	res = gosummaries_base(gl = x, go_res = go_res)
+	res = add_to_slot.gosummaries(res, "Organism", as.list(rep(organism, length(res))))
+	
+	# Add data and annotations
+	if(!is.null(x)){
+		res = add_dummydata.gosummaries(res)
+	}
 	
 	return(res)
 } 
@@ -320,10 +376,6 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	return(gosummaries)
 }
 
-
-
-
-
 ##
 
 ## Fill Data slot in gosummaries object
@@ -366,11 +418,20 @@ padz = function(x, n=max(nchar(x))) gsub(" ", "0", formatC(x, width=n))
 #' }
 #' @export
 add_expression.gosummaries = function(gosummaries, exp, annotation = NULL){
-	if(!is.gosummaries(gosummaries)) stop("Function requires a gosummaries type object")
+	# Check arguments
+	if(!is.gosummaries(gosummaries)){
+		stop("Function requires a gosummaries type object")
+	} 
 	
-	if(!all(colnames(exp) %in% rownames(annotation)) & !is.null(annotation)) 
-		stop("Column names of expression matrix and row names of annotation dataframe do not match") 
+	if(!all(colnames(exp) %in% rownames(annotation)) & !is.null(annotation)){
+		stop("Column names of expression matrix and row names of annotation data.frame do not match")
+	} 
 	
+	if(is.null(gosummaries[[1]]$Gene_lists)){
+		stop("No gene list data provided")
+	}
+	
+	# Do the work
 	for(i in seq_along(gosummaries)){
 		a = list()
 		for(j in seq_along(gosummaries[[i]]$Gene_lists)){
@@ -1415,3 +1476,4 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 	return(gosummaries)
 }
 
+##
