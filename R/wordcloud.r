@@ -105,6 +105,10 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	tailed = grepl("g|j|p|q|y|_", d$words)
 	d$height[tailed] = d$height[tailed] * 1.3
 	
+	# Add padding 
+	d$width = d$width * 1.1
+	d$height = d$height * 1.1
+	
 	# Rotate words
 	if(any(d$angle == 90)){
 		a = d$width[d$angle == 90]
