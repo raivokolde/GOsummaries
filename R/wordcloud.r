@@ -6,6 +6,9 @@ findCoordinates_left = function (width, height){
 	.Call("findCoordinates_left", width, height, PACKAGE = "GOsummaries")
 }
 
+findCoordinates_left_top = function (width, height){
+	.Call("findCoordinates_left_top", width, height, PACKAGE = "GOsummaries")
+}
 
 #' Plot a wordcloud given words and frequencies
 #' 
@@ -143,6 +146,13 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 				a = findCoordinates_left(d$width, d$height)
 				a[, 1] = 1 - a[, 1]
 			}
+			if(algorithm == "leftside_top"){
+				a = findCoordinates_left_top(d$width, d$height)
+			}
+			if(algorithm == "rightside_top"){
+				a = findCoordinates_left_top(d$width, d$height)
+				a[, 1] = 1 - a[, 1]
+			}
 			if(algorithm == "circle"){
 				a = findCoordinates(d$width, d$height)
 			}
@@ -164,6 +174,13 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 		}
 		if(algorithm == "rightside"){
 			a = findCoordinates_left(d$width, d$height)
+			a[, 1] = 1 - a[, 1]
+		}
+		if(algorithm == "leftside_top"){
+			a = findCoordinates_left_top(d$width, d$height)
+		}
+		if(algorithm == "rightside_top"){
+			a = findCoordinates_left_top(d$width, d$height)
 			a[, 1] = 1 - a[, 1]
 		}
 		if(algorithm == "circle"){
@@ -197,11 +214,11 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	
 	
 	# Draw the words
-	if(algorithm == "leftside"){
+	if(algorithm %in% c("leftside", "leftside_top")){
 		hjust = ifelse(d$angle == 90, 0.5, 0)
 		vjust = ifelse(d$angle == 90, 1, 0.5)
 	}
-	if(algorithm == "rightside"){
+	if(algorithm %in% c("rightside", "rightside_top")){
 		hjust = ifelse(d$angle == 90, 0.5, 1)
 		vjust = ifelse(d$angle == 90, 0, 0.5)
 	}

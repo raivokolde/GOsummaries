@@ -200,3 +200,66 @@ SEXP findCoordinates_left( SEXP width, SEXP height ){
 	END_RCPP
 }
 
+// declarations
+extern "C" {
+SEXP findCoordinates_left_top( SEXP width, SEXP height) ;
+}
+
+// definition
+
+SEXP findCoordinates_left_top( SEXP width, SEXP height ){
+	BEGIN_RCPP
+	Rcpp::NumericVector width1(width);
+	Rcpp::NumericVector height1(height);
+	Rcpp::NumericMatrix boxes(width1.size(), 4);
+	boxes.fill(-1);
+
+	Environment stats("package:stats");
+	Function runif = stats["runif"];
+	Environment base("package:base");
+
+	double x, y;
+	double vertStep = 0.02;
+	double horizStep = 0.02;
+
+	for(int i=0; i<width1.size(); i++){
+		x = 0.01;
+		y = 1;
+		
+		bool isOverlapped = true;
+		while(isOverlapped){
+			if(!is_overlap(x, y - 0.5 * height1(i), width1(i), height1(i), boxes) && (x > 0) && (y - 0.5 * height1(i) > 0) && (x + width1(i) < 1)  && (y + 0.5 * height1(i) < 1)){
+				boxes(i, 0) = x;
+				boxes(i, 1) = y - 0.5 * height1(i);
+				boxes(i, 2) = width1(i);
+				boxes(i, 3) = height1(i);
+				isOverlapped = false;
+			}
+			else{
+				if(x > 1){
+					boxes(i, 0) = 2;
+					boxes(i, 1) = 2;
+					boxes(i, 2) = 2;
+					boxes(i, 3) = 2;
+
+					isOverlapped = false;
+				}
+				else{
+					y = y - vertStep;
+					
+					if((y < -1)){
+						y = 1;
+						x = x + horizStep;
+					}
+				}
+			}
+		}	
+	}
+
+	boxes(_, 0) = boxes(_, 0);
+	boxes(_, 1) = boxes(_, 1) + 0.5 * boxes(_, 3);
+
+	return Rcpp::wrap(boxes);
+	END_RCPP
+}
+
