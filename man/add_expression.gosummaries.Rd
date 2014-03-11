@@ -2,8 +2,7 @@
 \alias{add_expression.gosummaries}
 \title{Add expression data to gosummaries object}
 \usage{
-  add_expression.gosummaries(gosummaries, exp,
-    annotation = NULL)
+add_expression.gosummaries(gosummaries, exp, annotation = NULL)
 }
 \arguments{
   \item{gosummaries}{a gosummaries object}
@@ -16,20 +15,19 @@
   \code{exp}}
 }
 \description{
-  Function to add expression data and its annotations to a
-  gosummaries object.
+Function to add expression data and its annotations to a
+gosummaries object.
 }
 \details{
-  The data is added to the object in a "long" format so it
-  would be directly usable by the ggplot2 based panel
-  drawing functions \code{\link{panel_boxplot}} etc. For
-  each component it produces a data frame with columns:
-  \itemize{ \item \bold{x} : sample IDs for the x axis,
-  their factor order is the same as on the columns of input
-  matrix \item \bold{y} : expression values from the matrix
-  \item . . . : sample annotation columns from the
-  annotation table that can be displayed on figure as
-  colors. }
+The data is added to the object in a "long" format so it
+would be directly usable by the ggplot2 based panel drawing
+functions \code{\link{panel_boxplot}} etc. For each
+component it produces a data frame with columns: \itemize{
+\item \bold{x} : sample IDs for the x axis, their factor
+order is the same as on the columns of input matrix \item
+\bold{y} : expression values from the matrix \item . . . :
+sample annotation columns from the annotation table that
+can be displayed on figure as colors. }
 }
 \examples{
 \dontrun{
@@ -48,6 +46,6 @@ print(gs_limma_exp1)
 }
 }
 \author{
-  Raivo Kolde <rkolde@gmail.com>
+Raivo Kolde <rkolde@gmail.com>
 }
 

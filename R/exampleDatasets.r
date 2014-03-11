@@ -11,6 +11,7 @@
 #' package. These can be used to test the package if no internet connection is available. Names of these are \code{gs_kmeans}, \code{gs_limma}, \code{gs_limma_exp} and \code{gs_pca} 
 #' 
 #' @name tissue_example 
+#' @docType data
 #' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' 
@@ -24,7 +25,9 @@
 NULL
 
 
-#' \code{metabolomic_example} is a dataset extracted from York \emph{et al} (Metabolights ID: MTBLS30), it contains a subset of 120 wild-type samples from 4 tissues: heart, skeletal muscle, liver and brain.
+#' \code{metabolomic_example} is a dataset extracted from York \emph{et al} (Metabolights ID:
+#'  MTBLS30), it contains a subset of 120 wild-type samples from 4 tissues: heart, skeletal
+#'  muscle, liver and brain.
 #' 
 #' The dataset is a list with 2 slots
 #' \enumerate{ 
@@ -33,12 +36,13 @@ NULL
 #' }
 #' 
 #' @name metabolomic_example 
+#' @docType data
 #' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' 
 #' @references York, B., Sagen, J. V., Tsimelzon, A., Louet, J. F., Chopra, A. R., Reineke, E. L.,
 #'  et al. (2013). Research resource: tissue- and pathway-specific metabolomic profiles of the
-#'  steroid receptor coactivator (SRC) family. Mol Endocrinol, 27(2), 366–380.
+#'  steroid receptor coactivator (SRC) family. Mol Endocrinol, 27(2), 366-380.
 #' 
 #' @keywords data
 NULL
@@ -54,6 +58,7 @@ NULL
 #' }
 #' 
 #' @name metagenomic_example 
+#' @docType data
 #' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' 

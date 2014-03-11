@@ -2,13 +2,11 @@
 \alias{plot.gosummaries}
 \title{Plot the GOsummaries figure}
 \usage{
-  \method{plot}{gosummaries} (x,
-    components = 1:min(10, length(x)), classes = NA,
-    panel_plot = NULL, panel_customize = NULL,
-    panel_par = list(), panel_height = 5, panel_width = 30,
-    fontsize = 10, term_length = 35,
-    wordcloud_colors = c("grey70", "grey10"),
-    filename = NA, ...)
+\method{plot}{gosummaries}(x, components = 1:min(10, length(x)),
+  classes = NA, panel_plot = NULL, panel_customize = NULL,
+  panel_par = list(), panel_height = 5, panel_width = 30, fontsize = 10,
+  term_length = 35, wordcloud_colors = c("grey70", "grey10"),
+  wordcloud_legend_title = NULL, filename = NA, ...)
 }
 \arguments{
   \item{x}{a gosummaries object}
@@ -46,6 +44,8 @@
   the word with the best. Set the same value for both if
   you want to remove the color scale and the legend.}
 
+  \item{wordcloud_legend_title}{title of wordcloud legend}
+
   \item{filename}{file path where to save the picture.
   Filetype is decided by the extension in the path.
   Currently following formats are supported: png, pdf,
@@ -56,25 +56,24 @@
   \item{\dots}{not used}
 }
 \value{
-  The \code{\link{gtable}} object containing the figure
+The \code{\link{gtable}} object containing the figure
 }
 \description{
-  The function to draw a GOsummaries figure based on a
-  \code{gosummaries} object.  The GOsummaries figure
-  consists of several components each defined by a gene
-  list ora a pair of them. The GO annotations of them are
-  shown as wordclouds. Optionally one can draw related
-  (expression) data on panels atop of the wordclouds.
+The function to draw a GOsummaries figure based on a
+\code{gosummaries} object.  The GOsummaries figure consists
+of several components each defined by a gene list ora a
+pair of them. The GO annotations of them are shown as
+wordclouds. Optionally one can draw related (expression)
+data on panels atop of the wordclouds.
 }
 \details{
-  In most cases the function can decide which type of plot
-  to draw into the panel part. If there is no data
-  explicitly put into the Data slots of the gosummaries
-  object, it just draws a horizontal barplot with the
-  numbers of genes. On visualizing the PCA data it draws
-  histogram of the samples on the principal axes. For
-  clustering and differential expression it draws the
-  boxplot of expression values.
+In most cases the function can decide which type of plot to
+draw into the panel part. If there is no data explicitly
+put into the Data slots of the gosummaries object, it just
+draws a horizontal barplot with the numbers of genes. On
+visualizing the PCA data it draws histogram of the samples
+on the principal axes. For clustering and differential
+expression it draws the boxplot of expression values.
 }
 \examples{
 \dontrun{
@@ -111,6 +110,6 @@ plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Ti
 }
 }
 \author{
-  Raivo Kolde <rkolde@gmail.com>
+Raivo Kolde <rkolde@gmail.com>
 }
 

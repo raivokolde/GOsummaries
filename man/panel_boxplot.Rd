@@ -4,11 +4,11 @@
 \alias{panel_violin_box}
 \title{Panel drawing functions}
 \usage{
-  panel_boxplot(data, fontsize = 10, par)
+panel_boxplot(data, fontsize = 10, par)
 
-  panel_violin(data, fontsize = 10, par)
+panel_violin(data, fontsize = 10, par)
 
-  panel_violin_box(data, fontsize = 10, par)
+panel_violin_box(data, fontsize = 10, par)
 }
 \arguments{
   \item{data}{the data from Data slot of the gosummaries
@@ -25,36 +25,34 @@
   function.}
 }
 \value{
-  It returns a function that can draw a ggplot2 plot of the
-  data in Data slot of a gosummaries object. The legend and
-  the actual plots for the panels are extracted later from
-  the figure produced by this function.
+It returns a function that can draw a ggplot2 plot of the
+data in Data slot of a gosummaries object. The legend and
+the actual plots for the panels are extracted later from
+the figure produced by this function.
 }
 \description{
-  These functions are used to draw the panel portion of
-  every component based on the Data slots in gosummaries
-  object. These concrete functions assume the data is
-  presented as does
-  \code{\link{add_expression.gosummaries}}. They provide
-  three options: boxplot, violin plot (which shows the
-  distrubution more precisely) and both combined.
+These functions are used to draw the panel portion of every
+component based on the Data slots in gosummaries object.
+These concrete functions assume the data is presented as
+does \code{\link{add_expression.gosummaries}}. They provide
+three options: boxplot, violin plot (which shows the
+distrubution more precisely) and both combined.
 }
 \details{
-  These functions specify in principle the general setting
-  for the panels, like which "geom"-s, how the data is
-  transformed and summarized, etc. To make small
-  adjustments to the figure such as changing color scheme,
-  write your own customization function (See
-  \code{\link{customize}} as example).
+These functions specify in principle the general setting
+for the panels, like which "geom"-s, how the data is
+transformed and summarized, etc. To make small adjustments
+to the figure such as changing color scheme, write your own
+customization function (See \code{\link{customize}} as
+example).
 
-  It is possible to write your own panel plotting function,
-  as long as the parameters used and the return value are
-  similar to what is specified here. When writing a new
-  panel function one only has to make sure that it matches
-  the data given in the Data slot of the gosummaries
-  object.
+It is possible to write your own panel plotting function,
+as long as the parameters used and the return value are
+similar to what is specified here. When writing a new panel
+function one only has to make sure that it matches the data
+given in the Data slot of the gosummaries object.
 }
 \author{
-  Raivo Kolde <rkolde@gmail.com>
+Raivo Kolde <rkolde@gmail.com>
 }
 

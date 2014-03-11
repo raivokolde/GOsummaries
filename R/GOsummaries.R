@@ -152,11 +152,12 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 #' Some visual parameters are stored in the attributes of \code{gosummaries} object: 
 #' \code{score_type} tells how to handle the scores associated to wordclouds, 
 #' \code{wc_algorithm} specifies the wordcloud layout algorithm and 
-#' \code{wordcloud_legend_title} specifies the title of the wordcloud.
+#' \code{wordcloud_legend_title} specifies the title of the wordcloud. One can change 
+#' them using the \code{attr} function.
 #' 
 #' The word clouds are specified as \code{data.frame}s with two columns: "Term" and "Score". If 
 #' one wants to use custom data for wordclouds, instead of the default GO enrichment results, 
-#' then this is possible with function \code{gosummaries.custom}. The input structure is 
+#' then this is possible to specify parameter \code{wc_data}. The input structure is 
 #' similar to the gene list input, only instead of gene lists one has the two column 
 #' \code{data.frame}s.
 #' 
@@ -188,11 +189,9 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 #' There are several constructors of gosummaries object that work on common analysis 
 #' result objects, such as \code{\link{gosummaries.kmeans}}, 
 #' \code{\link{gosummaries.MArrayLM}} and \code{\link{gosummaries.prcomp}} corresponding 
-#' to k-means, limma and PCA results.
+#' to k-means, limma and PCA results. 
 #'
 #' @param x list of arrays of gene names (or list of lists of arrays of gene names)
-#' @param organism the organism that the gene lists correspond to. The format should be 
-#' as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
 #' @param \dots additional parameters for gprofiler function 
 #' @return   A gosummaries type of object
 #' 
@@ -240,22 +239,25 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 #' wcd1 = data.frame(Term = c("KLF1", "KLF2", "POU5F1"), Score = c(0.05, 0.001, 0.0001))
 #' wcd2 = data.frame(Term = c("CD8", "CD248", "CCL5"), Score = c(0.02, 0.005, 0.00001))
 #' 
-#' gs = gosummaries.custom(wc_data = list(Results1 = wcd1, Results2 = wcd2))
+#' gs = gosummaries(wc_data = list(Results1 = wcd1, Results2 = wcd2))
 #' plot(gs)
 #' 
-#' gs = gosummaries.custom(wc_data = list(Results = list(wcd1, wcd2)))
+#' gs = gosummaries(wc_data = list(Results = list(wcd1, wcd2)))
 #' plot(gs)
 #' 
 #' # Adjust wordcloud legend title
-#' gs = gosummaries.custom(wc_data = list(Results = list(wcd1, wcd2)), wordcloud_legend_title = "Significance score")
+#' gs = gosummaries(wc_data = list(Results = list(wcd1, wcd2)), wordcloud_legend_title = "Significance score")
 #' plot(gs)
 #' 
 #' @rdname gosummaries
 #' @export
-gosummaries = function(x, ...){
+gosummaries = function(x = NULL, ...){
 	UseMethod("gosummaries", x)
-}
+} 
 
+#' @param wc_data precalculated GO enrichment results (see Details)
+#' @param organism the organism that the gene lists correspond to. The format should be 
+#' as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
 #' @param go_branches GO tree branches and pathway databases as denoted in g:Profiler (Possible values: BP, CC, MF, ke, re) 
 #' @param max_p_value threshold for p-values that are corrected for multiple testing
 #' @param min_set_size minimal size of functional category to be considered
@@ -265,6 +267,12 @@ gosummaries = function(x, ...){
 #' query algorithm is used in g:Profiler)
 #' @param hier_filtering a type of hierarchical filtering used when reducing the number of g:Profiler 
 #' results (see \code{\link{gprofiler}} for further information) 
+#' @param score_type indicates the type of scores in \code{wc_data}. Possible values: "p-value"
+#'  and "count"
+#' @param wc_algorithm the type of wordcloud algorithm used. Possible values are "top" that 
+#' puts first word to the top corner and "middle" that puts first word to the middle. 
+#' @param wordcloud_legend_title title of the word cloud legend, should reflect the nature of 
+#' the score
 #' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' 
@@ -272,31 +280,8 @@ gosummaries = function(x, ...){
 #' @method gosummaries default
 #' @S3method gosummaries default
 #' @export
-gosummaries.default = function(x, organism = "hsapiens", go_branches = c("BP", "ke", "re"), max_p_value = 1e-2, min_set_size = 50, max_set_size = 1000, max_signif = 40, ordered_query = T, hier_filtering = "moderate", ...){
+gosummaries.default = function(x = NULL, wc_data = NULL, organism = "hsapiens", go_branches = c("BP", "ke", "re"), max_p_value = 1e-2, min_set_size = 50, max_set_size = 1000, max_signif = 40, ordered_query = TRUE, hier_filtering = "moderate", score_type = "p-value", wc_algorithm = "middle", wordcloud_legend_title = NULL, ...){
 	
-	# Create basic structure
-	res = gosummaries_base(gl = x)
-	
-	# Add data and annotations
-	res = add_dummydata.gosummaries(res)
-	res = annotate.gosummaries(res, organism = organism, go_branches = go_branches, max_p_value = max_p_value, min_set_size = min_set_size, max_set_size = max_set_size, max_signif = max_signif, ordered_query = ordered_query, hier_filtering = hier_filtering, ...)
-	
-	attr(res, "wordcloud_legend_title") = "Enrichment p-value"
-	
-	return(res)
-}
-
-#' @param wc_data precalculated GO enrichment results (see Details)
-#' @param score_type indicates the type of scores in \code{wc_data}. Possible values: "p-value"
-#'  and "count"
-#' @param wc_algorithm the type of wordcloud algorithm used. Possible values are "top" that 
-#' puts first word to the top corner and "middle" that puts first word to the middle. 
-#' @param wordcloud_legend_title title of the word cloud legend, should reflect the nature of 
-#' the score
-#' @rdname gosummaries
-#' @method gosummaries custom
-#' @export
-gosummaries.custom = function(x = NULL, wc_data = NULL, score_type = "p-value", wc_algorithm = "middle", wordcloud_legend_title = NULL){
 	# Create basic structure
 	res = gosummaries_base(gl = x, wc_data = wc_data, score_type = score_type, wc_algorithm = wc_algorithm, wordcloud_legend_title = wordcloud_legend_title)
 	
@@ -305,9 +290,14 @@ gosummaries.custom = function(x = NULL, wc_data = NULL, score_type = "p-value", 
 		res = add_dummydata.gosummaries(res)
 	}
 	
+	if(is.null(wc_data)){
+		res = annotate.gosummaries(res, organism = organism, go_branches = go_branches, max_p_value = max_p_value, min_set_size = min_set_size, max_set_size = max_set_size, max_signif = max_signif, ordered_query = ordered_query, hier_filtering = hier_filtering, ...)
+	
+		attr(res, "wordcloud_legend_title") = "Enrichment p-value"
+	}
+	
 	return(res)
-} 
-
+}
  
 #' @param gosummaries a gosummaries object
 #' @rdname add_to_slot.gosummaries
@@ -425,6 +415,7 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	}
 	
 	# Run g:Profiler analysis 
+	gProfileR::set_user_agent(sprintf("; GOsummaries/%s", packageVersion("GOsummaries")), append = T)
 	gpr = gProfileR::gprofiler(query = gl, organism = organism, ordered_query = ordered_query, max_set_size = max_set_size, hier_filtering = hier_filtering, max_p_value = max_p_value, ...)
 	
 	# Clean and filter the results
@@ -787,7 +778,7 @@ gen_wordcloud_legend = function(gosummaries, par){
 
 plot_wordcloud = function(words, freq, color, algorithm, dimensions){
 	if(length(words) > 0){
-		return(plotWordcloud(words, freq, colors = color, random.order = F, min.freq = -Inf, rot.per = 0, scale = 0.85, max_min = c(1, 0), algorithm = algorithm, add = F, grob = T, dimensions = dimensions))
+		return(plotWordcloud(words, freq, colors = color, random.order = FALSE, min.freq = -Inf, rot.per = 0, scale = 0.85, max_min = c(1, 0), algorithm = algorithm, add = FALSE, grob = TRUE, dimensions = dimensions))
 	}
 	return(zeroGrob())
 }
@@ -1256,6 +1247,7 @@ customize = function(p, par){
 #' displaying the enrichment p-values across the wordclouds. First element defines the 
 #' color for category with worst p-value and the second for the word with the best. Set 
 #' the same value for both if you want to remove the color scale and the legend. 
+#' @param wordcloud_legend_title title of wordcloud legend 
 #' @param filename file path where to save the picture. Filetype is decided by the 
 #' extension in the path. Currently following formats are supported: png, pdf, tiff, 
 #' bmp, jpeg. Even if the plot does not fit into the plotting window, the file size is 
@@ -1439,15 +1431,15 @@ spearman_mds = function(pc, expression, n_genes){
 	n_down = sum(res$Correlation < 0)
 	
 	res = list(
-		subset(res, Correlation < 0, c("Term", "Score"))[1:min(n_down, 2 * n_genes), ],
-		subset(res, Correlation > 0, c("Term", "Score"))[1:min(n_up, 2 * n_genes), ]
+		res[res$Correlation < 0, c("Term", "Score")][1:min(n_down, 2 * n_genes), ],
+		res[res$Correlation > 0, c("Term", "Score")][1:min(n_up, 2 * n_genes), ]
 	)
 	
 	return(res)
 }
 
  
-#' Prepare gosummaries object based on any MDS results
+#' Prepare gosummaries object based on Multi Dimensional Scaling (MDS) results
 #' 
 #' The Multi Dimensional Scaling (MDS) results are converted into a gosummaries 
 #' object, by finding genes that have most significant Spearman correlations 
@@ -1486,21 +1478,22 @@ spearman_mds = function(pc, expression, n_genes){
 #' 
 #' @author  Raivo Kolde <rkolde@@gmail.com>
 #' @examples
+#' \dontrun{
 #' library(vegan)
 #' 
-#' data("metagenomics_example")
+#' data("metagenomic_example")
 #' 
 #' # Run Principal Coordinate Analysis on Bray-Curtis dissimilarity matrix 
-#' pcoa = cmdscale(vegdist(t(metagenomics_example$otu), "bray"), k = 3)
+#' pcoa = cmdscale(vegdist(t(metagenomic_example$otu), "bray"), k = 3)
 #' 
 #' # By turning off the GO analysis we can show the names of taxa
-#' gs = gosummaries.mds(pcoa, metagenomics_example$otu, metagenomics_example$annot, show_genes = T, gconvert_target = NULL, n_genes = 30)
+#' gs = gosummaries(pcoa, metagenomic_example$otu, metagenomic_example$annot, show_genes = TRUE, gconvert_target = NULL, n_genes = 30)
 #' 
 #' plot(gs, class = "BodySite", fontsize = 8)
-#' 
+#' }
 #' 
 #' @export
-gosummaries.mds = function(x, exp = NULL, annotation = NULL, components = 1:min(ncol(x), 10), show_genes = F, gconvert_target = "NAME", n_genes = ifelse(show_genes, 30, 500), organism = "hsapiens", ...){
+gosummaries.matrix = function(x, exp = NULL, annotation = NULL, components = 1:min(ncol(x), 10), show_genes = FALSE, gconvert_target = "NAME", n_genes = ifelse(show_genes, 30, 500), organism = "hsapiens", ...){
 	# Check assumptions
 	if(is.null(exp)){
 		stop("expression matrix has to be specified")
@@ -1570,7 +1563,13 @@ gosummaries.mds = function(x, exp = NULL, annotation = NULL, components = 1:min(
 #' @param annotation a \code{data.frame} describing the samples, its row names should match 
 #' with column names of the projection matrix in x
 #' @param components numeric vector of components to include 
-#' @param n_genes how many top genes to use for annotation
+#' @param show_genes logical showing if GO categories or actual genes are shown in word clouds
+#' @param gconvert_target specifies gene ID format for genes showed in word cloud. The 
+#' name of the format is passed to \code{\link{gconvert}}, if NULL original IDs are shown.
+#' @param n_genes shows the number of genes used for annotating the component, in case gene 
+#' names are shown, it is the maximum number of genes shown in a word cloud
+#' @param organism the organism that the gene lists correspond to. The format should be 
+#' as follows: "hsapiens", "mmusculus", "scerevisiae", etc
 #' @param \dots GO annotation filtering parameters as defined in 
 #' \code{\link{gosummaries.default}}
 #' @return  A gosummaries object.
@@ -1591,14 +1590,14 @@ gosummaries.mds = function(x, exp = NULL, annotation = NULL, components = 1:min(
 #' pca = prcomp(t(metabolomic_example$data))
 #' 
 #' # Turn off GO enricment, since it does not work on metabolites
-#' gs = gosummaries(pca, annotation = metabolomic_example$annot, show_gene = T, gconvert_target = NULL)
+#' gs = gosummaries(pca, annotation = metabolomic_example$annot, show_gene = TRUE, gconvert_target = NULL)
 #' plot(gs, class = "Tissue", components = 1:3, fontsize = 8)
 #' 
 #' @method gosummaries prcomp
 #' @S3method gosummaries prcomp
 #' 
 #' @export
-gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_genes = F, gconvert_target = "NAME", n_genes = ifelse(show_genes, 30, 500), organism = "hsapiens", ...){
+gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_genes = FALSE, gconvert_target = "NAME", n_genes = ifelse(show_genes, 30, 500), organism = "hsapiens", ...){
 	
 	gl = list()
 	for(i in components){
@@ -1671,6 +1670,8 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_gene
 #' @param annotation a \code{data.frame} describing the samples, its row names should 
 #' match with column names of \code{exp} (Optional)
 #' @param components numeric vector of clusters to annotate
+#' @param organism the organism that the gene lists correspond to. The format should be 
+#' as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
 #' @param \dots GO annotation filtering parameters as defined in 
 #' \code{\link{gosummaries.default}} 
 #' @return  A gosummaries object.
@@ -1695,7 +1696,7 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_gene
 #' @S3method gosummaries kmeans
 #' 
 #' @export
-gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:length(x$size), show_genes = F, gconvert_target = "NAME", n_genes = 50, organism = "hsapiens", ...){
+gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:length(x$size), organism = "hsapiens", ...){
 	
 	gl = list()
 	for(i in components){
@@ -1779,7 +1780,7 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 #' @S3method gosummaries MArrayLM 
 #' 
 #' @export
-gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr", exp = NULL, annotation = NULL, components = 1:ncol(x), show_genes = F, gconvert_target = "NAME", n_genes = 30, organism = "hsapiens",  ...){
+gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr", exp = NULL, annotation = NULL, components = 1:ncol(x), show_genes = FALSE, gconvert_target = "NAME", n_genes = 30, organism = "hsapiens",  ...){
 	
 	# Calculate the gene list
 	gl = list()

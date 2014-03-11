@@ -2,12 +2,10 @@
 \alias{plotWordcloud}
 \title{Plot a wordcloud given words and frequencies}
 \usage{
-  plotWordcloud(words, freq, rot.per = 0.3,
-    max_min = c(1, 0.1), scale = 0.4, min.freq = 3,
-    max.words = Inf, random.order = FALSE,
-    colors = "black", random.colors = FALSE,
-    algorithm = "circle", tryfit = T, add = F, grob = F,
-    dimensions = unit(c(1, 1), "npc"))
+plotWordcloud(words, freq, rot.per = 0.3, max_min = c(1, 0.1),
+  scale = 0.4, min.freq = 3, max.words = Inf, random.order = FALSE,
+  colors = "black", random.colors = FALSE, algorithm = "circle",
+  tryfit = T, add = F, grob = F, dimensions = unit(c(1, 1), "npc"))
 }
 \arguments{
   \item{words}{vector of words to draw}
@@ -57,18 +55,18 @@
   the width and height of the word cloud respectively}
 }
 \description{
-  General \code{grid} based wordcloud drawing function
+General \code{grid} based wordcloud drawing function
 }
 \details{
-  Uses the algorithm from wordcloud package to calculate
-  the positions of the words. then uses grid graphics to
-  plot the words on screen. The shape of the wordcloud
-  depends on the shape of the plotting window
+Uses the algorithm from wordcloud package to calculate the
+positions of the words. then uses grid graphics to plot the
+words on screen. The shape of the wordcloud depends on the
+shape of the plotting window
 }
 \examples{
 plotWordcloud(c("Audi", "Volkswagen", "Opel", "Porsche", "Mercedez", "BMW"), 8:3)
 }
 \author{
-  Raivo Kolde <rkolde@gmail.com>
+Raivo Kolde <rkolde@gmail.com>
 }
 

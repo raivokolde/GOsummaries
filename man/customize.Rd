@@ -2,7 +2,7 @@
 \alias{customize}
 \title{Customization function for panel}
 \usage{
-  customize(p, par)
+customize(p, par)
 }
 \arguments{
   \item{p}{a ggplot2 plot object}
@@ -11,14 +11,14 @@
   \code{\link{panel_boxplot}}}
 }
 \value{
-  a ggplot2 plot object with added customizations
+a ggplot2 plot object with added customizations
 }
 \description{
-  This function is supposed to make small changes in the
-  panel function appearance like changing color scheme for
-  example. It has to match with the output of the
-  corresponding panel function. Check examples in
-  plot.gosummaries to see how to write one yourself.
+This function is supposed to make small changes in the
+panel function appearance like changing color scheme for
+example. It has to match with the output of the
+corresponding panel function. Check examples in
+plot.gosummaries to see how to write one yourself.
 }
 \examples{
 \dontrun{
@@ -33,6 +33,6 @@ plot(gs_limma_exp, classes = "Tissue", panel_plot = panel_boxplot, panel_customi
 }
 }
 \author{
-  Raivo Kolde <rkolde@gmail.com>
+Raivo Kolde <rkolde@gmail.com>
 }
 

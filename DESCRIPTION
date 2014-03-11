@@ -20,8 +20,3 @@ Imports:
     limma,
     gtable
 LinkingTo: Rcpp
-Collate:
-    'GOsummaries-package.r'
-    'GOsummaries.R'
-    'exampleDatasets.r'
-    'wordcloud.r'

@@ -5,13 +5,13 @@
 \alias{print.gosummaries}
 \title{Functions for working with gosummaries object}
 \usage{
-  is.gosummaries(x)
+is.gosummaries(x)
 
-  \method{print}{gosummaries} (x, ...)
+\method{print}{gosummaries}(x, ...)
 
-  [.gosummaries(x, i, ...)
+\method{[}{gosummaries}(x, i, ...)
 
-  add_to_slot.gosummaries(x, slot, values)
+add_to_slot.gosummaries(x, slot, values)
 }
 \arguments{
   \item{gosummaries}{a gosummaries object}
@@ -29,14 +29,14 @@
   corresponds to one component}
 }
 \description{
-  Functions for working with gosummaries object
+Functions for working with gosummaries object
 }
 \details{
-  Method [ ensures that subsetting gosummaries object will
-  not lose the attributes.
+Method [ ensures that subsetting gosummaries object will
+not lose the attributes.
 
-  \code{add_to_slot.gosummaries} allows to add values to
-  specific slots in the gosummaries object
+\code{add_to_slot.gosummaries} allows to add values to
+specific slots in the gosummaries object
 }
 \examples{
 data(gs_kmeans)
@@ -47,6 +47,6 @@ gs_kmeans_new = add_to_slot.gosummaries(gs_kmeans, "Title", as.list(paste("K-mea
 print(gs_kmeans_new)
 }
 \author{
-  Raivo Kolde <rkolde@gmail.com>
+Raivo Kolde <rkolde@gmail.com>
 }
 
