@@ -415,7 +415,7 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	}
 	
 	# Run g:Profiler analysis 
-	gProfileR::set_user_agent(sprintf("; GOsummaries/%s", packageVersion("GOsummaries")), append = T)
+	gProfileR::set_user_agent(sprintf("gProfileR/%s; GOsummaries/%s", packageVersion("gProfileR"), packageVersion("GOsummaries")), append = F)
 	gpr = gProfileR::gprofiler(query = gl, organism = organism, ordered_query = ordered_query, max_set_size = max_set_size, hier_filtering = hier_filtering, max_p_value = max_p_value, ...)
 	
 	# Clean and filter the results
