@@ -1,0 +1,16 @@
+\docType{data}
+\name{metagenomic_example}
+\alias{metagenomic_example}
+\title{\code{metagenomic_example} is a small sample of Human Microbiome Project 16S dataset for
+ finding biomarkers characterizing different level of oxygen availability in different
+ bodysites. This was downloaded from http://huttenhower.sph.harvard.edu/webfm_send/129.}
+\description{
+The dataset is a list with 2 slots \enumerate{ \item
+\code{otu} - otu table for this experiment; \item
+\code{annot} - annotation data frame. }
+}
+\author{
+Raivo Kolde <rkolde@gmail.com>
+}
+\keyword{data}
+

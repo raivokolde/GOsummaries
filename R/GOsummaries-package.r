@@ -33,8 +33,9 @@
 #' @import reshape2
 #' @import limma
 #' @import gtable
+#' @import Rcpp
 #' 
 #' @useDynLib GOsummaries 
 #' 
 #' @aliases GOsummaries
-NA
+NULL

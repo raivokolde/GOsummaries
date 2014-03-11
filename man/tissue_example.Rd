@@ -1,10 +1,11 @@
+\docType{data}
 \name{tissue_example}
 \alias{gs_kmeans}
 \alias{gs_limma}
 \alias{gs_limma_exp}
 \alias{gs_pca}
 \alias{tissue_example}
-\title{\code{tissue_example} is a dataset based on Lukk \emph{et al}, it contains a subset of 24 samples
+\title{\code{tissue_example} is a dataset extracted from Lukk \emph{et al}, it contains a subset of 24 samples
 from more than 5000 in the original article. The gene expression in all the samples is measured using
 Affymetrix U133A array.
 The dataset is a list with 2 slots
@@ -13,21 +14,19 @@ The dataset is a list with 2 slots
 	\item \code{annot} - annotation data frame.
 }}
 \description{
-  The GOsummaries objects based on this data created in
-  different examples are alaso attached to the package.
-  These can be used to test the package if no internet
-  connection is available. Names of these are
-  \code{gs_kmeans}, \code{gs_limma}, \code{gs_limma_exp}
-  and \code{gs_pca}
+The GOsummaries objects based on this data created in
+different examples are alaso attached to the package. These
+can be used to test the package if no internet connection
+is available. Names of these are \code{gs_kmeans},
+\code{gs_limma}, \code{gs_limma_exp} and \code{gs_pca}
 }
 \author{
-  Raivo Kolde <rkolde@gmail.com>
+Raivo Kolde <rkolde@gmail.com>
 }
 \references{
-  Lukk M, Kapushesky M, Nikkila J, Parkinson H, Goncalves
-  A, Huber W, Ukkonen E, Brazma A. "A global map of human
-  gene expression." Nat Biotechnology. 2010
-  Apr;28(4):322-4.
+Lukk M, Kapushesky M, Nikkila J, Parkinson H, Goncalves A,
+Huber W, Ukkonen E, Brazma A. "A global map of human gene
+expression." Nat Biotechnology. 2010 Apr;28(4):322-4.
 }
 \keyword{data}
 

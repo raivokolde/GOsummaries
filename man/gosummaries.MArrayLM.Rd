@@ -2,9 +2,10 @@
 \alias{gosummaries.MArrayLM}
 \title{Prepare gosummaries object based on limma results}
 \usage{
-  \method{gosummaries}{MArrayLM} (x, p.value = 0.05,
-    lfc = 1, adjust.method = "fdr", exp = NULL,
-    annotation = NULL, components = 1:ncol(x), ...)
+\method{gosummaries}{MArrayLM}(x, p.value = 0.05, lfc = 1,
+  adjust.method = "fdr", exp = NULL, annotation = NULL,
+  components = 1:ncol(x), show_genes = FALSE, gconvert_target = "NAME",
+  n_genes = 30, organism = "hsapiens", ...)
 }
 \arguments{
   \item{x}{an object of class \code{MArrayLM}}
@@ -28,26 +29,50 @@
   \item{components}{numeric vector of comparisons to
   annotate}
 
+  \item{show_genes}{logical showing if GO categories or
+  actual genes are shown in word clouds}
+
+  \item{gconvert_target}{specifies gene ID format for genes
+  showed in word cloud. The name of the format is passed to
+  \code{\link{gconvert}}, if NULL original IDs are shown.}
+
+  \item{n_genes}{maximum number of genes shown in a word
+  cloud}
+
+  \item{organism}{the organism that the gene lists
+  correspond to. The format should be as follows:
+  "hsapiens", "mmusculus", "scerevisiae", etc.}
+
   \item{\dots}{GO annotation filtering parameters as
   defined in \code{\link{gosummaries.default}}}
 }
 \value{
-  A gosummaries object.
+A gosummaries object.
 }
 \description{
-  The gosummaries object is created based on the
-  differentially expresed genes, each contrast defines one
-  component.
+The gosummaries object is created based on the
+differentially expresed genes, each contrast defines one
+component.
 }
 \details{
-  The usual differential expression analysis involves
-  making several comparisons between treatments ehere each
-  one yields an up and down regulated gene list. In a
-  GOsummaries figure each comparison is displayed as one
-  component with two wordclouds. If expression matrix is
-  attached then the panel shows the expression values for
-  each gene as boxplots, if not then number of genes is
-  displayed
+The usual differential expression analysis involves making
+several comparisons between treatments ehere each one
+yields an up and down regulated gene list. In a GOsummaries
+figure each comparison is displayed as one component with
+two wordclouds. If expression matrix is attached then the
+panel shows the expression values for each gene as
+boxplots, if not then number of genes is displayed
+
+It is possible to show the gene names instead of GO
+annotations in the wordclouds. The word sizes in wordclouds
+are defined by the limma p-values. As the gene identifiers
+in expression matrices are usually rather unintelligible
+then they are automatically converted into gene names using
+\code{\link{gconvert}} function. It is possible to show
+also the original identifiers by setting
+\code{gconvert_target} to NULL. This can be useful if the
+values do not correspond to genes, but for example
+metabolites.
 }
 \examples{
 \dontrun{
@@ -72,6 +97,6 @@ plot(gs_limma_exp, classes = "Tissue", fontsize = 8)
 }
 }
 \author{
-  Raivo Kolde <rkolde@gmail.com>
+Raivo Kolde <rkolde@gmail.com>
 }
 
