@@ -1704,7 +1704,7 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 	}
 	
 	cat("Annotating functionally\n")
-	gosummaries = gosummaries.default(gl, ...)
+	gosummaries = gosummaries.default(gl, ordered_query = F,  ...)
 	
 	cat("Adding expression values\n")
 	if(!is.null(exp)){
