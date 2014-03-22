@@ -1,3 +1,5 @@
+#' Example gene expression dataset 
+#' 
 #' \code{tissue_example} is a dataset extracted from Lukk \emph{et al}, it contains a subset of 24 samples 
 #' from more than 5000 in the original article. The gene expression in all the samples is measured using 
 #' Affymetrix U133A array. 
@@ -25,6 +27,8 @@
 NULL
 
 
+#' Example metabolomic dataset
+#' 
 #' \code{metabolomic_example} is a dataset extracted from York \emph{et al} (Metabolights ID:
 #'  MTBLS30), it contains a subset of 120 wild-type samples from 4 tissues: heart, skeletal
 #'  muscle, liver and brain.
@@ -47,6 +51,8 @@ NULL
 #' @keywords data
 NULL
 
+#' Example metagenomic dataset
+#' 
 #' \code{metagenomic_example} is a small sample of Human Microbiome Project 16S dataset for
 #'  finding biomarkers characterizing different level of oxygen availability in different
 #'  bodysites. This was downloaded from http://huttenhower.sph.harvard.edu/webfm_send/129. 
