@@ -673,12 +673,12 @@ calc_component_dimensions = function(component, par){
 	# Wordcloud height
 	nr = max(plyr::laply(component$WCD, nrow))
 	if(length(component$WCD) > 1){
-		wc_height = ifelse(nr > 3, max(nr / 5.5, 3), nr)
+		wc_height = ifelse(nr > 3, max(nr / 6.5, 3), nr)
 		# arrows_height = 1.5
 		arrows_height = 0.5
 	}
 	else{
-		wc_height = ifelse(nr > 3, max(nr / 8, 3), nr)
+		wc_height = ifelse(nr > 3, max(nr / 10, 3), nr)
 		arrows_height = 0.5
 	}
 	
