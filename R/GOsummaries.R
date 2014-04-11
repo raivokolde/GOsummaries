@@ -96,7 +96,7 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 			}
 			else{
 				comp$Gene_lists = list(gl1 = gl[[i]][[1]], gl2 = gl[[i]][[2]])
-				comp$Percentage = sprintf("G1: %d\nG2: %d", length(gl[[i]][[2]]), length(gl[[i]][[1]]))
+				comp$Percentage = sprintf("G1: %d\nG2: %d", length(gl[[i]][[1]]), length(gl[[i]][[2]]))
 			}
 		}
 		
