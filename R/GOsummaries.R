@@ -1638,7 +1638,6 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_gene
 		gosummaries = gosummaries_base(gl = gl, wc_data = wc_data, wc_algorithm = "top", score_type = "count", wordcloud_legend_title = "PCA weight")	
 	}
 	else{
-		cat("Annotating functionally\n")
 		gosummaries = gosummaries.default(gl, organism = organism,  ...)
 	}
 	
@@ -1703,10 +1702,8 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 		gl[[sprintf("Cluster %d", i)]] = names(x$cluster[x$cluster == i])
 	}
 	
-	cat("Annotating functionally\n")
 	gosummaries = gosummaries.default(gl, organism = organism, ordered_query = F,  ...)
 	
-	cat("Adding expression values\n")
 	if(!is.null(exp)){
 		gosummaries = add_expression.gosummaries(gosummaries, exp, annotation)
 	}
@@ -1843,13 +1840,11 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 		gosummaries = add_dummydata.gosummaries(gosummaries)
 	}
 	else{
-		cat("Annotating functionally\n")
 		gosummaries = gosummaries.default(gl, organism = organism, ...)
 	}
 	
 	# Add additional data
 	if(!is.null(exp)){
-		cat("Adding expression values\n")
 		gosummaries = add_expression.gosummaries(gosummaries, exp, annotation)
 	}
 	
