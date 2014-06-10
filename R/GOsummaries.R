@@ -259,7 +259,7 @@ gosummaries = function(x = NULL, ...){
 #' @param organism the organism that the gene lists correspond to. The format should be 
 #' as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
 #' @param go_branches GO tree branches and pathway databases as denoted in g:Profiler (Possible values: BP, CC, MF, ke, re) 
-#' @param max_p_value threshold for p-values that are corrected for multiple testing
+#' @param max_p_value threshold for p-values that have been corrected for multiple testing
 #' @param min_set_size minimal size of functional category to be considered
 #' @param max_set_size maximal size of functional category to be considered
 #' @param max_signif maximal number of categories returned per query
