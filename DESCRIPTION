@@ -1,5 +1,5 @@
 Package: GOsummaries
-Version: 1.1
+Version: 0.99.0
 Date: 2014-06-11
 License: GPL (>= 2)
 Description: A package to visualise Gene Ontology (GO) enrichment analysis
