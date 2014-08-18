@@ -7,8 +7,8 @@ Description: A package to visualise Gene Ontology (GO) enrichment analysis
     PCA. The significant GO categories are visualised as word clouds that can
     be combined with different plots summarising the underlying data.
 Title: Word cloud summaries of GO enrichment analysis
-Author: Raivo Kolde <rkolde@gmail.com>
-Maintainer: Raivo Kolde <rkolde@gmail.com>
+Author: Raivo Kolde <raivo.kolde@eesti.ee>
+Maintainer: Raivo Kolde <raivo.kolde@eesti.ee>
 Depends:
     R (>= 2.15),
     ggplot2,
@@ -21,3 +21,7 @@ Imports:
     limma,
     gtable
 LinkingTo: Rcpp
+biocViews: GeneExpression,
+    Clustering,
+    GO,
+    Visualization

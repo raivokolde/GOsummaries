@@ -13,7 +13,10 @@ dummyData = function(gl, max){
 is.dummyData = function(x) inherits(x, "dummyData")
 
 add_dummydata.gosummaries = function(gosummaries){
-	max = max(unlist(lapply(gosummaries, function(x) lapply(x$Gene_lists, length))))
+	max = max(unlist(lapply(gosummaries, function(x){
+		lapply(x$Gene_lists, length)
+	})))
+	
 	for(i in seq_along(gosummaries)){
 		gosummaries[[i]]$Data = dummyData(gosummaries[[i]]$Gene_lists, max)
 	}
@@ -84,7 +87,10 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 		comp = list(
 			Title = names[i],
 			Gene_lists = NULL,
-			WCD = switch(k, list(wcd1 = wc_data[[i]]), list(wcd1 = wc_data[[i]][[1]], wcd2 = wc_data[[i]][[2]])),
+			WCD = switch(k, 
+				list(wcd1 = wc_data[[i]]), 
+				list(wcd1 = wc_data[[i]][[1]], wcd2 = wc_data[[i]][[2]])
+			),
 			Data = NULL,
 			Percentage = " "
 		)
@@ -96,7 +102,8 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 			}
 			else{
 				comp$Gene_lists = list(gl1 = gl[[i]][[1]], gl2 = gl[[i]][[2]])
-				comp$Percentage = sprintf("G1: %d\nG2: %d", length(gl[[i]][[1]]), length(gl[[i]][[2]]))
+				comp$Percentage = sprintf("G1: %d\nG2: %d", length(gl[[i]][[1]]), 
+											length(gl[[i]][[2]]))
 			}
 		}
 		
@@ -113,7 +120,12 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 		}
 	}
 	
-	res = structure(res, class = "gosummaries", score_type = score_type, wordcloud_legend_title = wordcloud_legend_title, wc_algorithm = wc_algorithm)
+	res = structure(res, 
+		class = "gosummaries", 
+		score_type = score_type, 
+		wordcloud_legend_title = wordcloud_legend_title, 
+		wc_algorithm = wc_algorithm
+	)
 	
 	return(res)
 }
@@ -129,87 +141,99 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
  
 #' Constructor for gosummaries object
 #' 
-#' Constructor for gosummaries object that contains all the necessary information to d
-#' raw the figure, like gene lists and their annotations, expression data and all the 
-#' relevant texts.
+#' Constructor for gosummaries object that contains all the necessary 
+#' information to draw the figure, like gene lists and their annotations, 
+#' expression data and all the relevant texts.
 #' 
-#' The object is a list of "components", with each component defined by a gene list or a 
+#' The object is a list of "components", with each component defined by a gene 
+#' list or a 
 #' pair of gene lists. Each "component" has the slots as follows:
 #' \itemize{
-#'   \item \bold{Title}: title string of the component. (Default: the names of the gene 
-#' lists)
+#'   \item \bold{Title}: title string of the component. (Default: the names of 
+#' the gene lists)
 #'   \item \bold{Gene_lists}: list of one or two gene lists
-#'   \item \bold{WCD}: g:Profiler results based on the Gene_lists slot or user entered table. 
-#'   \item \bold{Data}: the related data (expression values, PCA rotation, ...) that is 
-#' used to draw the "panel" i.e. theplot above the wordclouds. In principle there is no 
-#' limitation what  kind of data is there as far as the function that is provided to 
-#' draw that in \code{\link{plot.gosummaries}} can use it.
-#'   \item \bold{Percentage}: a text that is drawn on the right top corner of every 
-#' component. In case of PCA this is the percentage of variation the component explains, 
-#' by default it just depicts the number of genes in the Gene_lists slot.
+#'   \item \bold{WCD}: g:Profiler results based on the Gene_lists slot or user 
+#' entered table. 
+#'   \item \bold{Data}: the related data (expression values, PCA rotation, ...) 
+#' that is used to draw the "panel" i.e. theplot above the wordclouds. In 
+#' principle there is no limitation what  kind of data is there as far as the 
+#' function that is provided to draw that in \code{\link{plot.gosummaries}} can 
+#' use it.
+#'   \item \bold{Percentage}: a text that is drawn on the right top corner of 
+#' every component. In case of PCA this is the percentage of variation the 
+#' component explains, by default it just depicts the number of genes in the 
+#' Gene_lists slot.
 #' }
 #' 
-#' Some visual parameters are stored in the attributes of \code{gosummaries} object: 
+#' Some visual parameters are stored in the attributes of \code{gosummaries} 
+#' object: 
 #' \code{score_type} tells how to handle the scores associated to wordclouds, 
 #' \code{wc_algorithm} specifies the wordcloud layout algorithm and 
-#' \code{wordcloud_legend_title} specifies the title of the wordcloud. One can change 
-#' them using the \code{attr} function.
+#' \code{wordcloud_legend_title} specifies the title of the wordcloud. One can 
+#' change them using the \code{attr} function.
 #' 
-#' The word clouds are specified as \code{data.frame}s with two columns: "Term" and "Score". If 
-#' one wants to use custom data for wordclouds, instead of the default GO enrichment results, 
-#' then this is possible to specify parameter \code{wc_data}. The input structure is 
-#' similar to the gene list input, only instead of gene lists one has the two column 
+#' The word clouds are specified as \code{data.frame}s with two columns: "Term" 
+#' and "Score". If one wants to use custom data for wordclouds, instead of the 
+#' default GO enrichment results, then this is possible to specify parameter 
+#' \code{wc_data}. The input structure is similar to the gene list input, only 
+#' instead of gene lists one has the two column 
 #' \code{data.frame}s.
 #' 
-#' The GO enrichment analysis is performed using g:Profiler web toolkit and its 
-#' associated R package \code{gProfileR}. This means the computer has to have internet 
-#' access to annotate the gene lists. Since g:Profiler can accept a wide range of gene 
-#' IDs then user usually does not have to worry about converitng the gene IDs into right 
-#' format. To be absolutely sure the tool recognizes the gene IDs one can check if they 
-#' will give any results in \url{http://biit.cs.ut.ee/gprofiler/gconvert.cgi}. 
+#' The GO enrichment analysis is performed using g:Profiler web toolkit and its
+#' associated R package \code{gProfileR}. This means the computer has to have 
+#' internet access to annotate the gene lists. Since g:Profiler can accept a 
+#' wide range of gene IDs then user usually does not have to worry about 
+#' converitng the gene IDs into right format. To be absolutely sure the tool 
+#' recognizes the gene IDs one can check if they will give any results in 
+#' \url{http://biit.cs.ut.ee/gprofiler/gconvert.cgi}. 
 #' 
-#' There can be a lot of results for a typical GO enrichment analysis but usually these 
-#' tend to be pretty redundant. Since one can fit only a small number of categories into 
-#' a word cloud we have to bring down the number of categories to show an reduce the 
-#' redundancy. For this we use hierarchical filtering option \"moderate\" in g:Profiler. In g:Profiler 
-#' the categories are grouped together when they share one or more enriched parents. The \"moderate\" 
-#' option selects the most significant category from each of such groups. (See more at 
-#' http://biit.cs.ut.ee/gprofiler/)   
+#' There can be a lot of results for a typical GO enrichment analysis but 
+#' usually these tend to be pretty redundant. Since one can fit only a small 
+#' number of categories into a word cloud we have to bring down the number of 
+#' categories to show an reduce the redundancy. For this we use hierarchical 
+#' filtering option \"moderate\" in g:Profiler. In g:Profiler the categories 
+#' are grouped together when they share one or more enriched parents. The 
+#' \"moderate\" option selects the most significant category from each of such 
+#' groups. (See more at http://biit.cs.ut.ee/gprofiler/)   
 #' 
-#' The slots of the object can be filled with custom information using a function 
-#' \code{\link{add_to_slot.gosummaries}}. 
+#' The slots of the object can be filled with custom information using a 
+#' function \code{\link{add_to_slot.gosummaries}}. 
 #' 
-#' By default the Data slot is filled with a dataset that contains the number of genes 
-#' in the Gene_lists slot. Expression data can be added to the object for example by 
-#' using function \code{\link{add_expression.gosummaries}}. It is possible to derive 
-#' your own format for the Data slot as well, as long as a panel plotting function for 
-#' this data is alaso provided (See \code{\link{panel_boxplot}} for further 
-#' information).
+#' By default the Data slot is filled with a dataset that contains the number 
+#' of genes in the Gene_lists slot. Expression data can be added to the object 
+#' for example by using function \code{\link{add_expression.gosummaries}}. It 
+#' is possible to derive your own format for the Data slot as well, as long as 
+#' a panel plotting function for this data is alaso provided (See 
+#' \code{\link{panel_boxplot}} for further information).
 #' 
-#' There are several constructors of gosummaries object that work on common analysis 
-#' result objects, such as \code{\link{gosummaries.kmeans}}, 
-#' \code{\link{gosummaries.MArrayLM}} and \code{\link{gosummaries.prcomp}} corresponding 
-#' to k-means, limma and PCA results. 
+#' There are several constructors of gosummaries object that work on common 
+#' analysis result objects, such as \code{\link{gosummaries.kmeans}}, 
+#' \code{\link{gosummaries.MArrayLM}} and \code{\link{gosummaries.prcomp}} 
+#' corresponding to k-means, limma and PCA results. 
 #'
-#' @param x list of arrays of gene names (or list of lists of arrays of gene names)
+#' @param x list of arrays of gene names (or list of lists of arrays of gene 
+#' names)
 #' @param \dots additional parameters for gprofiler function 
 #' @return   A gosummaries type of object
 #' 
 #' @seealso \code{\link{gosummaries.kmeans}}, 
 #' \code{\link{gosummaries.MArrayLM}}, \code{\link{gosummaries.prcomp}}
 #' 
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #' \dontrun{
 #' # Define gene lists 
-#' genes1 = c("203485_at", "209469_at", "209470_s_at", "203999_at", "205358_at", "203130_s_at", 
-#' "210222_s_at", "202508_s_at", "203001_s_at", "207957_s_at", "203540_at", "203000_at", "219619_at",
-#' "221805_at", "214046_at", "213135_at", "203889_at", "209990_s_at", "210016_at", "202507_s_at", 
-#' "209839_at", "204953_at", "209167_at", "209685_s_at",  "211276_at", "202391_at", "205591_at", 
+#' genes1 = c("203485_at", "209469_at", "209470_s_at", "203999_at", 
+#' "205358_at", "203130_s_at", "210222_s_at", "202508_s_at", "203001_s_at", 
+#' "207957_s_at", "203540_at", "203000_at", "219619_at", "221805_at", 
+#' "214046_at", "213135_at", "203889_at", "209990_s_at", "210016_at", 
+#' "202507_s_at", "209839_at", "204953_at", "209167_at", "209685_s_at",  
+#' "211276_at", "202391_at", "205591_at", 
 #' "201313_at")
-#' genes2 = c("201890_at", "202503_s_at", "204170_s_at", "201291_s_at", "202589_at", "218499_at", 
-#' "209773_s_at", "204026_s_at", "216237_s_at", "202546_at", "218883_s_at", "204285_s_at", 
-#' "208659_at", "201292_at", "201664_at")
+#' genes2 = c("201890_at", "202503_s_at", "204170_s_at", "201291_s_at", 
+#' "202589_at", "218499_at", "209773_s_at", "204026_s_at", "216237_s_at", 
+#' "202546_at", "218883_s_at", "204285_s_at", "208659_at", "201292_at", 
+#' "201664_at")
 #' 
 #' 
 #' gl1 = list(List1 = genes1,  List2 = genes2) # One list per component
@@ -228,16 +252,20 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 #' # Adding expression data
 #' data(tissue_example)
 #' 
-#' gs1 = add_expression.gosummaries(gs1, exp = tissue_example$exp, annotation = tissue_example$annot)
-#' gs2 = add_expression.gosummaries(gs2, exp = tissue_example$exp, annotation = tissue_example$annot)
+#' gs1 = add_expression.gosummaries(gs1, exp = tissue_example$exp, annotation = 
+#' tissue_example$annot)
+#' gs2 = add_expression.gosummaries(gs2, exp = tissue_example$exp, annotation = 
+#' tissue_example$annot)
 #'
 #' plot(gs1, panel_par = list(classes = "Tissue"), fontsize = 8)
 #' plot(gs2, panel_par = list(classes = "Tissue"), fontsize = 8)
 #' }
 #' 
 #' # Using custom annotations for word clouds
-#' wcd1 = data.frame(Term = c("KLF1", "KLF2", "POU5F1"), Score = c(0.05, 0.001, 0.0001))
-#' wcd2 = data.frame(Term = c("CD8", "CD248", "CCL5"), Score = c(0.02, 0.005, 0.00001))
+#' wcd1 = data.frame(Term = c("KLF1", "KLF2", "POU5F1"), Score = c(0.05, 0.001, 
+#' 0.0001))
+#' wcd2 = data.frame(Term = c("CD8", "CD248", "CCL5"), Score = c(0.02, 0.005, 
+#' 0.00001))
 #' 
 #' gs = gosummaries(wc_data = list(Results1 = wcd1, Results2 = wcd2))
 #' plot(gs)
@@ -246,7 +274,8 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 #' plot(gs)
 #' 
 #' # Adjust wordcloud legend title
-#' gs = gosummaries(wc_data = list(Results = list(wcd1, wcd2)), wordcloud_legend_title = "Significance score")
+#' gs = gosummaries(wc_data = list(Results = list(wcd1, wcd2)), 
+#' wordcloud_legend_title = "Significance score")
 #' plot(gs)
 #' 
 #' @rdname gosummaries
@@ -256,34 +285,42 @@ gosummaries = function(x = NULL, ...){
 } 
 
 #' @param wc_data precalculated GO enrichment results (see Details)
-#' @param organism the organism that the gene lists correspond to. The format should be 
-#' as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
-#' @param go_branches GO tree branches and pathway databases as denoted in g:Profiler (Possible values: BP, CC, MF, ke, re) 
-#' @param max_p_value threshold for p-values that have been corrected for multiple testing
+#' @param organism the organism that the gene lists correspond to. The format 
+#' should be as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
+#' @param go_branches GO tree branches and pathway databases as denoted in 
+#' g:Profiler (Possible values: BP, CC, MF, ke, re) 
+#' @param max_p_value threshold for p-values that have been corrected for 
+#' multiple testing
 #' @param min_set_size minimal size of functional category to be considered
 #' @param max_set_size maximal size of functional category to be considered
 #' @param max_signif maximal number of categories returned per query
-#' @param ordered_query logical showing if the lists are ordered or not (it determines if the ordered 
-#' query algorithm is used in g:Profiler)
-#' @param hier_filtering a type of hierarchical filtering used when reducing the number of g:Profiler 
-#' results (see \code{\link{gprofiler}} for further information) 
-#' @param score_type indicates the type of scores in \code{wc_data}. Possible values: "p-value"
-#'  and "count"
-#' @param wc_algorithm the type of wordcloud algorithm used. Possible values are "top" that 
-#' puts first word to the top corner and "middle" that puts first word to the middle. 
-#' @param wordcloud_legend_title title of the word cloud legend, should reflect the nature of 
-#' the score
+#' @param ordered_query logical showing if the lists are ordered or not (it 
+#' determines if the ordered query algorithm is used in g:Profiler)
+#' @param hier_filtering a type of hierarchical filtering used when reducing 
+#' the number of g:Profiler results (see \code{\link{gprofiler}} for further 
+#' information) 
+#' @param score_type indicates the type of scores in \code{wc_data}. Possible 
+#' values: "p-value" and "count"
+#' @param wc_algorithm the type of wordcloud algorithm used. Possible values 
+#' are "top" that puts first word to the top corner and "middle" that puts 
+#' first word to the middle. 
+#' @param wordcloud_legend_title title of the word cloud legend, should reflect 
+#' the nature of the score
 #' 
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' 
 #' @rdname gosummaries
 #' @method gosummaries default
-#' @S3method gosummaries default
 #' @export
 gosummaries.default = function(x = NULL, wc_data = NULL, organism = "hsapiens", go_branches = c("BP", "ke", "re"), max_p_value = 1e-2, min_set_size = 50, max_set_size = 1000, max_signif = 40, ordered_query = TRUE, hier_filtering = "moderate", score_type = "p-value", wc_algorithm = "middle", wordcloud_legend_title = NULL, ...){
 	
 	# Create basic structure
-	res = gosummaries_base(gl = x, wc_data = wc_data, score_type = score_type, wc_algorithm = wc_algorithm, wordcloud_legend_title = wordcloud_legend_title)
+	res = gosummaries_base(gl = x, 
+		wc_data = wc_data, 
+		score_type = score_type, 
+		wc_algorithm = wc_algorithm, 
+		wordcloud_legend_title = wordcloud_legend_title
+	)
 	
 	# Add data and annotations
 	if(!is.null(x)){
@@ -308,7 +345,6 @@ is.gosummaries = function(x) inherits(x, "gosummaries")
 #' 
 #' @rdname add_to_slot.gosummaries
 #' @method print gosummaries
-#' @S3method print gosummaries
 #' @export
 print.gosummaries = function(x, ...){
 	for(a in x){
@@ -338,7 +374,7 @@ print.gosummaries = function(x, ...){
 #' @param i index
 #' 
 #' @rdname add_to_slot.gosummaries
-#' @S3method [ gosummaries
+#' @method [ gosummaries
 #' @export
 "[.gosummaries" = function(x, i, ...) {
     attrs = attributes(x)
@@ -354,28 +390,33 @@ print.gosummaries = function(x, ...){
 #' 
 #' Functions for working with gosummaries object 
 #' 
-#' Method [ ensures that subsetting gosummaries object will not lose the attributes.
+#' Method [ ensures that subsetting gosummaries object will not lose the 
+#' attributes.
 #' 
 #' \code{add_to_slot.gosummaries} allows to add values to specific slots in the 
 #' gosummaries object
 #'
 #' @param x a gosummaries object
-#' @param slot the component slot name to be filled (e.g Title, Percentage, etc.)
+#' @param slot the component slot name to be filled (e.g Title, Percentage, 
+#' etc.)
 #' @param values list of values where each element corresponds to one component
 #' 
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #' data(gs_kmeans)
 #' 
 #' # Add new title to the components
-#' gs_kmeans_new = add_to_slot.gosummaries(gs_kmeans, "Title", as.list(paste("K-means cluster", 1:length(gs_kmeans))))
+#' gs_kmeans_new = add_to_slot.gosummaries(gs_kmeans, "Title", 
+#' as.list(paste("K-means cluster", 1:length(gs_kmeans))))
 #' 
 #' print(gs_kmeans_new)
 #' 
 #' @rdname add_to_slot.gosummaries
 #' @export
 add_to_slot.gosummaries = function(x, slot, values){
-	if(length(x) != length(values)) stop("Length of gosummaries object and values does not match")
+	if(length(x) != length(values)){
+		stop("Length of gosummaries object and values does not match")
+	} 
 	
 	for(i in seq_along(x)){
 		x[[i]][[slot]] = values[[i]]
@@ -400,7 +441,9 @@ filter_gprofiler = function(gpr, go_branches, min_set_size, max_signif){
 
 annotate.gosummaries = function(gosummaries, organism, components = 1:length(gosummaries), go_branches, min_set_size, max_p_value, max_set_size, max_signif, ordered_query, hier_filtering, ...){
 	
-	if(!is.gosummaries(gosummaries)) stop("Function requires a gosummaries type of  object")
+	if(!is.gosummaries(gosummaries)){
+		stop("Function requires a gosummaries type of  object")
+	} 
 	
 	#Compile gene lists 
 	gl = NULL
@@ -415,17 +458,25 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	}
 	
 	# Run g:Profiler analysis 
-	gProfileR::set_user_agent(sprintf("gProfileR/%s; GOsummaries/%s", packageVersion("gProfileR"), packageVersion("GOsummaries")), append = F)
-	gpr = gProfileR::gprofiler(query = gl, organism = organism, ordered_query = ordered_query, max_set_size = max_set_size, hier_filtering = hier_filtering, max_p_value = max_p_value, ...)
+	user_agent = sprintf("gProfileR/%s; GOsummaries/%s", 
+							packageVersion("gProfileR"), 
+							packageVersion("GOsummaries"))
+	gProfileR::set_user_agent(ua = user_agent, append = F)
+	
+	gpr = gProfileR::gprofiler(query = gl, organism = organism, 
+							   ordered_query = ordered_query, 
+							   max_set_size = max_set_size, 
+							   hier_filtering = hier_filtering, 
+							   max_p_value = max_p_value, ...)
 	
 	# Clean and filter the results
 	gpr$query.number = as.numeric(as.character(gpr$query.number))
-	gpr = filter_gprofiler(gpr, go_branches = go_branches, min_set_size = min_set_size, max_signif = max_signif)
+	gpr = filter_gprofiler(gpr, go_branches = go_branches, 
+						   min_set_size = min_set_size, max_signif = max_signif)
 	gpr = gpr[, c("query.number", "p.value", "term.name")]
 	colnames(gpr) = c("query.number", "Score", "Term")
-
-	k = 1
 	
+	k = 1
 	
 	for(i in seq_along(components)){
 		for(j in seq_along(gosummaries[[i]]$WCD)){
@@ -446,35 +497,40 @@ padz = function(x, n=max(nchar(x))) gsub(" ", "0", formatC(x, width=n))
  
 #' Add expression data to gosummaries object
 #' 
-#' Function to add expression data and its annotations to a gosummaries object.  
+#' Function to add expression data and its annotations to a gosummaries object. 
 #' 
-#' The data is added to the object in a "long" format so it would be directly usable by 
-#' the ggplot2 based panel drawing functions \code{\link{panel_boxplot}} etc. For each 
-#' component it produces a data frame with columns:
+#' The data is added to the object in a "long" format so it would be directly 
+#' usable by the ggplot2 based panel drawing functions 
+#' \code{\link{panel_boxplot}} etc. For each component it produces a data frame 
+#' with columns:
 #' \itemize{
-#'   \item \bold{x} : sample IDs for the x axis, their factor order is the same as on the columns of input matrix 
+#'   \item \bold{x} : sample IDs for the x axis, their factor order is the same 
+#' as on the columns of input matrix 
 #'   \item \bold{y} : expression values from the matrix
-#'   \item  . . . : sample annotation columns from the annotation table that can be displayed on figure as colors.
+#'   \item  . . . : sample annotation columns from the annotation table that 
+#' can be displayed on figure as colors.
 #' } 
 #'
 #' @param gosummaries a gosummaries object
-#' @param exp an expression matrix, with row names corresponding to the names in the 
-#' Gene_lists slot
-#' @param annotation a \code{data.frame} describing the samples, its row names should match 
-#' with column names of \code{exp}
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @param exp an expression matrix, with row names corresponding to the names 
+#' in the Gene_lists slot
+#' @param annotation a \code{data.frame} describing the samples, its row names 
+#' should match with column names of \code{exp}
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #' \dontrun{
 #' data(gs_limma)
 #' data(tissue_example)
 #' 
 #' # Add just expression without annotations
-#' gs_limma_exp1 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp)
+#' gs_limma_exp1 = add_expression.gosummaries(gs_limma, exp = 
+#' tissue_example$exp)
 #' 
 #' print(gs_limma_exp1)
 #' 
 #' # Add expression with annotations
-#' gs_limma_exp2 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp, annotation = tissue_example$annot)
+#' gs_limma_exp2 = add_expression.gosummaries(gs_limma, exp = 
+#' tissue_example$exp, annotation = tissue_example$annot)
 #' 
 #' print(gs_limma_exp1)
 #' }
@@ -561,7 +617,10 @@ add_pca.gosummaries = function(gosummaries, pcr, annotation){
 shorten_strings = function(strings, max){
 	strings = as.character(strings)
 	n = nchar(strings)
-	strings[n > max] = paste(substr(strings[n > max], 1, max - 3), "...", sep = "")
+	
+	ind = n > max
+	strings[ind] = paste(substr(strings[ind], 1, max - 3), "...", sep = "")
+	
 	return(strings)
 }
 
@@ -590,7 +649,15 @@ adjust_wordcloud_appearance = function(gosummaries, term_length = 35, wordcloud_
 	gosummaries = convert_scores(gosummaries)
 	
 	# Find best score
-	scores = plyr::ldply(gosummaries, function(x){plyr::ldply(x$WCD, function(y) data.frame(y$Score))})[,2]
+	scores = plyr::llply(gosummaries, function(x){
+		comp_scores = plyr::llply(x$WCD, function(y){
+			y$Score
+		})
+		
+		unlist(comp_scores)
+	})
+	
+	scores = unlist(scores)
 	
 	if(length(scores) == 0){
 		return(gosummaries)
@@ -602,10 +669,15 @@ adjust_wordcloud_appearance = function(gosummaries, term_length = 35, wordcloud_
 	for(i in seq_along(gosummaries)){
 		for(j in seq_along(gosummaries[[i]]$WCD)){
 			# Shorten GO names
-			gosummaries[[i]]$WCD[[j]]$Term = shorten_strings(gosummaries[[i]]$WCD[[j]]$Term, term_length)
+			original_terms = gosummaries[[i]]$WCD[[j]]$Term
+			shortened_terms = shorten_strings(original_terms, term_length)
+			gosummaries[[i]]$WCD[[j]]$Term = shortened_terms
 			
 			# Calculate colors
-			gosummaries[[i]]$WCD[[j]]$Colors = colorRampPalette(wordcloud_colors)(100)[ceiling(gosummaries[[i]]$WCD[[j]]$Score / best_score * 100)]
+			comp_scores = gosummaries[[i]]$WCD[[j]]$Score
+			palette = colorRampPalette(wordcloud_colors)(100)
+			palette_ind = ceiling(comp_scores / best_score * 100)
+			gosummaries[[i]]$WCD[[j]]$Colors = palette[palette_ind]
 		}
 	}
 	
@@ -638,7 +710,8 @@ open_file_con = function(filename, width, height){
 		png = function(x, ...) png(x, units = "in", res = 300, ...),
 		jpeg = function(x, ...) jpeg(x, units = "in", res = 300, ...),
 		jpg = function(x, ...) jpeg(x, units = "in", res = 300, ...),
-		tiff = function(x, ...) tiff(x, units = "in", res = 300, compression = "lzw", ...),
+		tiff = function(x, ...) tiff(x, units = "in", res = 300, 
+										compression = "lzw", ...),
 		bmp = function(x, ...) bmp(x, units = "in", res = 300, ...),
 		stop("File type should be: pdf, png, bmp, jpg, tiff")
 	)
@@ -648,16 +721,25 @@ open_file_con = function(filename, width, height){
 
 panelize_ggplot2 = function(plot_function, customize_function, par){
 	res = function(data, fontsize, legend = F){
-		p = ggplot2::ggplot_gtable(ggplot2::ggplot_build(customize_function(plot_function(data, fontsize, par), par)))
+		p = plot_function(data, fontsize, par)
+		p = customize_function(p, par)
+		p = ggplot2::ggplot_build(p)
+		p = ggplot2::ggplot_gtable(p) 
 		
 		if(legend){
 			if(any(grepl("guide-box", p$layout$name))){
-				nc = ncol(gtable::gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]])
-				nr = nrow(gtable::gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]])
-				return(gtable::gtable_filter(p, "guide-box")$grob[[1]]$grob[[1]][2:(nr - 1), 2:(nc - 1)])
+				gb = gtable::gtable_filter(p, "guide-box")
+				gb_grob = gb$grob[[1]]$grob[[1]]
+				nc = ncol(gb_grob)
+				nr = nrow(gb_grob)
+				res = gb_grob[2:(nr - 1), 2:(nc - 1)]
+				return(res)
 			}
-			else
-				return(gtable::gtable(widths = unit(0, "cm"), heights = unit(0, "cm")))
+			else{
+				res = gtable::gtable(widths = unit(0, "cm"), 
+									 heights = unit(0, "cm"))
+				return(res)
+			}
 		}
 		else{
 			return(gtable::gtable_filter(p, "panel"))
@@ -682,6 +764,13 @@ calc_component_dimensions = function(component, par){
 		arrows_height = 0.5
 	}
 	
+	# Percentage slot width
+	gp = gpar(fontsize = par$fontsize, cex = 0.8)
+	percentage_rows = strsplit(component$Percentage, "\n")[[1]]
+	percentage_grobs = lapply(as.list(percentage_rows), textGrob, gp = gp)
+	percentage_widths = lapply(percentage_grobs, grobWidth)
+	percentage_widths_units = do.call(unit.c, percentage_widths)
+	
 	# Compile results
 	lines_in_points = par$fontsize * 1.445
 	res = list(
@@ -691,8 +780,9 @@ calc_component_dimensions = function(component, par){
 		wc_height = unit(wc_height * lines_in_points, "points"),
 	
 		panel_width = unit(par$panel_width * lines_in_points, "points"),
-		percentage_width = max(do.call(unit.c, lapply(lapply(as.list(strsplit(component$Percentage, "\n")[[1]]), textGrob, gp = gpar(fontsize = par$fontsize, cex = 0.8)), grobWidth))) * 1.25,
-		wc_width = unit(par$panel_width * lines_in_points / length(component$WCD), "points")
+		percentage_width = max(percentage_widths_units) * 1.25,
+		wc_width = unit(par$panel_width * lines_in_points / 
+						length(component$WCD), "points")
 	)
 	
 	return(res)
@@ -711,18 +801,26 @@ calc_components_dimensions = function(gosummaries, par){
 gen_legend = function(legend_data, par){
 	n = length(legend_data$colors)
 	# Create Grobs
-	title = textGrob(legend_data$title, y = 1, x = 0, just = c(0, 1), gp = gpar(fontsize = par$fontsize, fontface = "bold", cex = 0.8))
+	title = textGrob(legend_data$title, y = 1, x = 0, just = c(0, 1),
+		 			gp = gpar(fontsize = par$fontsize, fontface = "bold",
+					cex = 0.8))
 	
 	# rect_height = unit(1.7 * par$fontsize, "points")
 	rect_height = unit(6.096, "mm")
-	yy = unit(1, "npc") - unit(0.8 * par$fontsize * 1.1, "points") - (0:(n - 1)) * rect_height
-	boxes = rectGrob(x = 0, y = yy, height = rect_height, width = rect_height, just = c(0, 1), gp = gpar(col = 0, fill = legend_data$colors))
+	yy = unit(1, "npc") - unit(0.8 * par$fontsize * 1.1, "points") - 
+		 (0:(n - 1)) * rect_height
+	boxes = rectGrob(x = 0, y = yy, height = rect_height, width = rect_height,
+			 		 just = c(0, 1), 
+					 gp = gpar(col = 0, fill = legend_data$colors))
 	
 	yyy = yy - rect_height * 0.5
 	gl = gList()
 	length = c(rep(0, n), convertWidth(grobWidth(title), "in"))
 	for(i in 1:n){
-		gl[[i]] = textGrob(legend_data$labels[[i]], x = rect_height + unit(3, "points"), y = yyy[i], hjust = 0, gp = gpar(cex = 0.8, fontsize = par$fontsize))
+		gl[[i]] = textGrob(legend_data$labels[[i]], 
+						   x = rect_height + unit(3, "points"), y = yyy[i], 
+						   hjust = 0, 
+						   gp = gpar(cex = 0.8, fontsize = par$fontsize))
 		length[i] = convertWidth(grobWidth(gl[[i]]), "in")
 	}
 	
@@ -732,7 +830,8 @@ gen_legend = function(legend_data, par){
 	 
 	# Put together a frame
 	fg = frameGrob()
-	fg = packGrob(fg, rectGrob(width = width, height = height, gp = gpar(col = NA)))
+	fg = packGrob(fg, rectGrob(width = width, height = height, 
+				  gp = gpar(col = NA)))
 	fg = packGrob(fg, title)
 	fg = packGrob(fg, boxes)
 	for(i in 1:length(gl)){
@@ -749,27 +848,37 @@ gen_wordcloud_legend = function(gosummaries, par){
 	legend_data$colors = colorRampPalette(rev(par$wordcloud_colors))(3)
 	
 	# Calculate p-value breakpoints
-	scores = plyr::ldply(gosummaries, function(x){plyr::ldply(x$WCD, function(y) data.frame(y$Score))})[,2]
+	scores = plyr::ldply(gosummaries, function(x){
+		plyr::ldply(x$WCD, function(y) data.frame(y$Score))
+	})[,2]
 	
 	if(length(scores) == 0){
-		return(rectGrob(width = unit(0.0001, "cm"), height = unit(0.0001, "cm")))
+		empty_grob = rectGrob(width = unit(0.0001, "cm"), 
+							  height = unit(0.0001, "cm"))
+		return(empty_grob)
 	}
 	
 	best_score = max(scores)	
 	
 	breaks = grid.pretty(c(0, best_score))
 	if(length(breaks) %% 2 == 0){
-		kesk = mean(c(breaks[length(breaks) / 2], breaks[length(breaks) / 2 + 1]))
+		average_low = breaks[length(breaks) / 2]
+		average_high = breaks[length(breaks) / 2 + 1]
+		average = mean(c(average_low, average_high))
 	}
 	else{
-		kesk = breaks[ceiling(length(breaks) / 2)]
+		average = breaks[ceiling(length(breaks) / 2)]
 	}
 	
 	if(attr(gosummaries, "score_type") == "p-value"){
-		legend_data$labels = c(substitute(10 ^ -p, list(p = breaks[length(breaks)])), substitute(10 ^ -p, list(p = kesk)), 1)
+		legend_data$labels = c(
+			substitute(10 ^ -p, list(p = breaks[length(breaks)])), 
+			substitute(10 ^ -p, list(p = average)), 
+			1
+		)
 	}
 	if(attr(gosummaries, "score_type") == "count"){
-		legend_data$labels = c(breaks[length(breaks)], kesk, 0)
+		legend_data$labels = c(breaks[length(breaks)], average, 0)
 	}
 	
 	
@@ -778,21 +887,27 @@ gen_wordcloud_legend = function(gosummaries, par){
 
 plot_wordcloud = function(words, freq, color, algorithm, dimensions){
 	if(length(words) > 0){
-		return(plotWordcloud(words, freq, colors = color, random.order = FALSE, min.freq = -Inf, rot.per = 0, scale = 0.85, max_min = c(1, 0), algorithm = algorithm, add = FALSE, grob = TRUE, dimensions = dimensions))
+		return(plotWordcloud(words, freq, colors = color, random.order = FALSE,
+				 			 min.freq = -Inf, rot.per = 0, scale = 0.85,
+							 max_min = c(1, 0), algorithm = algorithm, 
+							 add = FALSE, grob = TRUE, dimensions = dimensions))
 	}
+	
 	return(zeroGrob())
 }
 
 plot_arrow = function(end, par){
 	x = switch(end, first = c(0, 0.95), both = c(0.05, 0.95), last = c(0.05, 1))
-	res = linesGrob(x = x, y = 0.5, arrow = arrow(ends = end, type = "closed", angle = 15, length = unit(0.1, "inches")), gp = gpar(lwd = 0.3 * par$fontsize, col = "grey40"))
+	res = linesGrob(x = x, y = 0.5, arrow = arrow(ends = end, type = "closed",
+		 			angle = 15, length = unit(0.1, "inches")), 
+					gp = gpar(lwd = 0.3 * par$fontsize, col = "grey40"))
 	return(res)
 }
 
 plot_component = function(data_component, plot_panel, par, component_dims){
 	
 	# Create gtable
-	heights = with(component_dims, unit.c(title_height, panel_height, arrows_height + wc_height))
+	heights = with(component_dims, unit.c(title_height, panel_height, 											arrows_height + wc_height))
 	widths = with(component_dims, unit.c(panel_width, percentage_width))
 	
 	gtable_component = gtable::gtable(widths, heights)
@@ -804,7 +919,8 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 		gp = gpar(fontface = "bold", fontsize = par$fontsize)
 	)
 	
-	gtable_component = gtable::gtable_add_grob(gtable_component, title, 1, 1, clip = "off")
+	gtable_component = gtable::gtable_add_grob(gtable_component, title, 1, 1,
+			 									clip = "off")
 	
 	# Add plot
 	if(par$panel_height != 0){
@@ -815,18 +931,16 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 	}
 	b = rectGrob(gp = gpar(lwd = 1.5, col = "grey40", fill = NA))
 	
-	gtable_component = gtable::gtable_add_grob(gtable_component, gTree(children = gList(p, b)), 2, 1, clip = "off")
+	gtable_component = gtable::gtable_add_grob(gtable_component, 
+											   gTree(children = gList(p, b)), 
+											   2, 1, clip = "off")
 	
 	# Add percentage
-	p = textGrob(data_component$Percentage, 
-		x = 0.1, 
-		y = 1, 
-		vjust = 1, 
-		hjust = 0, 
-		gp = gpar(fontsize = par$fontsize, cex = 0.8)
-	)
+	p = textGrob(data_component$Percentage, x = 0.1, y = 1, vjust = 1, 
+				 hjust = 0, gp = gpar(fontsize = par$fontsize, cex = 0.8))
 	
-	gtable_component = gtable::gtable_add_grob(gtable_component, p, 2, 2, clip = "off")
+	gtable_component = gtable::gtable_add_grob(gtable_component, p, 2, 2, 
+											   clip = "off")
 	
 	# Arrows and wordclouds
 	heights = with(component_dims, unit.c(arrows_height, wc_height))
@@ -838,11 +952,13 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 		wc = plot_wordcloud(words = data_component$WCD$wcd1$Term,
 			freq = data_component$WCD$wcd1$Score, 
 			color = data_component$WCD$wcd1$Colors, 
-			algorithm = switch(par$wc_algorithm, top = "leftside_top", middle = "leftside"), 
+			algorithm = switch(par$wc_algorithm, top = "leftside_top", 
+							   middle = "leftside"), 
 			dimensions = with(component_dims, unit.c(wc_width, wc_height))
 		)
 		
-		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc, 2, 1, name = "wordcloud")
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc, 2, 1, 
+											name = "wordcloud")
 	}
 	
 	if(length(data_component$WCD) == 2){
@@ -852,23 +968,29 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 		wc1 = plot_wordcloud(words = data_component$WCD$wcd1$Term,
 			freq = data_component$WCD$wcd1$Score, 
 			color = data_component$WCD$wcd1$Colors, 
-			algorithm = switch(par$wc_algorithm, top = "leftside_top", middle = "leftside"), 
+			algorithm = switch(par$wc_algorithm, top = "leftside_top", 
+								middle = "leftside"), 
 			dimensions = with(component_dims, unit.c(wc_width, wc_height))
 		)
 		wc2 = plot_wordcloud(words = data_component$WCD$wcd2$Term,
 			freq = data_component$WCD$wcd2$Score, 
 			color = data_component$WCD$wcd2$Colors, 
-			algorithm = switch(par$wc_algorithm, top = "rightside_top", middle = "rightside"), 
+			algorithm = switch(par$wc_algorithm, top = "rightside_top", 
+							   middle = "rightside"), 
 			dimensions = with(component_dims, unit.c(wc_width, wc_height))
 		)
 		
-		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc1, 2, 1, name = "wordcloud-left")
-		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc2, 2, 2, name = "wordcloud-right")
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc1, 2, 1,
+				 							name = "wordcloud-left")
+		gtable_aw = gtable::gtable_add_grob(gtable_aw, wc2, 2, 2, 
+											name = "wordcloud-right")
 	}
 	
 		
-	gtable_component = gtable::gtable_add_grob(gtable_component, gtable_aw, 3, 1, name = "arrows-wordcloud")
-	gtable_component = gtable::gtable_add_padding(gtable_component, unit(c(0, 0, 0.5 * par$fontsize * 1.445, 0), "points"))
+	gtable_component = gtable::gtable_add_grob(gtable_component, gtable_aw, 3, 
+											   1, name = "arrows-wordcloud")
+	gtable_component = gtable::gtable_add_padding(gtable_component, 
+						unit(c(0, 0, 0.5 * par$fontsize * 1.445, 0), "points"))
 	
 	return(gtable_component)
 
@@ -892,17 +1014,23 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	
 	# Create legends 
 	if(par$panel_height != 0){
-		panel_legend = plot_panel(gosummaries[[1]]$Data, par$fontsize, legend = T)
-		if(convertHeight(gtable::gtable_height(panel_legend), "cm", valueOnly = T) != 0){
-			panel_legend = gtable::gtable_add_padding(panel_legend, unit(c(0, 0, 0.5 * par$fontsize * 1.445, 0), "points"))
+		panel_legend = plot_panel(gosummaries[[1]]$Data, par$fontsize, 
+								  legend = T)
+		height = gtable::gtable_height(panel_legend)
+		height_in_cm = convertHeight(height, "cm", valueOnly = T)
+		if(height_in_cm != 0){
+			panel_legend = gtable::gtable_add_padding(panel_legend, 
+						unit(c(0, 0, 0.5 * par$fontsize * 1.445, 0), "points"))
 		}
 	}
 	else{
-		panel_legend = gtable::gtable(widths = unit(0, "cm"), heights = unit(0, "cm"))
+		panel_legend = gtable::gtable(widths = unit(0, "cm"), 
+									  heights = unit(0, "cm"))
 	}
 	
 	if(par$wordcloud_colors[1] == par$wordcloud_colors[2]){
-		wordcloud_legend = gtable::gtable(widths = unit(0.001, "cm"), heights = unit(0.001, "cm"))
+		wordcloud_legend = gtable::gtable(widths = unit(0.001, "cm"), 
+										  heights = unit(0.001, "cm"))
 	}
 	else{
 		wordcloud_legend = gen_wordcloud_legend(gosummaries, par)
@@ -916,30 +1044,23 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	
 	legend_width = max(pl_width, wl_width)
 	legend_height = unit.c(pl_height, wl_height)
-	vp = viewport( 
+	vp = viewport(
 		y = unit(1, "npc") - unit(1.5 * par$fontsize * 1.445, "points"), 
-		height = sum(legend_height),
-		just = c(0.5, 1)
-	)
+		height = sum(legend_height), just = c(0.5, 1))
 	
-	gtable_legend = gtable::gtable(
-		width = legend_width, 
-		height = legend_height, 
-		vp = vp
-	)
+	gtable_legend = gtable::gtable(width = legend_width, 
+								   height = legend_height, vp = vp)
 	
-	panel_legend = editGrob(panel_legend, vp = viewport(x = unit(0, "npc"), width = pl_width, just = c(0, 0.5)))
+	panel_legend = editGrob(panel_legend, vp = viewport(x = unit(0, "npc"),
+		 					width = pl_width, just = c(0, 0.5)))
 	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
-		grobs = panel_legend, 
-		t = 1, 
-		l = 1,
-		name = "panel-legend", 
-		clip = "off"
-	)
+											grobs = panel_legend, t = 1, l = 1,
+											name = "panel-legend", clip = "off")
 	
-	wordcloud_legend = editGrob(wordcloud_legend, vp = viewport(x = unit(0, "npc"), width = wl_width, just = c(0, 0.5)))
-	gtable_legend = gtable::gtable_add_grob(gtable_legend, 
-		wordcloud_legend, 
+	wordcloud_legend = editGrob(wordcloud_legend, 
+								vp = viewport(x = unit(0, "npc"), 
+											width = wl_width, just = c(0, 0.5)))
+	gtable_legend = gtable::gtable_add_grob(gtable_legend, wordcloud_legend, 
 		t = 2, 
 		l = 1,
 		name = "wordcloud-legend", 
@@ -1037,7 +1158,32 @@ panel_crossbar = function(data, fontsize = 10, par){
 #' @return  It returns a function that can draw a ggplot2 plot of the data in Data slot 
 #' of a gosummaries object. The legend and the actual plots for the panels are extracted 
 #' later from the figure produced by this function.
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
+#' 
+#' @examples
+#'  
+#' \dontrun{
+#' data(gs_kmeans)
+#' 
+#' # Draw default version with plot_boxplot
+#' plot(gs_kmeans, components = 1:3, classes = "Tissue")
+#' 
+#' # Define alternative where one boxplot summarises all values belonging to one class
+#' plot_classes = function(data, fontsize, par){
+#'     qplot(x = data[, par$classes], y = data$y, geom = "boxplot", fill = data[, par$classes]) + theme_bw()
+#' }
+#' 
+#' plot(gs_kmeans, components = 1:3, panel_plot = plot_classes, classes = "Tissue")
+#' 
+#' 
+#' # Flip the boxplots to make them more comparable
+#' plot_classes = function(data, fontsize, par){
+#'     qplot(x = data[, par$classes], y = data$y, geom = "boxplot", 
+#'         fill = data[, par$classes]) + coord_flip() + theme_bw()
+#' }
+#' 
+#' plot(gs_kmeans, components = 1:3, panel_plot = plot_classes, classes = "Tissue")
+#' }
 #' 
 #' @rdname panel_boxplot
 #' @export
@@ -1194,7 +1340,7 @@ customize_dummy = function(p, par){
 #' @param p a ggplot2 plot object
 #' @param par parameters object like in \code{\link{panel_boxplot}}
 #' @return  a ggplot2 plot object with added customizations
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #' \dontrun{
 #' data(gs_limma_exp)
@@ -1255,7 +1401,7 @@ customize = function(p, par){
 #' @param \dots not used
 #' 
 #' @return The \code{\link{gtable}} object containing the figure
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #' \dontrun{
 #' data(gs_limma)
@@ -1424,8 +1570,8 @@ spearman_mds = function(pc, expression, n_genes){
 	n = ncol(expression)
 	cc = cor(t(expression), pc)[,1]
 	res = data.frame(Term = names(cc), Correlation = cc)
-	res$Score = pmin(pspearman(res$Correlation, n, lower.tail = F), pspearman(res$Correlation, n, lower.tail = T))
-	res = res[order(abs(res$Correlation), decreasing = T), ]
+	res$Score = pmin(pspearman(res$Correlation, n, lower.tail = FALSE), pspearman(res$Correlation, n, lower.tail = TRUE))
+	res = res[order(abs(res$Correlation), decreasing = TRUE), ]
 	
 	n_up = sum(res$Correlation > 0)
 	n_down = sum(res$Correlation < 0)
@@ -1476,7 +1622,7 @@ spearman_mds = function(pc, expression, n_genes){
 #' \code{\link{gosummaries.default}}
 #' @return A gosummaries object.
 #' 
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #' \dontrun{
 #' library(vegan)
@@ -1573,7 +1719,7 @@ gosummaries.matrix = function(x, exp = NULL, annotation = NULL, components = 1:m
 #' @param \dots GO annotation filtering parameters as defined in 
 #' \code{\link{gosummaries.default}}
 #' @return  A gosummaries object.
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #' \dontrun{
 #' data(tissue_example)
@@ -1594,7 +1740,6 @@ gosummaries.matrix = function(x, exp = NULL, annotation = NULL, components = 1:m
 #' plot(gs, class = "Tissue", components = 1:3, fontsize = 8)
 #' 
 #' @method gosummaries prcomp
-#' @S3method gosummaries prcomp
 #' 
 #' @export
 gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_genes = FALSE, gconvert_target = "NAME", n_genes = ifelse(show_genes, 30, 500), organism = "hsapiens", ...){
@@ -1674,7 +1819,7 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_gene
 #' @param \dots GO annotation filtering parameters as defined in 
 #' \code{\link{gosummaries.default}} 
 #' @return  A gosummaries object.
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #' \dontrun{
 #' data(tissue_example)
@@ -1692,7 +1837,6 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_gene
 #' }
 #' 
 #' @method gosummaries kmeans
-#' @S3method gosummaries kmeans
 #' 
 #' @export
 gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:length(x$size), organism = "hsapiens", ...){
@@ -1702,7 +1846,7 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 		gl[[sprintf("Cluster %d", i)]] = names(x$cluster[x$cluster == i])
 	}
 	
-	gosummaries = gosummaries.default(gl, organism = organism, ordered_query = F,  ...)
+	gosummaries = gosummaries.default(gl, organism = organism, ordered_query = FALSE,  ...)
 	
 	if(!is.null(exp)){
 		gosummaries = add_expression.gosummaries(gosummaries, exp, annotation)
@@ -1749,7 +1893,7 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 #' @param \dots GO annotation filtering parameters as defined in 
 #' \code{\link{gosummaries.default}}
 #' @return A gosummaries object.
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #' 
 #' \dontrun{
@@ -1774,7 +1918,6 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 #' }
 #' 
 #' @method gosummaries MArrayLM
-#' @S3method gosummaries MArrayLM 
 #' 
 #' @export
 gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr", exp = NULL, annotation = NULL, components = 1:ncol(x), show_genes = FALSE, gconvert_target = "NAME", n_genes = 30, organism = "hsapiens",  ...){

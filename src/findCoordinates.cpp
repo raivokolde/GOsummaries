@@ -18,7 +18,9 @@ using namespace Rcpp;
 // user includes
 
 #include <iostream>
+#include <R_ext/Rdynload.h>
 using namespace std;
+
 
 bool is_overlap(double x1, double y1, double sw1, double sh1, NumericMatrix boxes){
 	double x2, y2, sw2, sh2;
@@ -263,3 +265,13 @@ SEXP findCoordinates_left_top( SEXP width, SEXP height ){
 	END_RCPP
 }
 
+// register methods
+void R_init_GOsummaries(DllInfo *info){
+	R_CallMethodDef CallMethods[] = {
+		{"findCoordinates", (DL_FUNC) &findCoordinates, 2},
+		{"findCoordinates_left", (DL_FUNC) &findCoordinates_left, 2},
+		{"findCoordinates_left_top", (DL_FUNC) &findCoordinates_left_top, 2}
+	};
+	
+	R_registerRoutines(info, NULL, CallMethods, NULL, NULL);
+}

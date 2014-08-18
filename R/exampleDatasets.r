@@ -15,7 +15,7 @@
 #' @name tissue_example 
 #' @docType data
 #' 
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' 
 #' @references Lukk M, Kapushesky M, Nikkila J, Parkinson H, Goncalves A, Huber W, 
 #' Ukkonen E, Brazma A. "A global map of human gene expression." Nat Biotechnology. 2010 
@@ -42,7 +42,7 @@ NULL
 #' @name metabolomic_example 
 #' @docType data
 #' 
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' 
 #' @references York, B., Sagen, J. V., Tsimelzon, A., Louet, J. F., Chopra, A. R., Reineke, E. L.,
 #'  et al. (2013). Research resource: tissue- and pathway-specific metabolomic profiles of the
@@ -66,7 +66,7 @@ NULL
 #' @name metagenomic_example 
 #' @docType data
 #' 
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' 
 #' @keywords data
 NULL

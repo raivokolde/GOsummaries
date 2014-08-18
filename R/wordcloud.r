@@ -41,7 +41,7 @@ findCoordinates_left_top = function (width, height){
 #' @param dimensions a two element vector of units giving the width and height of the word 
 #' cloud respectively
 #' 
-#' @author  Raivo Kolde <rkolde@@gmail.com>
+#' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #'  plotWordcloud(c("Audi", "Volkswagen", "Opel", "Porsche", "Mercedez", "BMW"), 8:3)
 #' 
@@ -137,7 +137,7 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	
 	# Calculate the coordinates of words
 	if(tryfit) {
-		dontfit = T
+		dontfit = TRUE
 		while(dontfit){
 			if(algorithm == "leftside"){
 				a = findCoordinates_left(d$width, d$height)
@@ -164,7 +164,7 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 				# d = d[d$size > 0.6,]
 			}
 			else{
-				dontfit = F
+				dontfit = FALSE
 			}
 		}	
 	}
@@ -193,7 +193,9 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	
 	# Issue warning when something is not drawn
 	if(any(d$y == 3)){
-		warning(sprintf("Words not drawn: %s", paste(as.character(d$words[d$y == 3]), collapse = ", ")))
+		missing_words = paste(as.character(d$words[d$y == 3]), collapse = ", ")
+		message = sprintf("Words not drawn: %s", missing_words)
+		warning(message)
 	}
 	
 	d = d[!(d$y == 3), ]
@@ -207,10 +209,13 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	tailed = grepl("g|j|p|q|y|_", d$words)
 	if(any(d$angle == 90)){
 		if(algorithm == "circle"){
-			d[tailed & d$angle == 90, "x"] = d[tailed & d$angle == 90, "x"] - 0.1153846 * d[tailed & d$angle == 90, "width"]
+			ind = tailed & d$angle == 90
+			d[ind, "x"] = d[ind, "x"] - 0.1153846 * d[ind, "width"]
 		}
 	}
-	d[tailed & d$angle == 0, "y"] = d[tailed & d$angle == 0, "y"] + 0.1153846 * d[tailed & d$angle == 0, "height"]
+	
+	ind = tailed & d$angle == 0
+	d[ind, "y"] = d[ind, "y"] + 0.1153846 * d[ind, "height"]
 	
 	
 	# Draw the words
