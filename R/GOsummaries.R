@@ -473,7 +473,7 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	user_agent = sprintf("gProfileR/%s; GOsummaries/%s", 
 							packageVersion("gProfileR"), 
 							packageVersion("GOsummaries"))
-	gProfileR::set_user_agent(ua = user_agent, append = F)
+	gProfileR::set_user_agent(ua = user_agent, append = FALSE)
 	
 	gpr = gProfileR::gprofiler(query = gl, organism = organism, 
 							   ordered_query = ordered_query, 
@@ -902,7 +902,8 @@ plot_wordcloud = function(words, freq, color, algorithm, dimensions){
 		return(plotWordcloud(words, freq, colors = color, random.order = FALSE,
 				 			 min.freq = -Inf, rot.per = 0, scale = 0.85,
 							 max_min = c(1, 0), algorithm = algorithm, 
-							 add = FALSE, grob = TRUE, dimensions = dimensions))
+							 add = FALSE, grob = TRUE, 
+							 dimensions = dimensions))
 	}
 	
 	return(zeroGrob())
@@ -1025,9 +1026,9 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	# Create legends 
 	if(par$panel_height != 0){
 		panel_legend = plot_panel(gosummaries[[1]]$Data, par$fontsize, 
-								  legend = T)
+								  legend = TRUE)
 		height = gtable::gtable_height(panel_legend)
-		height_in_cm = convertHeight(height, "cm", valueOnly = T)
+		height_in_cm = convertHeight(height, "cm", valueOnly = TRUE)
 		if(height_in_cm != 0){
 			panel_legend = gtable::gtable_add_padding(panel_legend, 
 						unit(c(0, 0, 0.5 * par$fontsize * 1.445, 0), "points"))
@@ -1108,9 +1109,9 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	# Open connection to file if filename specified
 	if(!is.na(filename)){
 		width = convertWidth(gtable::gtable_width(gtable_full), "inches",
-			 				 valueOnly = T) 
+			 				 valueOnly = TRUE) 
 		height = convertHeight(gtable::gtable_height(gtable_full), "inches",
-			 				   valueOnly = T) 
+			 				   valueOnly = TRUE) 
 		open_file_con(filename, width, height)
 	}
 	
@@ -1233,7 +1234,8 @@ panel_boxplot = function(data, fontsize = 10, par){
 	}
 	
 	if(inherits(data, "twoListExpData")){
-		p = p + ggplot2::geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
+		n_samples = length(unique(data$x))/2
+		p = p + ggplot2::geom_vline(xintercept = n_samples + 0.5)
 	}
 	
 	p = p + ggplot2::theme_bw(base_size = fontsize)
@@ -1254,7 +1256,8 @@ panel_violin = function(data, fontsize = 10, par){
 	}
 	
 	if(inherits(data, "twoListExpData")){
-		p = p + ggplot2::geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
+		n_samples = length(unique(data$x))/2
+		p = p + ggplot2::geom_vline(xintercept = n_samples + 0.5)
 	}
 	
 	p = p + ggplot2::theme_bw(base_size = fontsize)
@@ -1279,7 +1282,8 @@ panel_violin_box = function(data, fontsize = 10, par){
 	}
 	
 	if(inherits(data, "twoListExpData")){
-		p = p + ggplot2::geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
+		n_samples = length(unique(data$x))/2
+		p = p + ggplot2::geom_vline(xintercept = n_samples + 0.5)
 	}
 	
 	p = p + ggplot2::theme_bw(base_size = fontsize)
@@ -1772,25 +1776,24 @@ gosummaries.matrix = function(x, exp = NULL, annotation = NULL, components = 1:m
  
 #' Prepare gosummaries object based on PCA results 
 #' 
-#' The PCA results are converted into a gosummaries object, by extracting genes 
-#' with the largest positive and negative weights from each component. 
+#' The PCA results are converted into a gosummaries object, by extracting genes with the largest positive and negative weights from each component. 
 #' 
 #' The usual visualisation of PCA results displays the projections of sample 
 #' expression on the principal axes. It shows if and how the samples cluster, 
-#' but not why do they behave like that. Actually, it is possible to go further 
-#' and annotate the axes by studying genes that have the largest influence in 
-#' the linear combinations that define the principal components. For example, 
-#' high expression of genes with large negative weights pushes the samples 
-#' projection to the negative side of the principal axis and large positive 
-#' weigths to the positive side. If a sample has highly expressed genes in both 
-#' groups it stays most probably in the middle. If we annotate functionally the 
-#' genes with highest positive and negative weights for each of the principal 
-#' axes, then it is possible to say which biological processes drive the 
-#' separation of samples on them.   
+#' but not why do they behave like that. Actually, it is possible to go 
+#' further and annotate the axes by studying genes that have the largest 
+#' influence in the linear combinations that define the principal components. 
+#' For example, high expression of genes with large negative weights pushes 
+#' the samples projection to the negative side of the principal axis and large 
+#' positive weigths to the positive side. If a sample has highly expressed 
+#' genes in both groups it stays most probably in the middle. If we annotate 
+#' functionally the genes with highest positive and negative weights for each 
+#' of the principal axes, then it is possible to say which biological 
+#' processes drive the separation of samples on them.   
 #' 
-#' This function creates a gosummaries object for such analysis. It expects the 
-#' results of \code{\link{prcomp}} function. It assumes that the PCA was done 
-#' on samples and, thus, the row names of the rotation matrix can be 
+#' This function creates a gosummaries object for such analysis. It expects 
+#' the results of \code{\link{prcomp}} function. It assumes that the PCA was 
+#' done on samples and, thus, the row names of the rotation matrix can be 
 #' interpreted as gene names. For each component it annotates \code{n_genes} 
 #' elements with highest positive and negative weights.
 #' 
@@ -1803,8 +1806,8 @@ gosummaries.matrix = function(x, exp = NULL, annotation = NULL, components = 1:m
 #' @param annotation a \code{data.frame} describing the samples, its row names 
 #' should match with column names of the projection matrix in x
 #' @param components numeric vector of components to include 
-#' @param show_genes logical showing if GO categories or actual genes are shown 
-#' in word clouds
+#' @param show_genes logical showing if GO categories or actual genes are 
+#' shown in word clouds
 #' @param gconvert_target specifies gene ID format for genes showed in word 
 #' cloud. The name of the format is passed to \code{\link{gconvert}}, if NULL 
 #' original IDs are shown.
@@ -1897,7 +1900,7 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_gene
 		gosummaries = gosummaries_base(gl = gl, wc_data = wc_data, 
 									   wc_algorithm = "top", 
 									   score_type = "count", 
-									   wordcloud_legend_title = "PCA weight")	
+									   wordcloud_legend_title = "PCA weight")
 	}
 	else{
 		gosummaries = gosummaries.default(gl, organism = organism,  ...)
@@ -1995,7 +1998,7 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 #' As the gene identifiers in expression matrices are usually rather 
 #' unintelligible then they are automatically converted into gene names using  
 #' \code{\link{gconvert}} function. It is possible to show also the original 
-#' identifiers by setting \code{gconvert_target} to NULL. This can be useful if 
+#' identifiers by setting \code{gconvert_target} to NULL. This can be useful if
 #' the values do not correspond to genes, but for example metabolites.  
 #'
 #' @param x an object of class \code{MArrayLM}
@@ -2008,8 +2011,8 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 #' @param annotation a \code{data.frame} describing the samples, its row names 
 #' should match with column names of \code{exp} (Optional)
 #' @param components numeric vector of comparisons to annotate
-#' @param show_genes logical showing if GO categories or actual genes are shown 
-#' in word clouds
+#' @param show_genes logical showing if GO categories or actual genes are 
+#' shown in word clouds
 #' @param gconvert_target specifies gene ID format for genes showed in word 
 #' cloud. The name of the format is passed to \code{\link{gconvert}}, if NULL 
 #' original IDs are shown.
@@ -2056,6 +2059,8 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 	gl = list()
 	perc = list()
 	for(i in components){
+		flevels = rownames(x$contrasts)
+		
 		tt = limma::topTable(x, coef = i, p.value = p.value, lfc = lfc,
 			                 adjust.method = adjust.method, number = Inf)
 		tt$ID = rownames(tt)
@@ -2063,8 +2068,8 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 		gl_up = as.character(tt$ID[tt$logFC > 0])
 		gl_down = as.character(tt$ID[tt$logFC < 0])
 		
-		g1 = paste(rownames(x$contrasts)[x$contrasts[, i] < 0], collapse = ", ")
-		g2 = paste(rownames(x$contrasts)[x$contrasts[, i] > 0], collapse = ", ")
+		g1 = paste(flevels[x$contrasts[, i] < 0], collapse = ", ")
+		g2 = paste(flevels[x$contrasts[, i] > 0], collapse = ", ")
 		
 		title = sprintf("G1: %s; G2: %s", g1, g2)
 		perc[[i]] = sprintf("G1 > G2: %d\nG1 < G2: %d", length(gl_down), 

@@ -14,46 +14,49 @@ findCoordinates_left_top = function (width, height){
 #' 
 #' General \code{grid} based wordcloud drawing function 
 #' 
-#' Uses the algorithm from wordcloud package to calculate the positions of the words. 
-#' then uses grid graphics to plot the words on screen. The shape of the wordcloud 
-#' depends on the shape of the plotting window
+#' Uses the algorithm from wordcloud package to calculate the positions of the  
+#'  words. It then uses grid graphics to plot the words on screen. The shape of 
+#' the wordcloud depends on the shape of the plotting window
 #'
 #' @param words vector of words to draw
 #' @param freq frequencies for words, has to be the same length as words vector
 #' @param rot.per percentage of vertical words
-#' @param max_min relative scales to adjust the size difference between largest and 
-#' smallest word, by default the largest word is written with 10 times as large font than 
-#' the smallest
-#' @param scale a fraction of the available space on figure that will be covered with the bounding boxes of words
+#' @param max_min relative scales to adjust the size difference between largest 
+#' and smallest word, by default the largest word is written with 10 times as 
+#' large font than the smallest
+#' @param scale a fraction of the available space on figure that will be 
+#' covered with the bounding boxes of words
 #' @param min.freq minimal frequency of words to be displayed
 #' @param max.words maximal number of words to be displayed
-#' @param random.order plot words in random order. If false, they will be plotted in
-#'  decreasing frequency
-#' @param colors vector of colors fro the words. This vector will be extrapolated into as 
-#' many colors as needed, starting with the first color for lower frequencies and ending 
-#' with last color for higher frequencies.
+#' @param random.order plot words in random order. If false, they will be 
+#' plotted in decreasing frequency
+#' @param colors vector of colors fro the words. This vector will be 
+#' extrapolated into as many colors as needed, starting with the first color 
+#' for lower frequencies and ending with last color for higher frequencies.
 #' @param random.colors if true, assigns random color for the words.
-#' @param algorithm algorithm to find positions of words possible values: "circle", "leftside" and "rightside".
-#' @param tryfit if TRUE the algorithm checks if all words fit to the figure, if not it
-#' tries gradually smaller values of scale parameter until everything fits
+#' @param algorithm algorithm to find positions of words possible values: 
+#' "circle", "leftside" and "rightside".
+#' @param tryfit if TRUE the algorithm checks if all words fit to the figure, 
+#' if not it tries gradually smaller values of scale parameter until everything 
+#' fits
 #' @param add if TRUE adds the picture to existing plot.
 #' @param grob if TRUE returns the text grob instead of drawing it
-#' @param dimensions a two element vector of units giving the width and height of the word 
-#' cloud respectively
+#' @param dimensions a two element vector of units giving the width and height 
+#' of the word cloud respectively
 #' 
 #' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' @examples
 #'  plotWordcloud(c("Audi", "Volkswagen", "Opel", "Porsche", "Mercedez", "BMW"), 8:3)
 #' 
 #' @export
-plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale = 0.4, min.freq = 3, max.words = Inf, random.order = FALSE, colors = "black", random.colors = FALSE, algorithm = "circle", tryfit = T, add = F, grob = F, dimensions = unit(c(1, 1), "npc")){
+plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale = 0.4, min.freq = 3, max.words = Inf, random.order = FALSE, colors = "black", random.colors = FALSE, algorithm = "circle", tryfit = TRUE, add = FALSE, grob = FALSE, dimensions = unit(c(1, 1), "npc")){
 	# Empty the drawng area
 	if(!add){
 		grid.newpage()
 	}
 	
-	width = convertWidth(dimensions[1], "cm", valueOnly = T)
-	height = convertHeight(dimensions[2], "cm", valueOnly = T)
+	width = convertWidth(dimensions[1], "cm", valueOnly = TRUE)
+	height = convertHeight(dimensions[2], "cm", valueOnly = TRUE)
 	
 	# Check if word and freq are same length
 	if(length(words) != length(freq)){
@@ -101,9 +104,9 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 	
 	# Calculate the word sizes
 	w = unit(rep(1, n), "strwidth", as.list(as.character(d$words)))
-	d$width = convertWidth(w, "cm", valueOnly = T) / width
+	d$width = convertWidth(w, "cm", valueOnly = TRUE) / width
 	h = unit(rep(1, n), "strheight", as.list(as.character(d$words)))
-	d$height = convertHeight(h, "cm", valueOnly = T) / height
+	d$height = convertHeight(h, "cm", valueOnly = TRUE) / height
 	
 	tailed = grepl("g|j|p|q|y|_", d$words)
 	d$height[tailed] = d$height[tailed] * 1.3
@@ -232,10 +235,16 @@ plotWordcloud = function(words, freq, rot.per = 0.3, max_min = c(1, 0.1), scale 
 		vjust = 0.5
 	}
 	if(grob){
-		return(textGrob(d$words, d$x, d$y, rot = d$angle, hjust = hjust, vjust = vjust, gp = gpar(cex = d$size, col = d$colors), vp = viewport(width = unit(width, "cm"), height = unit(height, "cm"))))
+		return(textGrob(d$words, d$x, d$y, rot = d$angle, hjust = hjust, 
+						vjust = vjust, gp = gpar(cex = d$size, col = d$colors),
+						vp = viewport(width = unit(width, "cm"), 
+						height = unit(height, "cm"))))
 	}
 	else{
-		grid.text(d$words, d$x, d$y, rot = d$angle, hjust = hjust, vjust = vjust, gp = gpar(cex = d$size, col = d$colors), vp = viewport(width = unit(width, "cm"), height = unit(height, "cm")))
+		grid.text(d$words, d$x, d$y, rot = d$angle, hjust = hjust, 
+				  vjust = vjust, gp = gpar(cex = d$size, col = d$colors), 
+				  vp = viewport(width = unit(width, "cm"), 
+				  height = unit(height, "cm")))
 	}
 	
 }
