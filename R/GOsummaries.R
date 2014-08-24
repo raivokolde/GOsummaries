@@ -1,7 +1,8 @@
 ## Dummydata object
 dummyData = function(gl, max){
 	res = list( 
-		mat = data.frame(x = factor(1:length(gl)), y = unlist(lapply(gl, length))),
+		mat = data.frame(x = factor(1:length(gl)), 
+						 y = unlist(lapply(gl, length))),
 		max = max
 	)
 	
@@ -48,9 +49,11 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 		
 		components = 1:length(gl)
 		
-		# Find the number of lists per component (assumed to be the same over components)
+		# Find the number of lists per component (based on first component)
 		gl_k = ifelse(is.list(gl[[1]]), 2, 1) 
-		wc_data_k = ifelse(is.list(wc_data[[1]]) & !is.data.frame(wc_data[[1]]), 2, 1)
+		
+		wc_condition = is.list(wc_data[[1]]) & !is.data.frame(wc_data[[1]])
+		wc_data_k = ifelse(wc_condition, 2, 1)
 		
 		if(gl_k != wc_data_k){
 			stop("The gene lists and the word cloud data have to have a similar structure")
@@ -96,14 +99,16 @@ gosummaries_base = function(gl = NULL, wc_data = NULL, score_type = "p-value", w
 		)
 		
 		if(!is.null(gl)){
+			comp_gl = gl[[i]]
 			if(k == 1){
-				comp$Gene_lists = list(gl1 = gl[[i]])
-				comp$Percentage = sprintf("n: %d", length(gl[[i]]))
+				comp$Gene_lists = list(gl1 = comp_gl)
+				comp$Percentage = sprintf("n: %d", length(comp_gl))
 			}
 			else{
-				comp$Gene_lists = list(gl1 = gl[[i]][[1]], gl2 = gl[[i]][[2]])
-				comp$Percentage = sprintf("G1: %d\nG2: %d", length(gl[[i]][[1]]), 
-											length(gl[[i]][[2]]))
+				comp$Gene_lists = list(gl1 = comp_gl[[1]], gl2 = comp_gl[[2]])
+				comp$Percentage = sprintf("G1: %d\nG2: %d",
+					 					  length(comp_gl[[1]]), 
+										  length(comp_gl[[2]]))
 			}
 		}
 		
@@ -328,7 +333,14 @@ gosummaries.default = function(x = NULL, wc_data = NULL, organism = "hsapiens", 
 	}
 	
 	if(is.null(wc_data)){
-		res = annotate.gosummaries(res, organism = organism, go_branches = go_branches, max_p_value = max_p_value, min_set_size = min_set_size, max_set_size = max_set_size, max_signif = max_signif, ordered_query = ordered_query, hier_filtering = hier_filtering, ...)
+		res = annotate.gosummaries(res, organism = organism, 
+								   go_branches = go_branches, 
+								   max_p_value = max_p_value, 
+								   min_set_size = min_set_size, 
+								   max_set_size = max_set_size, 
+								   max_signif = max_signif, 
+								   ordered_query = ordered_query, 
+								   hier_filtering = hier_filtering, ...)
 	
 		attr(res, "wordcloud_legend_title") = "Enrichment p-value"
 	}
@@ -481,7 +493,8 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
 	for(i in seq_along(components)){
 		for(j in seq_along(gosummaries[[i]]$WCD)){
 			lname = paste("wcd", j, sep = "")
-			gosummaries[[i]]$WCD[[lname]] = gpr[gpr$query.number == k, c("Term", "Score")] 
+			results = gpr[gpr$query.number == k, c("Term", "Score")] 
+			gosummaries[[i]]$WCD[[lname]] = results
 			k = k + 1
 		}
 	}
@@ -696,7 +709,7 @@ heightDetails.zeroGrob =
 grobWidth.zeroGrob = 
 grobHeight.zeroGrob = function(x) unit(0, "cm")
 drawDetails.zeroGrob = function(x, recording) {}
-is.zero <- function(x) identical(x, zeroGrob())
+is.zero = function(x) identical(x, zeroGrob())
 ##
 
 open_file_con = function(filename, width, height){
@@ -881,7 +894,6 @@ gen_wordcloud_legend = function(gosummaries, par){
 		legend_data$labels = c(breaks[length(breaks)], average, 0)
 	}
 	
-	
 	return(gen_legend(legend_data, par))
 }
 
@@ -907,7 +919,8 @@ plot_arrow = function(end, par){
 plot_component = function(data_component, plot_panel, par, component_dims){
 	
 	# Create gtable
-	heights = with(component_dims, unit.c(title_height, panel_height, 											arrows_height + wc_height))
+	heights = with(component_dims, unit.c(title_height, panel_height, 
+										  arrows_height + wc_height))
 	widths = with(component_dims, unit.c(panel_width, percentage_width))
 	
 	gtable_component = gtable::gtable(widths, heights)
@@ -962,9 +975,6 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 	}
 	
 	if(length(data_component$WCD) == 2){
-		# gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "first", par), 1, 1, name = "arrow-left", clip = "off")
-		# gtable_aw = gtable::gtable_add_grob(gtable_aw, plot_arrow(end = "last", par), 1, 2, name = "arrow-right", clip = "off")
-		
 		wc1 = plot_wordcloud(words = data_component$WCD$wcd1$Term,
 			freq = data_component$WCD$wcd1$Score, 
 			color = data_component$WCD$wcd1$Colors, 
@@ -987,7 +997,7 @@ plot_component = function(data_component, plot_panel, par, component_dims){
 	}
 	
 		
-	gtable_component = gtable::gtable_add_grob(gtable_component, gtable_aw, 3, 
+	gtable_component = gtable::gtable_add_grob(gtable_component, gtable_aw, 3,
 											   1, name = "arrows-wordcloud")
 	gtable_component = gtable::gtable_add_padding(gtable_component, 
 						unit(c(0, 0, 0.5 * par$fontsize * 1.445, 0), "points"))
@@ -1069,27 +1079,38 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 	
 	
 	# Create gtable layout for the whole figure
-	widths = unit.c(max(do.call(unit.c, lapply(components, gtable::gtable_width))), gtable::gtable_width(gtable_legend))
+	component_widths = do.call(unit.c, lapply(components, gtable::gtable_width))
+	widths = unit.c(max(component_widths), gtable::gtable_width(gtable_legend))
 	heights = do.call(unit.c, lapply(components, gtable::gtable_height))
 	
 	gtable_full = gtable::gtable(widths, heights)
 	
 	# Add components
 	for(i in 1:length(components)){
-		components[[i]] = editGrob(components[[i]], vp = viewport(x = 0, width = gtable::gtable_width(components[[i]]), just = c(0, 0.5)))
-		gtable_full = gtable::gtable_add_grob(gtable_full, components[[i]], i, 1, name = paste("Component", i, sep = "-"))
+		component_width = gtable::gtable_width(components[[i]])
+		components[[i]] = editGrob(components[[i]], 
+								   vp = viewport(x = 0, 
+												  width = component_width, 
+												  just = c(0, 0.5)))
+		component_name = paste("Component", i, sep = "-")
+		gtable_full = gtable::gtable_add_grob(gtable_full, components[[i]], i, 
+											  1, name = component_name)
 	}
 	
 	# Add legend
-	gtable_full = gtable::gtable_add_grob(gtable_full, gtable_legend, 1, 2, length(components), name = "legend")
+	gtable_full = gtable::gtable_add_grob(gtable_full, gtable_legend, 1, 2, 
+										  length(components), name = "legend")
 	
 	# Add padding
-	gtable_full = gtable::gtable_add_padding(gtable_full, unit(0.5 * par$fontsize * 1.445, "points"))
+	padding_size = unit(0.5 * par$fontsize * 1.445, "points")
+	gtable_full = gtable::gtable_add_padding(gtable_full, padding_size)
 	
 	# Open connection to file if filename specified
 	if(!is.na(filename)){
-		width = convertWidth(gtable::gtable_width(gtable_full)  , "inches", valueOnly = T) 
-		height = convertHeight(gtable::gtable_height(gtable_full)  , "inches", valueOnly = T) 
+		width = convertWidth(gtable::gtable_width(gtable_full), "inches",
+			 				 valueOnly = T) 
+		height = convertHeight(gtable::gtable_height(gtable_full), "inches",
+			 				   valueOnly = T) 
 		open_file_con(filename, width, height)
 	}
 	
@@ -1108,16 +1129,22 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 ## Panel functions for expression data
 panel_crossbar = function(data, fontsize = 10, par){
 	qq = function(x, ...) {
-		res = data.frame(ymin = quantile(x, 0.05), y = median(x), ymax = quantile(x, 0.95))
+		res = data.frame(ymin = quantile(x, 0.05), y = median(x), 
+						 ymax = quantile(x, 0.95))
 		
 		return(res)
 	}
 	
 	if(!is.null(par$classes)){
-		p = ggplot2::qplot(x = data$x, y = data$y, geom = "crossbar", stat = "summary", width = 0.7, fun.data = qq, fill = data[, par$classes]) + ggplot2::geom_bar(aes(x = 1, y = 0, fill = data[, par$classes]), stat = "identity")
+		p = ggplot2::qplot(x = data$x, y = data$y, geom = "crossbar", 
+						   stat = "summary", width = 0.7, fun.data = qq, 
+						   fill = data[, par$classes]) + 
+			ggplot2::geom_bar(aes(x = 1, y = 0, fill = data[, par$classes]), 
+							  stat = "identity")
 	}
 	else{
-		p = ggplot2::qplot(x = data$x, y = data$y, geom = "crossbar", stat = "summary", width = 0.7, fun.data = qq)
+		p = ggplot2::qplot(x = data$x, y = data$y, geom = "crossbar", 
+						   stat = "summary", width = 0.7, fun.data = qq)
 	}
 	
 	if(inherits(data, "twoListExpData")){
@@ -1132,32 +1159,32 @@ panel_crossbar = function(data, fontsize = 10, par){
  
 #' Panel drawing functions 
 #' 
-#' These functions are used to draw the panel portion of every component based on the 
-#' Data slots in gosummaries object. These concrete functions assume the data is 
-#' presented as does \code{\link{add_expression.gosummaries}}. They provide three 
-#' options: boxplot, violin plot (which shows the distrubution more precisely) and both 
-#' combined.
+#' These functions are used to draw the panel portion of every component based 
+#' on the Data slots in gosummaries object. These concrete functions assume the 
+#' data is presented as does \code{\link{add_expression.gosummaries}}. They 
+#' provide three  options: boxplot, violin plot (which shows the distrubution 
+#' more precisely) and both combined.
 #' 
-#' These functions specify in principle the general setting for the panels, like which 
-#' "geom"-s, how the data is transformed and summarized, etc. To make small adjustments 
-#' to the figure such as changing color scheme, write your own customization function 
-#' (See \code{\link{customize}} as example).
+#' These functions specify in principle the general setting for the panels, 
+#' like which "geom"-s, how the data is transformed and summarized, etc. To 
+#' make small adjustments to the figure such as changing color scheme, write 
+#' your own customization function (See \code{\link{customize}} as example).
 #' 
-#' It is possible to write your own panel plotting function, as long as the parameters  
-#' used and the return value are similar to what is specified here. When writing a new 
-#' panel function one only has to make sure that it matches the data given in the Data 
-#' slot of the gosummaries object.
+#' It is possible to write your own panel plotting function, as long as the 
+#' parameters used and the return value are similar to what is specified here. 
+#' When writing a new panel function one only has to make sure that it matches 
+#' the data given in the Data slot of the gosummaries object.
 #' 
 #' @param data the data from Data slot of the gosummaries object
-#' @param fontsize fontsize in points, mainly used to ensure that the legend fontsizes 
-#' match
-#' @param par additional parameters for drawing the plot, given as list. These functions 
-#' use only \code{classes} slot for figuring out which parameter to use for coloring the 
-#' "geom"-s. However, when building a custom function it provides a way to give extra 
-#' parameters to the plotting function. 
-#' @return  It returns a function that can draw a ggplot2 plot of the data in Data slot 
-#' of a gosummaries object. The legend and the actual plots for the panels are extracted 
-#' later from the figure produced by this function.
+#' @param fontsize fontsize in points, mainly used to ensure that the legend 
+#' fontsizes match
+#' @param par additional parameters for drawing the plot, given as list. These 
+#' functions use only \code{classes} slot for figuring out which parameter to 
+#' use for coloring the "geom"-s. However, when building a custom function it 
+#' provides a way to give extra parameters to the plotting function. 
+#' @return  It returns a function that can draw a ggplot2 plot of the data in 
+#' Data slot of a gosummaries object. The legend and the actual plots for the 
+#' panels are extracted later from the figure produced by this function.
 #' @author  Raivo Kolde <raivo.kolde@@eesti.ee>
 #' 
 #' @examples
@@ -1168,9 +1195,10 @@ panel_crossbar = function(data, fontsize = 10, par){
 #' # Draw default version with plot_boxplot
 #' plot(gs_kmeans, components = 1:3, classes = "Tissue")
 #' 
-#' # Define alternative where one boxplot summarises all values belonging to one class
+#' # Define alternative where one boxplot summarises all values in one class
 #' plot_classes = function(data, fontsize, par){
-#'     qplot(x = data[, par$classes], y = data$y, geom = "boxplot", fill = data[, par$classes]) + theme_bw()
+#'     qplot(x = data[, par$classes], y = data$y, geom = "boxplot", 
+#'           fill = data[, par$classes]) + theme_bw()
 #' }
 #' 
 #' plot(gs_kmeans, components = 1:3, panel_plot = plot_classes, classes = "Tissue")
@@ -1190,14 +1218,18 @@ panel_crossbar = function(data, fontsize = 10, par){
 panel_boxplot = function(data, fontsize = 10, par){
 	qq = function(x) {
 		bs = boxplot.stats(x)$stats 
-		data.frame(ymin = bs[1], lower = bs[2], middle = bs[3], upper = bs[4], ymax = bs[5])
+		data.frame(ymin = bs[1], lower = bs[2], middle = bs[3], upper = bs[4], 
+				   ymax = bs[5])
 	
 	}
 	if(!is.null(par$classes)){
-			p = ggplot2::qplot(x = data$x, y = data$y, geom = "boxplot", stat = "summary", fun.data = qq, fill = data[, par$classes], width = 0.7) 
+			p = ggplot2::qplot(x = data$x, y = data$y, geom = "boxplot", 
+							   stat = "summary", fun.data = qq, 
+							   fill = data[, par$classes], width = 0.7) 
 	}
 	else{
-			p = ggplot2::qplot(x = data$x, y = data$y, geom = "boxplot", stat = "summary", fun.data = qq, width = 0.7) 
+			p = ggplot2::qplot(x = data$x, y = data$y, geom = "boxplot", 
+							   stat = "summary", fun.data = qq, width = 0.7) 
 	}
 	
 	if(inherits(data, "twoListExpData")){
@@ -1213,10 +1245,12 @@ panel_boxplot = function(data, fontsize = 10, par){
 #' @export
 panel_violin = function(data, fontsize = 10, par){
 	if(!is.null(par$classes)){
-			p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", fill = data[, par$classes], colour = I(NA))
+		p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", 
+						   fill = data[, par$classes], colour = I(NA))
 	}
 	else{
-			p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", colour = I(NA), fill = I("gray30")) 
+		p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", 
+						   colour = I(NA), fill = I("gray30")) 
 	}
 	
 	if(inherits(data, "twoListExpData")){
@@ -1232,10 +1266,16 @@ panel_violin = function(data, fontsize = 10, par){
 #' @export
 panel_violin_box = function(data, fontsize = 10, par){
 	if(!is.null(par$classes)){
-			p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", fill = data[, par$classes], colour = I(NA)) + ggplot2::geom_boxplot(fill = NA, outlier.size = 0.25, size = I(0.1), width = 0.7)
+			p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", 
+							   fill = data[, par$classes], colour = I(NA)) + 
+				ggplot2::geom_boxplot(fill = NA, outlier.size = 0.25, 
+									  size = I(0.1), width = 0.7)
 	}
 	else{
-			p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", colour = I(NA)) + ggplot2::geom_boxplot(fill = NA, outlier.size = 0.25, size = I(0.1), width = 0.7)
+			p = ggplot2::qplot(x = data$x, y = data$y, geom = "violin", 
+							   colour = I(NA)) + 
+				ggplot2::geom_boxplot(fill = NA, outlier.size = 0.25, 
+									  size = I(0.1), width = 0.7)
 	}
 	
 	if(inherits(data, "twoListExpData")){
@@ -1252,7 +1292,8 @@ combine_classes = function(data, par){
 		data[, par$classes] = factor(data[, par$classes])
 		new_x = paste(substr(data[, "x"], 1, 1), data[, par$classes])
 		n_levels = length(levels(data[, par$classes]))
-		levels = paste(rep(1:2, times = c(n_levels, n_levels)), levels(data[, par$classes]))
+		levels = paste(rep(1:2, times = c(n_levels, n_levels)),
+			 		   levels(data[, par$classes]))
 		
 		data$x = factor(new_x, levels = levels)
 	}
@@ -1294,10 +1335,14 @@ panel_violin_box_classes = function(data, fontsize = 10, par){
 ## Panel functions for pca data
 panel_histogram = function(data, fontsize = 10, par){
 	if(!is.null(par$classes)){
-		p = ggplot2::qplot(data$x, geom = "bar", fill = data[, par$classes], binwidth = (max(data$x) - min(data$x)) / 20, colour = I("grey70")) 
+		p = ggplot2::qplot(data$x, geom = "bar", fill = data[, par$classes], 
+						   binwidth = (max(data$x) - min(data$x)) / 20, 
+						   colour = I("grey70")) 
 	}
 	else{
-		p = ggplot2::qplot(data$x, geom = "bar", binwidth = (max(data$x) - min(data$x)) / 20, data = data)
+		p = ggplot2::qplot(data$x, geom = "bar", 
+						   binwidth = (max(data$x) - min(data$x)) / 20, 
+						   data = data)
 	}
 	p = p + ggplot2::theme_bw(base_size = fontsize)
 	
@@ -1309,14 +1354,27 @@ panel_histogram = function(data, fontsize = 10, par){
 panel_dummy = function(data, fontsize = 10, par){
 	if(nrow(data$mat) == 1){
 		colors = "#336699"
-		p = ggplot2::qplot(1, data$mat$y, geom = "bar", stat = "identity", fill = data$mat$x, width = I(0.6), ylim = c(0, data$max), xlim = c(0.5, 1.5)) + ggplot2::scale_fill_manual(values = colors) + ggplot2::theme_bw(base_size = fontsize) + ggplot2::theme(legend.position = "none") + ggplot2::coord_flip()
+		p = ggplot2::qplot(1, data$mat$y, geom = "bar", stat = "identity", 
+						   fill = data$mat$x, width = I(0.6), 
+						   ylim = c(0, data$max), xlim = c(0.5, 1.5)) + 
+			ggplot2::scale_fill_manual(values = colors) + 
+			ggplot2::theme_bw(base_size = fontsize) + 
+			ggplot2::theme(legend.position = "none") + 
+			ggplot2::coord_flip()
 	} 
 	
 	if(nrow(data$mat) == 2){
 		colors = c("#336699", "#990033")
 		data$mat$y[1] = -data$mat$y[1]
 		data$mat$x = factor(data$mat$x, labels = c("G1 > G2", "G1 < G2"))
-		p = ggplot2::qplot(1, data$mat$y, geom = "bar", stat = "identity", position = "identity", fill = data$mat$x, ylim = c(-data$max, data$max), width = I(0.6), xlim = c(0.5, 1.5)) + ggplot2::scale_fill_manual("Regulation direction", values = colors) + ggplot2::theme_bw(base_size = fontsize) + ggplot2::theme(legend.position = "none") + ggplot2::coord_flip()
+		p = ggplot2::qplot(1, data$mat$y, geom = "bar", stat = "identity", 
+						   position = "identity", fill = data$mat$x, 
+						   ylim = c(-data$max, data$max), width = I(0.6), 
+						   xlim = c(0.5, 1.5)) + 
+			ggplot2::scale_fill_manual("Regulation direction", values = colors)+
+ 			ggplot2::theme_bw(base_size = fontsize) + 
+			ggplot2::theme(legend.position = "none") + 
+			ggplot2::coord_flip()
 	}
 	
 	return(p)
@@ -1332,10 +1390,10 @@ customize_dummy = function(p, par){
  
 #' Customization function for panel
 #' 
-#' This function is supposed to make small changes in the panel function appearance like 
-#' changing color scheme for example. It has to match with the output of the 
-#' corresponding panel function. Check examples in plot.gosummaries to see how to write 
-#' one yourself.
+#' This function is supposed to make small changes in the panel function 
+#' appearance like changing color scheme for example. It has to match with the 
+#' output of the corresponding panel function. Check examples in 
+#' plot.gosummaries to see how to write one yourself.
 #' 
 #' @param p a ggplot2 plot object
 #' @param par parameters object like in \code{\link{panel_boxplot}}
@@ -1350,7 +1408,8 @@ customize_dummy = function(p, par){
 #' 	return(p)
 #' }
 #' 
-#' plot(gs_limma_exp, classes = "Tissue", panel_plot = panel_boxplot, panel_customize = cust, fontsize = 8) 
+#' plot(gs_limma_exp, classes = "Tissue", panel_plot = panel_boxplot, 
+#' 		panel_customize = cust, fontsize = 8) 
 #' } 
 #' 
 #' @export
@@ -1365,39 +1424,43 @@ customize = function(p, par){
 
 #' Plot the GOsummaries figure
 #' 
-#' The function to draw a GOsummaries figure based on a \code{gosummaries} object.  The 
-#' GOsummaries figure consists of several components each defined by a gene list ora a 
-#' pair of them. The GO annotations of them are shown as wordclouds. Optionally one can 
-#' draw related (expression) data on panels atop of the wordclouds. 
+#' The function to draw a GOsummaries figure based on a \code{gosummaries} 
+#' object.  The GOsummaries figure consists of several components each defined 
+#' by a gene list ora a pair of them. The GO annotations of them are shown as 
+#' wordclouds. Optionally one can draw related (expression) data on panels atop 
+#' of the wordclouds. 
 #' 
-#' In most cases the function can decide which type of plot to draw into the panel part. 
-#' If there is no data explicitly put into the Data slots of the gosummaries object, it 
-#' just draws a horizontal barplot with the numbers of genes. On visualizing the PCA 
-#' data it draws histogram of the samples on the principal axes. For clustering and 
-#' differential expression it draws the boxplot of expression values.   
+#' In most cases the function can decide which type of plot to draw into the 
+#' panel part. If there is no data explicitly put into the Data slots of the 
+#' gosummaries object, it just draws a horizontal barplot with the numbers of 
+#' genes. On visualizing the PCA data it draws histogram of the samples on the 
+#' principal axes. For clustering and differential expression it draws the 
+#' boxplot of expression values.   
 #'
 #' @param x a gosummaries object
 #' @param components index for the components to draw. 
-#' @param classes name of the variable from annotation data.frame that defines the colors in the plot
+#' @param classes name of the variable from annotation data.frame that defines 
+#' the colors in the plot
 #' @param panel_plot plotting function for panel  
-#' @param panel_customize customization function for the panel plot, menat for making 
-#' small changes like changing colour scheme
+#' @param panel_customize customization function for the panel plot, menat for 
+#' making small changes like changing colour scheme
 #' @param panel_par list of arguments passed on to \code{panel_plot} function
-#' @param panel_height panel height as number of lines, with given \code{fontsize}. If 
-#' set to 0 no panel is drawn. 
+#' @param panel_height panel height as number of lines, with given 
+#' \code{fontsize}. If set to 0 no panel is drawn. 
 #' @param panel_width panel width in lines of text
 #' @param fontsize font size used throughout the figure in points
-#' @param term_length maximum length of the dispalyed GO categories in characters, 
-#' longer names are cropped to this size
-#' @param wordcloud_colors two element vector of colors to define color scheme for 
-#' displaying the enrichment p-values across the wordclouds. First element defines the 
-#' color for category with worst p-value and the second for the word with the best. Set 
-#' the same value for both if you want to remove the color scale and the legend. 
+#' @param term_length maximum length of the dispalyed GO categories in 
+#' characters, longer names are cropped to this size
+#' @param wordcloud_colors two element vector of colors to define color scheme 
+#' for displaying the enrichment p-values across the wordclouds. First element 
+#' defines the color for category with worst p-value and the second for the 
+#' word with the best. Set the same value for both if you want to remove the 
+#' color scale and the legend. 
 #' @param wordcloud_legend_title title of wordcloud legend 
-#' @param filename file path where to save the picture. Filetype is decided by the 
-#' extension in the path. Currently following formats are supported: png, pdf, tiff, 
-#' bmp, jpeg. Even if the plot does not fit into the plotting window, the file size is 
-#' calculated so that the plot would fit there.
+#' @param filename file path where to save the picture. Filetype is decided by 
+#' the extension in the path. Currently following formats are supported: png, 
+#' pdf, tiff, bmp, jpeg. Even if the plot does not fit into the plotting 
+#' window, the file size is calculated so that the plot would fit there.
 #' @param \dots not used
 #' 
 #' @return The \code{\link{gtable}} object containing the figure
@@ -1415,25 +1478,28 @@ customize = function(p, par){
 #' # Selecting only certain components
 #' plot(gs_limma, components = c(1, 3), fontsize = 8)
 #' 
-#' # Cutting the longer terms shorter (see the effect on the right wordcloud on first component)
+#' # Cutting the longer terms shorter (see right wordcloud on first component)
 #' plot(gs_limma, term_length = 20, fontsize = 8) 
 #' 
 #' # Change wordcloud colors
-#' plot(gs_limma, term_length = 20, wordcloud_colors = c("#C6DBEF", "#08306B"), fontsize = 8)
+#' plot(gs_limma, term_length = 20, wordcloud_colors = c("#C6DBEF", "#08306B"), 
+#'      fontsize = 8)
 #' 
 #' # Adjust panel plot type (see panel_boxplot help for options)
 #' data(gs_kmeans)
 #' 
-#' plot(gs_kmeans, panel_plot = panel_violin, classes = "Tissue", components = 1:2, fontsize = 8)
-#' plot(gs_kmeans, panel_plot = panel_violin_box, classes = "Tissue", components = 1:2, fontsize = 8)
+#' plot(gs_kmeans, panel_plot = panel_violin, classes = "Tissue", components = 
+#'      1:2, fontsize = 8)
+#' plot(gs_kmeans, panel_plot = panel_violin_box, classes = "Tissue", 
+#'      components = 1:2, fontsize = 8)
 #' 
 #' # Adjust colorscheme for plot (see customize help for more information) 
 #' cust = function(p, par){
-#' 	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 2)
-#' 	return(p)
+#'   p = p + scale_fill_brewer(par$classes, type = "qual", palette = 2)
+#'   return(p)
 #' }
-#' plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, classes = "Tissue", components = 1:2, fontsize = 8)
-#' 
+#' plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, 
+#'      classes = "Tissue", components = 1:2, fontsize = 8)
 #' }
 #' @method plot gosummaries
 #' 
@@ -1441,8 +1507,12 @@ customize = function(p, par){
 plot.gosummaries = function(x, components = 1:min(10, length(x)), classes = NA, panel_plot = NULL, panel_customize = NULL, panel_par = list(), panel_height = 5, panel_width = 30, fontsize = 10, term_length = 35, wordcloud_colors = c("grey70", "grey10"), wordcloud_legend_title = NULL, filename = NA, ...){
 	
 	# Check input
-	if(!is.gosummaries(x)) stop("Function requires an object of gosummaries type")
-	if(any(!(components %in% 1:length(x)))) stop("Selected components are not present in data")
+	if(!is.gosummaries(x){
+		stop("Function requires an object of gosummaries type")
+	} 
+	if(any(!(components %in% 1:length(x)))){
+		stop("Selected components are not present in data")
+	} 
 	
 	# Add classes to panel_par
 	if(!is.na(classes)){
@@ -1468,20 +1538,22 @@ plot.gosummaries = function(x, components = 1:min(10, length(x)), classes = NA, 
 	
 	
 	# Attach default plotting method if it is not set
+	first_comp_data = x[[1]]$Data
 	if(is.null(panel_plot)){
-		if (is.null(x[[1]]$Data)){
+		if (is.null(first_comp_data)){
 			panel_height = 0
 		}
-		else if(inherits(x[[1]]$Data, "dummyData")){
+		else if(inherits(first_comp_data, "dummyData")){
 			if(panel_height == 5){
 				panel_height = 3
 			}
 			panel_plot = panel_dummy
 		}
-		else if(inherits(x[[1]]$Data, "pcaData")){
+		else if(inherits(first_comp_data, "pcaData")){
 			panel_plot = panel_histogram
 		}
-		else if(inherits(x[[1]]$Data, "oneListExpData") | inherits(x[[1]]$Data, "twoListExpData")){
+		else if(inherits(first_comp_data, "oneListExpData") | 
+				inherits(first_comp_data, "twoListExpData")){
 			panel_plot = panel_boxplot
 		}
 		
@@ -1491,7 +1563,7 @@ plot.gosummaries = function(x, components = 1:min(10, length(x)), classes = NA, 
 	}
 	
 	if(is.null(panel_customize)){
-		if(inherits(x[[1]]$Data, "dummyData")){
+		if(inherits(first_comp_data, "dummyData")){
 			panel_customize = customize_dummy
 		}
 		else{
@@ -1512,7 +1584,8 @@ plot.gosummaries = function(x, components = 1:min(10, length(x)), classes = NA, 
 	# Take the panel plot to proper format 
 	plot_panel = panelize_ggplot2(panel_plot, panel_customize, panel_par)
 	
-	invisible(plot_motor(x, plot_panel = plot_panel, par = par, filename = filename))
+	invisible(plot_motor(x, plot_panel = plot_panel, par = par, 
+						 filename = filename))
 }
 
 ##
@@ -1521,7 +1594,8 @@ plot.gosummaries = function(x, components = 1:min(10, length(x)), classes = NA, 
 convert_gene_ids = function(unique_ids, gconvert_target, organism){
 	if(!is.null(gconvert_target)){
 		cat(sprintf("%s\n", "Convert IDs"))
-		gcr = gProfileR::gconvert(unique_ids, target = gconvert_target, organism = organism)
+		gcr = gProfileR::gconvert(unique_ids, target = gconvert_target, 
+								  organism = organism)
 		gcr = ddply(gcr, "alias", function(x){
 			if(nrow(x) == 1){
 				return(x)
@@ -1561,7 +1635,8 @@ pspearman = function(rho, n, lower.tail = TRUE) {
 	q = (n^3 - n) * (1 - rho) / 6
 	den = (n * (n^2 - 1)) / 6 + 1 
 	r = 1 - q/den
-	p = pt(r / sqrt((1 - r ^ 2) / (n - 2)), df = n - 2, lower.tail = !lower.tail)
+	p = pt(r / sqrt((1 - r ^ 2) / (n - 2)), df = n - 2, 
+		   lower.tail = !lower.tail)
 	
 	return(p)
 }
@@ -1570,14 +1645,15 @@ spearman_mds = function(pc, expression, n_genes){
 	n = ncol(expression)
 	cc = cor(t(expression), pc)[,1]
 	res = data.frame(Term = names(cc), Correlation = cc)
-	res$Score = pmin(pspearman(res$Correlation, n, lower.tail = FALSE), pspearman(res$Correlation, n, lower.tail = TRUE))
+	res$Score = pmin(pspearman(res$Correlation, n, lower.tail = FALSE), 
+					 pspearman(res$Correlation, n, lower.tail = TRUE))
 	res = res[order(abs(res$Correlation), decreasing = TRUE), ]
 	
 	n_up = sum(res$Correlation > 0)
 	n_down = sum(res$Correlation < 0)
 	
 	res = list(
-		res[res$Correlation < 0, c("Term", "Score")][1:min(n_down, 2 * n_genes), ],
+		res[res$Correlation < 0, c("Term", "Score")][1:min(n_down, 2*n_genes),],
 		res[res$Correlation > 0, c("Term", "Score")][1:min(n_up, 2 * n_genes), ]
 	)
 	
@@ -1595,29 +1671,33 @@ spearman_mds = function(pc, expression, n_genes){
 #'  \code{\link{gosummaries.prcomp}}. Difference from PCA is that, in general,
 #'  we do not have the loadings for individual genes that could be used to 
 #' associate genes with components. However, it is possible to find genes that
-#'  are most correlated with each component. This function uses Spearman correlation
-#'  coefficient to find most correlated features. The significance of the correlation 
-#' values is decided using he approximation with t-distribution.
+#'  are most correlated with each component. This function uses Spearman 
+#' correlation coefficient to find most correlated features. The significance 
+#' of the correlation values is decided using he approximation with 
+#' t-distribution.
 #' 
-#' The function can also display genes instead of their GO annotations, while the sizes 
-#' of the gene names correspond to the Spearman correlation p-values. The corresponding
-#' parameters are described in more detail in \code{\link{gosummaries.MArrayLM}}. This 
-#' feature is important in applications, like metabolomics and metagenomics, where the 
-#' features are not genes and it is not possible to run GO enrichment analysis.
+#' The function can also display genes instead of their GO annotations, while 
+#' the sizes of the gene names correspond to the Spearman correlation p-values. 
+#' The corresponding parameters are described in more detail in 
+#' \code{\link{gosummaries.MArrayLM}}. This feature is important in 
+#' applications, like metabolomics and metagenomics, where the features are not 
+#' genes and it is not possible to run GO enrichment analysis.
 #' 
 #' @param x a matrix representation of multi dimensional scaling result, rows
 #' correspond to samples
 #' @param exp an expression matrix, with columns corresponding to samples 
 #' (these have to be in the same order as in \code{x})
-#' @param annotation a \code{data.frame} describing the samples, its row names should 
-#' match with column names of \code{exp} (Optional)
+#' @param annotation a \code{data.frame} describing the samples, its row names 
+#' should match with column names of \code{exp} (Optional)
 #' @param components numeric vector of comparisons to annotate
-#' @param show_genes logical showing if GO categories or actual genes are shown in word clouds
-#' @param gconvert_target specifies gene ID format for genes showed in word cloud. The 
-#' name of the format is passed to \code{\link{gconvert}}, if NULL original IDs are shown.
+#' @param show_genes logical showing if GO categories or actual genes are shown 
+#' in word clouds
+#' @param gconvert_target specifies gene ID format for genes showed in word 
+#' cloud. The name of the format is passed to \code{\link{gconvert}}, if NULL 
+#' original IDs are shown.
 #' @param n_genes maximum number of genes shown in a word cloud
-#' @param organism the organism that the gene lists correspond to. The format should be 
-#' as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
+#' @param organism the organism that the gene lists correspond to. The format 
+#' should be as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
 #' @param \dots GO annotation filtering parameters as defined in 
 #' \code{\link{gosummaries.default}}
 #' @return A gosummaries object.
@@ -1633,7 +1713,8 @@ spearman_mds = function(pc, expression, n_genes){
 #' pcoa = cmdscale(vegdist(t(metagenomic_example$otu), "bray"), k = 3)
 #' 
 #' # By turning off the GO analysis we can show the names of taxa
-#' gs = gosummaries(pcoa, metagenomic_example$otu, metagenomic_example$annot, show_genes = TRUE, gconvert_target = NULL, n_genes = 30)
+#' gs = gosummaries(pcoa, metagenomic_example$otu, metagenomic_example$annot, 
+#'                  show_genes = TRUE, gconvert_target = NULL, n_genes = 30)
 #' 
 #' plot(gs, class = "BodySite", fontsize = 8)
 #' }
@@ -1652,27 +1733,38 @@ gosummaries.matrix = function(x, exp = NULL, annotation = NULL, components = 1:m
 	# Create wordcloud data
 	wc_data = list()
 	for(i in components){
-		wc_data[[sprintf("Component %d", i)]] = spearman_mds(x[, i], exp, n_genes)
+		component_name = sprintf("Component %d", i)
+		wc_data[[component_name]] = spearman_mds(x[, i], exp, n_genes)
 	}
 	
 	# Create gosummaries object
 	if(!show_genes){
-		gl = plyr::llply(wc_data, plyr::llply, function(x) as.character(x$Term)[1:n_genes])
+		gl = plyr::llply(wc_data, plyr::llply, function(x){
+			as.character(x$Term)[1:n_genes]
+		})
 		
 		gosummaries = gosummaries.default(gl, organism = organism, ...)
 	}
 	else{
-		unique_ids = unlist(plyr::llply(wc_data, plyr::llply, function(x) as.character(x$Term)[1:n_genes]))
+		unique_ids = unlist(plyr::llply(wc_data, plyr::llply, function(x){
+			as.character(x$Term)[1:n_genes]
+		}))
 		i2g = convert_gene_ids(unique_ids, gconvert_target, organism)
 		
-		wc_data = plyr::llply(wc_data, plyr::llply, function(x){filter_wc_data(x, i2g, n_genes)})
+		wc_data = plyr::llply(wc_data, plyr::llply, function(x){
+			filter_wc_data(x, i2g, n_genes)
+		})
 		
-		gosummaries = gosummaries_base(gl = NULL, wc_data = wc_data, wc_algorithm = "top", score_type = "p-value", wordcloud_legend_title = "Spearman p-value")
+		gosummaries = gosummaries_base(gl = NULL, wc_data = wc_data, 
+									   wc_algorithm = "top", 
+									   score_type = "p-value",
+									wordcloud_legend_title = "Spearman p-value")
 	}
 	
 	# Add histogram data 
 	gosummaries = add_pca.gosummaries(gosummaries, x, annotation)
-	gosummaries = add_to_slot.gosummaries(gosummaries, "Percentage", rep("   ", length(components)))
+	gosummaries = add_to_slot.gosummaries(gosummaries, "Percentage", 
+										  rep("   ", length(components)))
 	
 	return(gosummaries)
 }
@@ -1680,42 +1772,47 @@ gosummaries.matrix = function(x, exp = NULL, annotation = NULL, components = 1:m
  
 #' Prepare gosummaries object based on PCA results 
 #' 
-#' The PCA results are converted into a gosummaries object, by extracting genes with the 
-#' largest positive and negative weights from each component. 
+#' The PCA results are converted into a gosummaries object, by extracting genes 
+#' with the largest positive and negative weights from each component. 
 #' 
-#' The usual visualisation of PCA results displays the projections of sample expression  
-#' on the principal axes. It shows if and how the samples cluster, but not why do they  
-#' behave like that. Actually, it is possible to go further and annotate the axes by 
-#' studying genes that have the largest influence in the linear combinations that define 
-#' the principal components. For example, high expression of genes with large negative 
-#' weights pushes the samples projection to the negative side of the principal axis and 
-#' large positive weigths to the positive side. If a sample has highly expressed genes 
-#' in both groups it stays most probably in the middle. If we annotate functionally the 
-#' genes with highest positive and negative weights for each of the principal axes, then 
-#' it is possible to say which biological processes drive the separation of samples on 
-#' them.   
+#' The usual visualisation of PCA results displays the projections of sample 
+#' expression on the principal axes. It shows if and how the samples cluster, 
+#' but not why do they behave like that. Actually, it is possible to go further 
+#' and annotate the axes by studying genes that have the largest influence in 
+#' the linear combinations that define the principal components. For example, 
+#' high expression of genes with large negative weights pushes the samples 
+#' projection to the negative side of the principal axis and large positive 
+#' weigths to the positive side. If a sample has highly expressed genes in both 
+#' groups it stays most probably in the middle. If we annotate functionally the 
+#' genes with highest positive and negative weights for each of the principal 
+#' axes, then it is possible to say which biological processes drive the 
+#' separation of samples on them.   
 #' 
-#' This function creates a gosummaries object for such analysis. It expects the results 
-#' of \code{\link{prcomp}} function. It assumes that the PCA was done on samples and, 
-#' thus, the row names of the rotation matrix can be interpreted as gene names. For each 
-#' component it annotates \code{n_genes} elements with highest positive and negative 
-#' weights.
+#' This function creates a gosummaries object for such analysis. It expects the 
+#' results of \code{\link{prcomp}} function. It assumes that the PCA was done 
+#' on samples and, thus, the row names of the rotation matrix can be 
+#' interpreted as gene names. For each component it annotates \code{n_genes} 
+#' elements with highest positive and negative weights.
 #' 
-#' The function can also display genes instead of their GO annotations, while the sizes 
-#' of the gene names correspond to the PCA loadings. The corresponding parameters are 
-#' described in more detail in \code{\link{gosummaries.MArrayLM}}.
+#' The function can also display genes instead of their GO annotations, while 
+#' the sizes of the gene names correspond to the PCA loadings. The 
+#' corresponding parameters are described in more detail in 
+#' \code{\link{gosummaries.MArrayLM}}.
 #'     
 #' @param x an object of class \code{prcomp}
-#' @param annotation a \code{data.frame} describing the samples, its row names should match 
-#' with column names of the projection matrix in x
+#' @param annotation a \code{data.frame} describing the samples, its row names 
+#' should match with column names of the projection matrix in x
 #' @param components numeric vector of components to include 
-#' @param show_genes logical showing if GO categories or actual genes are shown in word clouds
-#' @param gconvert_target specifies gene ID format for genes showed in word cloud. The 
-#' name of the format is passed to \code{\link{gconvert}}, if NULL original IDs are shown.
-#' @param n_genes shows the number of genes used for annotating the component, in case gene 
-#' names are shown, it is the maximum number of genes shown in a word cloud
-#' @param organism the organism that the gene lists correspond to. The format should be 
-#' as follows: "hsapiens", "mmusculus", "scerevisiae", etc
+#' @param show_genes logical showing if GO categories or actual genes are shown 
+#' in word clouds
+#' @param gconvert_target specifies gene ID format for genes showed in word 
+#' cloud. The name of the format is passed to \code{\link{gconvert}}, if NULL 
+#' original IDs are shown.
+#' @param n_genes shows the number of genes used for annotating the component, 
+#' in case gene names are shown, it is the maximum number of genes shown in a 
+#' word cloud
+#' @param organism the organism that the gene lists correspond to. The format 
+#' should be as follows: "hsapiens", "mmusculus", "scerevisiae", etc
 #' @param \dots GO annotation filtering parameters as defined in 
 #' \code{\link{gosummaries.default}}
 #' @return  A gosummaries object.
@@ -1736,7 +1833,8 @@ gosummaries.matrix = function(x, exp = NULL, annotation = NULL, components = 1:m
 #' pca = prcomp(t(metabolomic_example$data))
 #' 
 #' # Turn off GO enricment, since it does not work on metabolites
-#' gs = gosummaries(pca, annotation = metabolomic_example$annot, show_gene = TRUE, gconvert_target = NULL)
+#' gs = gosummaries(pca, annotation = metabolomic_example$annot, 
+#'                  show_gene = TRUE, gconvert_target = NULL)
 #' plot(gs, class = "Tissue", components = 1:3, fontsize = 8)
 #' 
 #' @method gosummaries prcomp
@@ -1746,26 +1844,42 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_gene
 	
 	gl = list()
 	for(i in components){
-		gl[[sprintf("Principal component %d", i)]] = list(
-			gl1 = rownames(x$rotation)[order((x$rotation[, components[i]]))][1:n_genes],
-			gl2 = rownames(x$rotation)[order(-(x$rotation[, components[i]]))][1:n_genes]
+		comp_name = sprintf("Principal component %d", i)
+		comp_weights = x$rotation[, i]
+		genes = rownames(x$rotation)
+		
+		gl[[comp_name]] = list(
+			gl1 = genes[order((comp_weights))][1:n_genes],
+			gl2 = genes[order(-(comp_weights))][1:n_genes]
 		) 
 	}
 	
 	if(show_genes){
-		unique_ids = unique(unlist(llply(gl, llply, function(x) x[1:min(length(x), 2 * n_genes)])))
+		unique_ids = unique(unlist(llply(gl, llply, function(x){
+			x[1:min(length(x), 2 * n_genes)]
+		})))
 		
 		i2g = convert_gene_ids(unique_ids, gconvert_target, organism)
 		
 		# Create tables for wordclouds
 		wc_data = list()
 		for(i in components){
-			n_up = sum(x$rotation[, components[i]] > 0)
-			ind_up = order(-(x$rotation[, components[i]]))[1:min(n_up, 2 * n_genes)]
-			wc_data_up = data.frame(Term = rownames(x$rotation)[ind_up], Score = x$rotation[ind_up, components[i]])
-			n_down = sum(x$rotation[, components[i]] < 0)
-			ind_down = order((x$rotation[, components[i]]))[1:min(n_down, 2 * n_genes)]
-			wc_data_down = data.frame(Term = rownames(x$rotation)[ind_down], Score = -x$rotation[ind_down, components[i]])
+			comp_weights = x$rotation[, i]
+			genes = rownames(x$rotation)
+			
+			n_up = sum(comp_weights > 0)
+			ind_up = order(-(comp_weights))[1:min(n_up, 2 * n_genes)]
+			wc_data_up = data.frame(
+				Term = genes[ind_up], 
+				Score = comp_weights[ind_up]
+			)
+			
+			n_down = sum(comp_weights < 0)
+			ind_down = order((comp_weights))[1:min(n_down, 2 * n_genes)]
+			wc_data_down = data.frame(
+				Term = genes[ind_down], 
+				Score = -comp_weights[ind_down]
+			)
 			
 			wc_data_up = filter_wc_data(wc_data_up, i2g, n_genes)
 			wc_data_down = filter_wc_data(wc_data_down, i2g, n_genes)
@@ -1780,13 +1894,19 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_gene
 		}
 		
 		# Create gosummaries object
-		gosummaries = gosummaries_base(gl = gl, wc_data = wc_data, wc_algorithm = "top", score_type = "count", wordcloud_legend_title = "PCA weight")	
+		gosummaries = gosummaries_base(gl = gl, wc_data = wc_data, 
+									   wc_algorithm = "top", 
+									   score_type = "count", 
+									   wordcloud_legend_title = "PCA weight")	
 	}
 	else{
 		gosummaries = gosummaries.default(gl, organism = organism,  ...)
 	}
 	
-	gosummaries = add_to_slot.gosummaries(gosummaries, "Percentage", paste(round((x$sdev ** 2)[components] / sum(x$sdev ** 2) * 100), "%", sep = ""))
+	percentages = round((x$sdev ** 2)[components] / sum(x$sdev ** 2) * 100
+	percentages = paste(percentages, "%", sep = "")
+	gosummaries = add_to_slot.gosummaries(gosummaries, "Percentage", 
+										  percentages)
 	gosummaries = add_pca.gosummaries(gosummaries, x, annotation)
 	
 	return(gosummaries)
@@ -1795,27 +1915,28 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_gene
  
 #' Prepare gosummaries object based on k-means results 
 #' 
-#' The gosummaries object is created based on the genes in the clusters, it is possible 
-#' to add corresponding gene expression data as well.
+#' The gosummaries object is created based on the genes in the clusters, it is 
+#' possible to add corresponding gene expression data as well.
 #' 
-#' The k-means clustering of expression matrix naturally defines a set of gene lists 
-#' that can be annotated functionally and displayed as a GOsummaries figure. This 
-#' functon takes in a \code{kmeans} object and and converts it to a \code{gosummaries} 
-#' object that can be plotted. If expression matrix is attached then the panel shows the 
-#' expression values for each gene as boxplots, if not then number of genes is displayed
+#' The k-means clustering of expression matrix naturally defines a set of gene 
+#' lists that can be annotated functionally and displayed as a GOsummaries  
+#' figure. This functon takes in a \code{kmeans} object and and converts it to 
+#' a \code{gosummaries} object that can be plotted. If expression matrix is 
+#' attached then the panel shows the expression values for each gene as 
+#' boxplots, if not then number of genes is displayed
 #' 
-#' It is advisable to filter some genes out before doing the clustering since the very 
-#' large gene lists (more than 2000 genes) might fail the annotation step and are 
-#' usually not too specific either.  
+#' It is advisable to filter some genes out before doing the clustering since 
+#' the very large gene lists (more than 2000 genes) might fail the annotation 
+#' step and are usually not too specific either.  
 #'
 #' @param x an object of class \code{kmeans}
-#' @param exp an expression matrix, with row names corresponding to the names of the 
-#' genes in clusters (Optional)
-#' @param annotation a \code{data.frame} describing the samples, its row names should 
-#' match with column names of \code{exp} (Optional)
+#' @param exp an expression matrix, with row names corresponding to the names 
+#' of the genes in clusters (Optional)
+#' @param annotation a \code{data.frame} describing the samples, its row names 
+#' should match with column names of \code{exp} (Optional)
 #' @param components numeric vector of clusters to annotate
-#' @param organism the organism that the gene lists correspond to. The format should be 
-#' as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
+#' @param organism the organism that the gene lists correspond to. The format 
+#' should be as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
 #' @param \dots GO annotation filtering parameters as defined in 
 #' \code{\link{gosummaries.default}} 
 #' @return  A gosummaries object.
@@ -1846,7 +1967,8 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 		gl[[sprintf("Cluster %d", i)]] = names(x$cluster[x$cluster == i])
 	}
 	
-	gosummaries = gosummaries.default(gl, organism = organism, ordered_query = FALSE,  ...)
+	gosummaries = gosummaries.default(gl, organism = organism, 
+									  ordered_query = FALSE,  ...)
 	
 	if(!is.null(exp)){
 		gosummaries = add_expression.gosummaries(gosummaries, exp, annotation)
@@ -1858,38 +1980,42 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
  
 #' Prepare gosummaries object based on limma results
 #' 
-#' The gosummaries object is created based on the differentially expresed genes, each 
-#' contrast defines one component.
+#' The gosummaries object is created based on the differentially expresed 
+#' genes, each contrast defines one component.
 #' 
-#' The usual differential expression analysis involves making several comparisons 
-#' between treatments ehere each one yields an up and down regulated gene list. In a 
-#' GOsummaries figure each comparison is displayed as one component with two wordclouds. 
-#' If expression matrix is attached then the panel shows the expression values for each 
-#' gene as boxplots, if not then number of genes is displayed 
+#' The usual differential expression analysis involves making several 
+#' comparisons between treatments ehere each one yields an up and down 
+#' regulated gene list. In a GOsummaries figure each comparison is displayed as 
+#' one component with two wordclouds. If expression matrix is attached then the 
+#' panel shows the expression values for each gene as boxplots, if not then 
+#' number of genes is displayed 
 #' 
-#' It is possible to show the gene names instead of GO annotations in the wordclouds. 
-#' The word sizes in wordclouds are defined by the limma p-values.  
-#' As the gene identifiers in expression matrices are usually rather unintelligible then 
-#' they are automatically converted into gene names using  \code{\link{gconvert}}
-#'  function. It is possible to show also the original identifiers by setting
-#'  \code{gconvert_target} to NULL. This can be useful if the values do not correspond 
-#' to genes, but for example metabolites.  
+#' It is possible to show the gene names instead of GO annotations in the 
+#' wordclouds. The word sizes in wordclouds are defined by the limma p-values. 
+#' As the gene identifiers in expression matrices are usually rather 
+#' unintelligible then they are automatically converted into gene names using  
+#' \code{\link{gconvert}} function. It is possible to show also the original 
+#' identifiers by setting \code{gconvert_target} to NULL. This can be useful if 
+#' the values do not correspond to genes, but for example metabolites.  
 #'
 #' @param x an object of class \code{MArrayLM}
 #' @param p.value p-value threshold as defined in topTable
 #' @param lfc log fold change threshold as defined in topTable
-#' @param adjust.method multiple testing adjustment method as defined in topTable
-#' @param exp an expression matrix, with row names corresponding to the names of the 
-#' genes in clusters (Optional)
-#' @param annotation a \code{data.frame} describing the samples, its row names should 
-#' match with column names of \code{exp} (Optional)
+#' @param adjust.method multiple testing adjustment method as defined in 
+#' topTable
+#' @param exp an expression matrix, with row names corresponding to the names 
+#' of the genes in clusters (Optional)
+#' @param annotation a \code{data.frame} describing the samples, its row names 
+#' should match with column names of \code{exp} (Optional)
 #' @param components numeric vector of comparisons to annotate
-#' @param show_genes logical showing if GO categories or actual genes are shown in word clouds
-#' @param gconvert_target specifies gene ID format for genes showed in word cloud. The 
-#' name of the format is passed to \code{\link{gconvert}}, if NULL original IDs are shown.
+#' @param show_genes logical showing if GO categories or actual genes are shown 
+#' in word clouds
+#' @param gconvert_target specifies gene ID format for genes showed in word 
+#' cloud. The name of the format is passed to \code{\link{gconvert}}, if NULL 
+#' original IDs are shown.
 #' @param n_genes maximum number of genes shown in a word cloud
-#' @param organism the organism that the gene lists correspond to. The format should be 
-#' as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
+#' @param organism the organism that the gene lists correspond to. The format 
+#' should be as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
 #' @param \dots GO annotation filtering parameters as defined in 
 #' \code{\link{gosummaries.default}}
 #' @return A gosummaries object.
@@ -1903,14 +2029,18 @@ gosummaries.kmeans = function(x, exp = NULL, annotation = NULL, components = 1:l
 #' mm = model.matrix(~ factor(tissue_example$annot$Tissue) - 1)
 #' colnames(mm) = make.names(levels(factor(tissue_example$annot$Tissue)))
 #' 
-#' contrast = limma::makeContrasts(brain - cell.line, hematopoietic.system - muscle, cell.line - hematopoietic.system, levels = colnames(mm))
+#' contrast = limma::makeContrasts(brain - cell.line, 
+#'                                 hematopoietic.system - muscle, 
+#'                                 cell.line - hematopoietic.system, 
+#'                                 levels = colnames(mm))
 #' 
 #' fit = limma::lmFit(tissue_example$exp, mm)
 #' fit = limma::contrasts.fit(fit, contrast)
 #' fit = limma::eBayes(fit)
 #' 
 #' gs_limma = gosummaries(fit)
-#' gs_limma_exp = gosummaries(fit, exp = tissue_example$exp, annotation = tissue_example$annot)
+#' gs_limma_exp = gosummaries(fit, exp = tissue_example$exp, 
+#'                            annotation = tissue_example$annot)
 #' 
 #' plot(gs_limma, fontsize = 8)
 #' plot(gs_limma, panel_height = 0, fontsize = 8)
@@ -1926,7 +2056,8 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 	gl = list()
 	perc = list()
 	for(i in components){
-		tt = limma::topTable(x, coef = i, p.value = p.value, lfc = lfc, adjust.method = adjust.method, number = Inf)
+		tt = limma::topTable(x, coef = i, p.value = p.value, lfc = lfc,
+			                 adjust.method = adjust.method, number = Inf)
 		tt$ID = rownames(tt)
 		
 		gl_up = as.character(tt$ID[tt$logFC > 0])
@@ -1936,7 +2067,8 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 		g2 = paste(rownames(x$contrasts)[x$contrasts[, i] > 0], collapse = ", ")
 		
 		title = sprintf("G1: %s; G2: %s", g1, g2)
-		perc[[i]] = sprintf("G1 > G2: %d\nG1 < G2: %d", length(gl_down), length(gl_up))
+		perc[[i]] = sprintf("G1 > G2: %d\nG1 < G2: %d", length(gl_down), 
+							length(gl_up))
 		
 		gl[[title]] = list(
 			gl1 = gl_down,
@@ -1948,14 +2080,19 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 	if(show_genes){
 		# Convert IDs
 		# unique_ids = unique(unlist(gl))
-		unique_ids = unique(unlist(llply(gl, llply, function(x) x[1:min(length(x), 2 * n_genes)])))
+		unique_ids = unique(unlist(llply(gl, llply, function(x){
+			x[1:min(length(x), 2 * n_genes)]
+		})))
 		
 		i2g = convert_gene_ids(unique_ids, gconvert_target, organism)
 		
 		# Create tables for wordclouds
 		wc_data = list()
+		flevels = rownames(x$contrasts)
 		for(i in components){
-			tt = limma::topTable(x, coef = i, p.value = p.value, lfc = lfc, adjust.method = adjust.method, number = Inf)
+			
+			tt = limma::topTable(x, coef = i, p.value = p.value, lfc = lfc, 
+								 adjust.method = adjust.method, number = Inf)
 			tt$ID = rownames(tt)
 		
 			wc_data_up = tt[tt$logFC > 0, c("ID", "adj.P.Val")]
@@ -1967,8 +2104,8 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 			wc_data_up = filter_wc_data(wc_data_up, i2g, n_genes)
 			wc_data_down = filter_wc_data(wc_data_down, i2g, n_genes)
 			
-			g1 = paste(rownames(x$contrasts)[x$contrasts[, i] < 0], collapse = ", ")
-			g2 = paste(rownames(x$contrasts)[x$contrasts[, i] > 0], collapse = ", ")
+			g1 = paste(flevels[x$contrasts[, i] < 0], collapse = ", ")
+			g2 = paste(flevels[x$contrasts[, i] > 0], collapse = ", ")
 		
 			title = sprintf("G1: %s; G2: %s", g1, g2)
 			
@@ -1979,7 +2116,8 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
 		}
 		
 		# Create gosummaries object
-		gosummaries = gosummaries_base(gl = gl, wc_data = wc_data, wc_algorithm = "top")
+		gosummaries = gosummaries_base(gl = gl, wc_data = wc_data, 
+									   wc_algorithm = "top")
 		gosummaries = add_dummydata.gosummaries(gosummaries)
 	}
 	else{
