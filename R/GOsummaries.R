@@ -1162,9 +1162,11 @@ panel_crossbar = function(data, fontsize = 10, par){
 #' 
 #' These functions are used to draw the panel portion of every component based 
 #' on the Data slots in gosummaries object. These concrete functions assume the 
-#' data is presented as does \code{\link{add_expression.gosummaries}}. They 
+#' data is presented as done by \code{\link{add_expression.gosummaries}}. They 
 #' provide three  options: boxplot, violin plot (which shows the distrubution 
-#' more precisely) and both combined.
+#' more precisely) and both combined. Additionally it is possible to combine 
+#' the values from one each functional group into one box/violin plot using 
+#' the corresponding functions ending with "_classes".
 #' 
 #' These functions specify in principle the general setting for the panels, 
 #' like which "geom"-s, how the data is transformed and summarized, etc. To 
@@ -1308,7 +1310,8 @@ combine_classes = function(data, par){
 	return(data)
 }
 
-
+#' @rdname panel_boxplot
+#' @export
 panel_boxplot_classes = function(data, fontsize = 10, par){
 	data = combine_classes(data, par)
 	
@@ -1317,6 +1320,8 @@ panel_boxplot_classes = function(data, fontsize = 10, par){
 	return(p)
 }
 
+#' @rdname panel_boxplot
+#' @export
 panel_violin_classes = function(data, fontsize = 10, par){
 	data = combine_classes(data, par)
 	
@@ -1325,6 +1330,9 @@ panel_violin_classes = function(data, fontsize = 10, par){
 	return(p)
 }
 
+
+#' @rdname panel_boxplot
+#' @export
 panel_violin_box_classes = function(data, fontsize = 10, par){
 	data = combine_classes(data, par)
 	
@@ -1511,7 +1519,7 @@ customize = function(p, par){
 plot.gosummaries = function(x, components = 1:min(10, length(x)), classes = NA, panel_plot = NULL, panel_customize = NULL, panel_par = list(), panel_height = 5, panel_width = 30, fontsize = 10, term_length = 35, wordcloud_colors = c("grey70", "grey10"), wordcloud_legend_title = NULL, filename = NA, ...){
 	
 	# Check input
-	if(!is.gosummaries(x){
+	if(!is.gosummaries(x)){
 		stop("Function requires an object of gosummaries type")
 	} 
 	if(any(!(components %in% 1:length(x)))){
@@ -1906,7 +1914,7 @@ gosummaries.prcomp = function(x, annotation = NULL, components = 1:10, show_gene
 		gosummaries = gosummaries.default(gl, organism = organism,  ...)
 	}
 	
-	percentages = round((x$sdev ** 2)[components] / sum(x$sdev ** 2) * 100
+	percentages = round((x$sdev ** 2)[components] / sum(x$sdev ** 2) * 100)
 	percentages = paste(percentages, "%", sep = "")
 	gosummaries = add_to_slot.gosummaries(gosummaries, "Percentage", 
 										  percentages)

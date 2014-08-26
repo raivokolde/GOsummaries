@@ -15,25 +15,28 @@
 
 \item{lfc}{log fold change threshold as defined in topTable}
 
-\item{adjust.method}{multiple testing adjustment method as defined in topTable}
+\item{adjust.method}{multiple testing adjustment method as defined in
+topTable}
 
-\item{exp}{an expression matrix, with row names corresponding to the names of the
-genes in clusters (Optional)}
+\item{exp}{an expression matrix, with row names corresponding to the names
+of the genes in clusters (Optional)}
 
-\item{annotation}{a \code{data.frame} describing the samples, its row names should
-match with column names of \code{exp} (Optional)}
+\item{annotation}{a \code{data.frame} describing the samples, its row names
+should match with column names of \code{exp} (Optional)}
 
 \item{components}{numeric vector of comparisons to annotate}
 
-\item{show_genes}{logical showing if GO categories or actual genes are shown in word clouds}
+\item{show_genes}{logical showing if GO categories or actual genes are
+shown in word clouds}
 
-\item{gconvert_target}{specifies gene ID format for genes showed in word cloud. The
-name of the format is passed to \code{\link{gconvert}}, if NULL original IDs are shown.}
+\item{gconvert_target}{specifies gene ID format for genes showed in word
+cloud. The name of the format is passed to \code{\link{gconvert}}, if NULL
+original IDs are shown.}
 
 \item{n_genes}{maximum number of genes shown in a word cloud}
 
-\item{organism}{the organism that the gene lists correspond to. The format should be
-as follows: "hsapiens", "mmusculus", "scerevisiae", etc.}
+\item{organism}{the organism that the gene lists correspond to. The format
+should be as follows: "hsapiens", "mmusculus", "scerevisiae", etc.}
 
 \item{\dots}{GO annotation filtering parameters as defined in
 \code{\link{gosummaries.default}}}
@@ -42,23 +45,24 @@ as follows: "hsapiens", "mmusculus", "scerevisiae", etc.}
 A gosummaries object.
 }
 \description{
-The gosummaries object is created based on the differentially expresed genes, each
-contrast defines one component.
+The gosummaries object is created based on the differentially expresed
+genes, each contrast defines one component.
 }
 \details{
-The usual differential expression analysis involves making several comparisons
-between treatments ehere each one yields an up and down regulated gene list. In a
-GOsummaries figure each comparison is displayed as one component with two wordclouds.
-If expression matrix is attached then the panel shows the expression values for each
-gene as boxplots, if not then number of genes is displayed
+The usual differential expression analysis involves making several
+comparisons between treatments ehere each one yields an up and down
+regulated gene list. In a GOsummaries figure each comparison is displayed as
+one component with two wordclouds. If expression matrix is attached then the
+panel shows the expression values for each gene as boxplots, if not then
+number of genes is displayed
 
-It is possible to show the gene names instead of GO annotations in the wordclouds.
-The word sizes in wordclouds are defined by the limma p-values.
-As the gene identifiers in expression matrices are usually rather unintelligible then
-they are automatically converted into gene names using  \code{\link{gconvert}}
- function. It is possible to show also the original identifiers by setting
- \code{gconvert_target} to NULL. This can be useful if the values do not correspond
-to genes, but for example metabolites.
+It is possible to show the gene names instead of GO annotations in the
+wordclouds. The word sizes in wordclouds are defined by the limma p-values.
+As the gene identifiers in expression matrices are usually rather
+unintelligible then they are automatically converted into gene names using
+\code{\link{gconvert}} function. It is possible to show also the original
+identifiers by setting \code{gconvert_target} to NULL. This can be useful if
+the values do not correspond to genes, but for example metabolites.
 }
 \examples{
 \dontrun{
@@ -68,14 +72,18 @@ data(tissue_example)
 mm = model.matrix(~ factor(tissue_example$annot$Tissue) - 1)
 colnames(mm) = make.names(levels(factor(tissue_example$annot$Tissue)))
 
-contrast = limma::makeContrasts(brain - cell.line, hematopoietic.system - muscle, cell.line - hematopoietic.system, levels = colnames(mm))
+contrast = limma::makeContrasts(brain - cell.line,
+                                hematopoietic.system - muscle,
+                                cell.line - hematopoietic.system,
+                                levels = colnames(mm))
 
 fit = limma::lmFit(tissue_example$exp, mm)
 fit = limma::contrasts.fit(fit, contrast)
 fit = limma::eBayes(fit)
 
 gs_limma = gosummaries(fit)
-gs_limma_exp = gosummaries(fit, exp = tissue_example$exp, annotation = tissue_example$annot)
+gs_limma_exp = gosummaries(fit, exp = tissue_example$exp,
+                           annotation = tissue_example$annot)
 
 plot(gs_limma, fontsize = 8)
 plot(gs_limma, panel_height = 0, fontsize = 8)

@@ -14,10 +14,10 @@ customize(p, par)
 a ggplot2 plot object with added customizations
 }
 \description{
-This function is supposed to make small changes in the panel function appearance like
-changing color scheme for example. It has to match with the output of the
-corresponding panel function. Check examples in plot.gosummaries to see how to write
-one yourself.
+This function is supposed to make small changes in the panel function
+appearance like changing color scheme for example. It has to match with the
+output of the corresponding panel function. Check examples in
+plot.gosummaries to see how to write one yourself.
 }
 \examples{
 \dontrun{
@@ -28,7 +28,8 @@ cust = function(p, par){
 	return(p)
 }
 
-plot(gs_limma_exp, classes = "Tissue", panel_plot = panel_boxplot, panel_customize = cust, fontsize = 8)
+plot(gs_limma_exp, classes = "Tissue", panel_plot = panel_boxplot,
+		panel_customize = cust, fontsize = 8)
 }
 }
 \author{

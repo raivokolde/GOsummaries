@@ -23,7 +23,8 @@ add_to_slot.gosummaries(x, slot, values)
 
 \item{x}{a gosummaries object}
 
-\item{slot}{the component slot name to be filled (e.g Title, Percentage, etc.)}
+\item{slot}{the component slot name to be filled (e.g Title, Percentage,
+etc.)}
 
 \item{values}{list of values where each element corresponds to one component}
 }
@@ -31,7 +32,8 @@ add_to_slot.gosummaries(x, slot, values)
 Functions for working with gosummaries object
 }
 \details{
-Method [ ensures that subsetting gosummaries object will not lose the attributes.
+Method [ ensures that subsetting gosummaries object will not lose the
+attributes.
 
 \code{add_to_slot.gosummaries} allows to add values to specific slots in the
 gosummaries object
@@ -40,7 +42,8 @@ gosummaries object
 data(gs_kmeans)
 
 # Add new title to the components
-gs_kmeans_new = add_to_slot.gosummaries(gs_kmeans, "Title", as.list(paste("K-means cluster", 1:length(gs_kmeans))))
+gs_kmeans_new = add_to_slot.gosummaries(gs_kmeans, "Title",
+as.list(paste("K-means cluster", 1:length(gs_kmeans))))
 
 print(gs_kmeans_new)
 }

@@ -8,23 +8,26 @@ add_expression.gosummaries(gosummaries, exp, annotation = NULL)
 \arguments{
 \item{gosummaries}{a gosummaries object}
 
-\item{exp}{an expression matrix, with row names corresponding to the names in the
-Gene_lists slot}
+\item{exp}{an expression matrix, with row names corresponding to the names
+in the Gene_lists slot}
 
-\item{annotation}{a \code{data.frame} describing the samples, its row names should match
-with column names of \code{exp}}
+\item{annotation}{a \code{data.frame} describing the samples, its row names
+should match with column names of \code{exp}}
 }
 \description{
 Function to add expression data and its annotations to a gosummaries object.
 }
 \details{
-The data is added to the object in a "long" format so it would be directly usable by
-the ggplot2 based panel drawing functions \code{\link{panel_boxplot}} etc. For each
-component it produces a data frame with columns:
+The data is added to the object in a "long" format so it would be directly
+usable by the ggplot2 based panel drawing functions
+\code{\link{panel_boxplot}} etc. For each component it produces a data frame
+with columns:
 \itemize{
-  \item \bold{x} : sample IDs for the x axis, their factor order is the same as on the columns of input matrix
+  \item \bold{x} : sample IDs for the x axis, their factor order is the same
+as on the columns of input matrix
   \item \bold{y} : expression values from the matrix
-  \item  . . . : sample annotation columns from the annotation table that can be displayed on figure as colors.
+  \item  . . . : sample annotation columns from the annotation table that
+can be displayed on figure as colors.
 }
 }
 \examples{
@@ -33,12 +36,14 @@ data(gs_limma)
 data(tissue_example)
 
 # Add just expression without annotations
-gs_limma_exp1 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp)
+gs_limma_exp1 = add_expression.gosummaries(gs_limma, exp =
+tissue_example$exp)
 
 print(gs_limma_exp1)
 
 # Add expression with annotations
-gs_limma_exp2 = add_expression.gosummaries(gs_limma, exp = tissue_example$exp, annotation = tissue_example$annot)
+gs_limma_exp2 = add_expression.gosummaries(gs_limma, exp =
+tissue_example$exp, annotation = tissue_example$annot)
 
 print(gs_limma_exp1)
 }

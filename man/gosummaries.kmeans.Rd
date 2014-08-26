@@ -9,16 +9,16 @@
 \arguments{
 \item{x}{an object of class \code{kmeans}}
 
-\item{exp}{an expression matrix, with row names corresponding to the names of the
-genes in clusters (Optional)}
+\item{exp}{an expression matrix, with row names corresponding to the names
+of the genes in clusters (Optional)}
 
-\item{annotation}{a \code{data.frame} describing the samples, its row names should
-match with column names of \code{exp} (Optional)}
+\item{annotation}{a \code{data.frame} describing the samples, its row names
+should match with column names of \code{exp} (Optional)}
 
 \item{components}{numeric vector of clusters to annotate}
 
-\item{organism}{the organism that the gene lists correspond to. The format should be
-as follows: "hsapiens", "mmusculus", "scerevisiae", etc.}
+\item{organism}{the organism that the gene lists correspond to. The format
+should be as follows: "hsapiens", "mmusculus", "scerevisiae", etc.}
 
 \item{\dots}{GO annotation filtering parameters as defined in
 \code{\link{gosummaries.default}}}
@@ -27,19 +27,20 @@ as follows: "hsapiens", "mmusculus", "scerevisiae", etc.}
 A gosummaries object.
 }
 \description{
-The gosummaries object is created based on the genes in the clusters, it is possible
-to add corresponding gene expression data as well.
+The gosummaries object is created based on the genes in the clusters, it is
+possible to add corresponding gene expression data as well.
 }
 \details{
-The k-means clustering of expression matrix naturally defines a set of gene lists
-that can be annotated functionally and displayed as a GOsummaries figure. This
-functon takes in a \code{kmeans} object and and converts it to a \code{gosummaries}
-object that can be plotted. If expression matrix is attached then the panel shows the
-expression values for each gene as boxplots, if not then number of genes is displayed
+The k-means clustering of expression matrix naturally defines a set of gene
+lists that can be annotated functionally and displayed as a GOsummaries
+figure. This functon takes in a \code{kmeans} object and and converts it to
+a \code{gosummaries} object that can be plotted. If expression matrix is
+attached then the panel shows the expression values for each gene as
+boxplots, if not then number of genes is displayed
 
-It is advisable to filter some genes out before doing the clustering since the very
-large gene lists (more than 2000 genes) might fail the annotation step and are
-usually not too specific either.
+It is advisable to filter some genes out before doing the clustering since
+the very large gene lists (more than 2000 genes) might fail the annotation
+step and are usually not too specific either.
 }
 \examples{
 \dontrun{
