@@ -20,11 +20,11 @@ Imports:
     reshape2,
     limma,
     gtable
+Suggests:
+    vegan
 LinkingTo: Rcpp
-URL:
-    https://github.com/raivokolde/GOsummaries
-biocViews: 
-    GeneExpression,
+URL: https://github.com/raivokolde/GOsummaries
+biocViews: GeneExpression,
     Clustering,
     GO,
     Visualization
