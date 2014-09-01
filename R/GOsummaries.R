@@ -733,7 +733,7 @@ open_file_con = function(filename, width, height){
 }
 
 panelize_ggplot2 = function(plot_function, customize_function, par){
-    res = function(data, fontsize, legend = F){
+    res = function(data, fontsize, legend = FALSE){
         p = plot_function(data, fontsize, par)
         p = customize_function(p, par)
         p = ggplot2::ggplot_build(p)
