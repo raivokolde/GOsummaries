@@ -59,14 +59,9 @@ bool is_overlap(double x1, double y1, double sw1, double sh1, NumericMatrix boxe
 	return false;
 }
 
-// declarations
-extern "C" {
-SEXP findCoordinates( SEXP width, SEXP height) ;
-}
-
 // definition
 
-SEXP findCoordinates( SEXP width, SEXP height ){
+extern "C" SEXP findCoordinates( SEXP width, SEXP height ){
 	BEGIN_RCPP
 	Rcpp::NumericVector width1(width);
 	Rcpp::NumericVector height1(height);
@@ -127,14 +122,11 @@ SEXP findCoordinates( SEXP width, SEXP height ){
 }
 
 
-// declarations
-extern "C" {
-SEXP findCoordinates_left( SEXP width, SEXP height) ;
-}
+
 
 // definition
 
-SEXP findCoordinates_left( SEXP width, SEXP height ){
+extern "C" SEXP findCoordinates_left( SEXP width, SEXP height ){
 	BEGIN_RCPP
 	Rcpp::NumericVector width1(width);
 	Rcpp::NumericVector height1(height);
@@ -202,14 +194,10 @@ SEXP findCoordinates_left( SEXP width, SEXP height ){
 	END_RCPP
 }
 
-// declarations
-extern "C" {
-SEXP findCoordinates_left_top( SEXP width, SEXP height) ;
-}
 
 // definition
 
-SEXP findCoordinates_left_top( SEXP width, SEXP height ){
+extern "C" SEXP findCoordinates_left_top( SEXP width, SEXP height ){
 	BEGIN_RCPP
 	Rcpp::NumericVector width1(width);
 	Rcpp::NumericVector height1(height);
@@ -266,12 +254,12 @@ SEXP findCoordinates_left_top( SEXP width, SEXP height ){
 }
 
 // register methods
+R_CallMethodDef CallMethods[] = {
+	{"findCoordinates", (DL_FUNC) &findCoordinates, 2},
+	{"findCoordinates_left", (DL_FUNC) &findCoordinates_left, 2},
+	{"findCoordinates_left_top", (DL_FUNC) &findCoordinates_left_top, 2}
+};
+
 void R_init_GOsummaries(DllInfo *info){
-	R_CallMethodDef CallMethods[] = {
-		{"findCoordinates", (DL_FUNC) &findCoordinates, 2},
-		{"findCoordinates_left", (DL_FUNC) &findCoordinates_left, 2},
-		{"findCoordinates_left_top", (DL_FUNC) &findCoordinates_left_top, 2}
-	};
-	
 	R_registerRoutines(info, NULL, CallMethods, NULL, NULL);
 }
