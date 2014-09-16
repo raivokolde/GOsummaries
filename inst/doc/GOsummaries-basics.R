@@ -1,14 +1,20 @@
 ### R code from vignette source 'GOsummaries-basics.Rnw'
 
 ###################################################
-### code chunk number 1: myCodeBlock
+### code chunk number 1: style-Sweave
+###################################################
+BiocStyle::latex()
+
+
+###################################################
+### code chunk number 2: myCodeBlock
 ###################################################
 library(GOsummaries, quietly=TRUE)
 library(vegan, quietly=TRUE)
 
 
 ###################################################
-### code chunk number 2: example1
+### code chunk number 3: example1
 ###################################################
 # Define gene lists
 genes1 = c("203485_at", "209469_at", "209470_s_at", "203999_at", 
@@ -30,7 +36,7 @@ plot(gs, fontsize = 8, filename = "figure2.pdf")
 
 
 ###################################################
-### code chunk number 3: Example2
+### code chunk number 4: Example2
 ###################################################
 data(tissue_example)
 
@@ -49,7 +55,7 @@ plot(gs_kmeans, fontsize = 8, classes = "Tissue", filename = "figure3.pdf")
 
 
 ###################################################
-### code chunk number 4: Example3
+### code chunk number 5: Example3
 ###################################################
 cust = function(p, par){
 	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 2)
@@ -60,21 +66,21 @@ classes = "Tissue", components = 1:2, filename = "ex3.pdf")
 
 
 ###################################################
-### code chunk number 5: ExampleUserSupplied
+### code chunk number 6: ExampleUserSupplied
 ###################################################
 wcd1 = data.frame(Term = c("KLF1", "KLF2", "POU5F1"), Score = c(0.05, 0.001, 0.0001))
 wcd2 = data.frame(Term = c("CD8", "CD248", "CCL5"), Score = c(0.02, 0.005, 0.00001))
 
 
 ###################################################
-### code chunk number 6: ExampleUserSupplied2
+### code chunk number 7: ExampleUserSupplied2
 ###################################################
 gs = gosummaries(wc_data = list(Results1 = wcd1, Results2 = wcd2))
 plot(gs, filename = "figure5.pdf")
 
 
 ###################################################
-### code chunk number 7: ExampleUserSupplied3
+### code chunk number 8: ExampleUserSupplied3
 ###################################################
 # To get two word clouds per block use neted lists
 gs = gosummaries(wc_data = list(Results = list(wcd1, wcd2)))
@@ -82,7 +88,7 @@ plot(gs, filename = "figure6.pdf")
 
 
 ###################################################
-### code chunk number 8: ExampleMetagenomic
+### code chunk number 9: ExampleMetagenomic
 ###################################################
 data(metagenomic_example)
 
@@ -97,7 +103,7 @@ plot(gs, class = "BodySite", fontsize = 8, file = "figure7.pdf")
 
 
 ###################################################
-### code chunk number 9: SessionInfo
+### code chunk number 10: SessionInfo
 ###################################################
 sessionInfo()
 
