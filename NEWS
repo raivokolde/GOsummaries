@@ -1,0 +1,22 @@
+Version 0.99.3 
+-------------------------------------------------------------------------------
+* Updated Vignette tu biocStyle
+* Form now GOsummaries is going to live in Bioconductor and ths version supercedes the CRAN version 1.1
+
+Version 0.99.2 
+-------------------------------------------------------------------------------
+* Reformatted code for Bioconductor 
+* Improved Vignette
+
+
+Version 1.1
+-------------------------------------------------------------------------------
+* Added support for custom data in word clouds (see gosummaries functions)
+* Now it is possible to display genes instead of GO categories (see show_genes parameter in gosummaries.MArrayLM, gosummaries.prcomp and gosummaries.matrix)
+* Added function gosummaries.matrix that takes in a matrix that is a MDS representation of data and expression matrix and then finds most correlated features for each MDS component.	
+
+Version 1.0
+-------------------------------------------------------------------------------
+First version of the package
+
+

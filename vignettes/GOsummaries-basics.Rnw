@@ -1,0 +1,271 @@
+\documentclass[a4paper]{article}
+\special{papersize=210mm,297mm}
+
+% \usepackage[top=2in, bottom=2in, left=3cm,right=3cm]{geometry}
+\usepackage{Sweave}
+% \usepackage{hyperref}
+
+<<style-Sweave, eval=TRUE, echo=FALSE, results=tex>>=
+BiocStyle::latex()
+@
+
+\begin{document}
+
+%\VignetteIndexEntry{GOsummaries basics}
+%\VignetteKeyword{gosummaries}
+
+
+<<myCodeBlock, echo=FALSE>>=
+library(GOsummaries, quietly=TRUE)
+library(vegan, quietly=TRUE)
+@
+
+\title{GOsummaries basics}
+\author{Raivo Kolde \texttt{raivo.kolde@eesti.ee}}
+\date{\today}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+\label{s:introduction}
+\texttt{GOsummaries} is a package to visualise Gene Ontology (GO) enrichment analysis results on gene lists arising from different analyses such clustering or PCA. The significant GO categories are visualised as word clouds that can be combined with different plots summarising the underlying data.
+
+\section{Elements of a  \Rpackage{GOsummaries} plot}
+\label{s:elements}
+
+Figure \ref{fig:gs} shows an example of plot generated with  \Rpackage{GOsummaries} package. All the  \Rpackage{GOsummaries} plots have more or less the same layout, however, the elements are adjusted corresponding to the underlying analysis. The plot is built of components (Fig \ref{fig:gs}A) that represent a gene list or a pair of gene lists as in Fig \ref{fig:gs}. Each component is composed of two parts the word cloud(s) (Fig \ref{fig:gs}E), representing the GO annotations of the gene lists, and a panel (Fig \ref{fig:gs}C) that displays the underlying data experimental data. In this case the panel shows the expression values of the corresponding genes. There are also slots for the component title (Fig \ref{fig:gs}B) and some additional information about the gene lists (Fig \ref{fig:gs}D). 
+
+In the word clouds the sizes of the GO categories indicate the strength of enrichment, relative to the other results of the same query. To make global comparison of the strength of enrichment possible we use different shades of grey.   
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=140mm]{GS.pdf}
+	\caption{Elements of a GO summaries figure}\label{fig:gs}
+\end{figure}
+
+\section{Usage of  \Rpackage{GOsummaries}}
+\label{s:usage}
+In most cases the  \Rpackage{GOsummaries} figures can be created using only two commands: \Rfunction{gosummaries} to create the object that has all the necessary information for drawing the plot and  \Rfunction{plot.gosummaries} to actually draw the plot.
+
+The \Rfunction{gosummaries} function requires a set of gene lists as an input. It applies GO enrichment analysis to these gene lists using g:Profiler (http://biit.cs.ut.ee/gprofiler/) web toolkit and saves the results into a \Robject{gosummaries} object. Then one can add experimental data and configure the slots for additional information. 
+
+However, this can be somewhat complicated. Therefore, we have provided several convenience functions to that generate the \Robject{gosummaries} objects based on the output of the most common analyses. We have functions \Rfunction{gosummaries.kmeans},\Rfunction{gosummaries.prcomp} and \Rfunction{gosummaries.MArrayLM}, for k-means clustering, principal component analysis (PCA) and linear models with \Biocpkg{limma}. These functions extract the gene lists right from the corresponding objects, run the GO enrichment and optionally add the experimental data in the right format. 
+
+The \Robject{gosummaries} can be plotted using the \Rfunction{plot} function. The figures might not fit into the plotting window, since the plot has to have rather strict layout to be readable. Therefore, it is advisable to write it into a file (file name can be given as a parameter). 
+
+Creating a simplest \Rpackage{GOsummaries} plot, starting from the gene lists goes as follows (example taken from \Rcode{?GOsummaries}):
+
+<<example1>>=
+# Define gene lists
+genes1 = c("203485_at", "209469_at", "209470_s_at", "203999_at", 
+	"205358_at", "203130_s_at", "210222_s_at", "202508_s_at", "203001_s_at", 
+	"207957_s_at", "203540_at", "203000_at", "219619_at","221805_at",
+	 "214046_at", "213135_at", "203889_at", "209990_s_at", "210016_at", 
+	"202507_s_at","209839_at", "204953_at", "209167_at", "209685_s_at",  
+	"211276_at", "202391_at", "205591_at","201313_at")
+genes2 = c("201890_at", "202503_s_at", "204170_s_at", "201291_s_at", 
+	"202589_at", "218499_at", "209773_s_at", "204026_s_at", "216237_s_at", 
+	"202546_at", "218883_s_at", "204285_s_at", "208659_at", "201292_at", 
+	"201664_at")
+gl = list(List = list(genes1, genes2)) # Two lists per component
+
+# Construct gosummaries objects
+gs = gosummaries(gl)
+
+plot(gs, fontsize = 8, filename = "figure2.pdf")
+@
+
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=140mm]{figure2.pdf}
+	\caption{Simplest GO summaries figure.}
+	\label{fig:ex1}
+\end{figure}
+
+In this example we had only the gene lists and no additional data to display in panel. In these situations \Rpackage{GOsummaries} displays by default just the number of genes. 
+
+These gene lists can be also displayed as separate components if the input gene list would have been constructed a bit differently.
+
+\begin{verbatim}
+	> gl = list(List1 = genes1, List2 = genes2)
+\end{verbatim}
+
+\subsection{Configuring the GO analysis}  
+Main task for the \Rfunction{gosummaries} function is to perform the GO enrichment analysis. To be able to fit the GO enrichment results into the word cloud, we have to reduce their number quite a bit.  We have defined some default parameters for this. Still, there might be a need to adjust those parameters. These parameters apply to all versions of the \Rfunction{gosummaries} function.   
+
+In the first step we throw out results from less interesting GO branches. For example, by default we throw out results from Molecular Function and Cellular Component branch, since the results are often not as interesting. But this behaviour can be changed using the \Rcode{go\_branches} parameter. 
+
+Then we throw out categories that are either too big or too small, since very small categories might not describe the gene list as a whole and very large categories on contrary can be too generic. The exact values for these parameters can be controlled by parameters \Rcode{min\_set\_size} and \Rcode{max\_set\_size}
+
+Finally we have set an upper limit for the number of categories to display, this can be changed using \Rcode{max\_signif} parameter. Of course, one can change also the p-value threshold with \Rcode{max\_p\_value}.
+
+It is also important to note that we assume, that the gene lists are ordered. If they are not then the option \Rcode{ordered\_query} should be set to FALSE. 
+
+\subsection{Adding expression data}
+In case of clustering and differential expression there is an option to display expression data alongside the word clouds (see Figure \ref{fig:gs}). In there, each boxplot represents the distribution of expression values of the genes in the  current list in one particular sample. If samples correspond to different classes, tissues or treatments then it can be shown with different colours.
+
+In \Rfunction{gosummaries.kmeans} and \Rfunction{gosummaries.MArrayLM} we have special parameters to add the expression data and its annotations: \Rcode{exp} and \Rcode{annotation}. The \Rcode{exp} variable takes in an expression matrix, where rows correspond to genes and columns to samples. The correct expression values are extracted, based on the row names. Therefore, gene names in the gene list have to be present in the expression matrix. The \Rcode{annotation} parameter accepts a \Rcode{data.frame} where each row describes one sample. Therefore, the column names of \Rcode{exp} have to be present in the row names of \Rcode{annotation}.
+
+Here is an example of adding the expression data:
+
+<<Example2>>=
+data(tissue_example)
+
+# Filter genes and perform k-means
+sd = apply(tissue_example$exp, 1, sd)
+exp2 = tissue_example$exp[sd > 0.75,]
+exp2 = exp2 - apply(exp2, 1, mean)
+kmr = kmeans(exp2, centers = 6, iter.max = 100)
+
+# Create gosummaries object
+exp2[1:6, 1:5]
+head(tissue_example$annot)
+
+gs_kmeans = gosummaries(kmr, components = 1:2, exp = exp2, annotation = tissue_example$annot)
+plot(gs_kmeans, fontsize = 8, classes = "Tissue", filename = "figure3.pdf")
+@
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=140mm]{figure3.pdf}
+	\caption{K-means plot with added expression data.}
+	\label{fig:ex2}
+\end{figure}
+
+If one wants to add expression data to a custom \Robject{gosummaries} object then it is possible to use a function \Rcode{add\_expression.gosummaries} that adds the expression data to an existing \Robject{gosummaries} object. The other parameters  \Rcode{exp} and \Rcode{annotation} work as described above. For example, if we want to add expression data to the \Robject{gosummaries} object from the first example, we can write.
+
+\begin{verbatim}
+> data(tissue_example)
+> gs_exp = add_expression.gosummaries(gs, exp = tissue_example$exp, 
+annotation = tissue_example$annot)
+Using  as id variables
+Using  as id variables
+\end{verbatim}
+
+
+\subsection{Configuring the plot appearance}
+The layout of the plot is fixed. However, it is still possible to configure some parameters. For example, the proportions of the panel area with parameters \Rcode{panel\_height} and \Rcode{panel\_width}. The unit for these measures is lines of text. Using these units keeps the proportions of the plot similar even if we change the \Rcode{fontsize}. The panel height parameter is most useful if one wants to omit the panel area completely. Then one can set the \Rcode{panel\_height} to 0. 
+
+The content of the panels is drawn by the function that is specified in the \Rcode{panel\_plot} parameter. If one uses the built-in functions, such as \Rfunction{gosummaries.prcomp}, \Rfunction{gosummaries.kmeans}, etc. then the most suitable panel drawing function is selected automatically. Without any expression data, only the number of genes is displayed in there. In case of PCA, we display projection of the values to the principal component as histogram. For clustering and differential expression we show the boxplots of the expression in different samples. Instead of boxplot, one can use also the violin plot (\Rfunction{panel\_violin}) or combination of boxplot and violin plot (\Rfunction{panel\_violin\_box}).
+
+All the panel drawing functions basically generate a \CRANpkg{ggplot2} plot based on the \Rcode{Data} slot in a component of \Robject{gosummaires} object. From there we extract the plot area to display in panel and also the legend. In principle it is possible to define your own functions, as long as its input and output are match our functions and it conforms to the data in the \Rcode{Data} slot in the components of \Robject{gosummaires} object. See the help of \Rcode{panel\_boxplot} and the source of these functions for more information.
+
+If one wants to make smaller changes to the panels, such as, change the colour scheme, then for this we have easier means than defining new panel function. With the parameter \Rfunction{panel\_customize} one can specify a function that modifies the plot created with the \Rfunction{panel\_plot} function. For example the default function \Rfunction{customize} looks like this.
+
+\begin{verbatim}
+function(p, par){
+	p = p + ggplot2::scale_fill_discrete(par$classes)
+	return(p)
+}
+\end{verbatim}
+
+To select a different colour scheme one can modify that function and and give it to the \Rfunction{plot.gosummaires} function.
+<<Example3>>=
+cust = function(p, par){
+	p = p + scale_fill_brewer(par$classes, type = "qual", palette = 2)
+	return(p)
+}
+plot(gs_kmeans, panel_plot = panel_violin, panel_customize = cust, 
+classes = "Tissue", components = 1:2, filename = "ex3.pdf")
+@
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=140mm]{ex3.pdf}
+	\caption{K-means plot with modified color scheme and violin plots instead of boxplots.}
+	\label{fig:ex3}
+\end{figure}
+
+
+\section{Using other annotation sources for word clouds}
+Right now the default pipeline always runs a g:Profiler query on the given genes and displays the results as word clouds. However, there are several situations where it would be reasonable  to use data from some other source in the word clouds. For example, other GO enrichment tools might give more reasonable results.
+
+For such cases there is a parameter \Rcode{wc\_data} in \Rfunction{gosummaries.default} where one can enter arbitrary data that will be shown on word clouds. The input structure is similar to the gene list input , only instead of vectors with gene names it requires data frames with two columns: "Term" and "Score". Where Term is the text that is being drawn and Score determines its size. 
+
+<<ExampleUserSupplied>>=
+wcd1 = data.frame(Term = c("KLF1", "KLF2", "POU5F1"), Score = c(0.05, 0.001, 0.0001))
+wcd2 = data.frame(Term = c("CD8", "CD248", "CCL5"), Score = c(0.02, 0.005, 0.00001))
+@
+
+To get one word cloud per block use flat list.
+<<ExampleUserSupplied2>>=
+gs = gosummaries(wc_data = list(Results1 = wcd1, Results2 = wcd2))
+plot(gs, filename = "figure5.pdf")
+@
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=140mm]{figure5.pdf}
+	\caption{User supplied wordcloud data as two components}
+	\label{fig:ex4}
+\end{figure}
+
+To get two word clouds per block use neted lists.    
+<<ExampleUserSupplied3>>=	
+# To get two word clouds per block use neted lists
+gs = gosummaries(wc_data = list(Results = list(wcd1, wcd2)))
+plot(gs, filename = "figure6.pdf")
+@
+
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=140mm]{figure6.pdf}
+	\caption{User supplied wordcloud data as one components}
+	\label{fig:ex5}
+\end{figure}
+
+One can also add the gene lists when specifying \Rcode{wc\_data}, but they can be in many cases omitted. This option makes it easy to incorporate the GO enrichment results from other tools. 
+
+\subsection{Attributes}
+Several general properties of the plot are stored in the attributes of \Robject{gosummaries} object. If needed, these can be changed using the \Rfunction{attr} function. 
+
+\begin{itemize}
+	\item \Rcode{score\_type}: Specifies how to handle the scores associated to words in word clouds. In case of "count", the score is expected to be positive and the word sizes are directly proportional to the scores. In case of "p-value", the word sizes are proportional to $-\log_{10}$ of the score. 
+	\item \Rcode{wc\_algorithm} Specifies the word cloud layout algorithm. In case of "top", the word placement starts from the top corner, in case of "middle" from the centre of left or right side of the box. 
+	\item \Rcode{wordcloud\_legend\_title} Gives the title of the word cloud.
+\end{itemize}
+
+\subsection{Displaying gene names instead of GO categories}
+If the gene lists or the whole dataset is very small then the GO analysis might not give many significant results. In these cases it would be more reasonable to show the names of genes instead. It is possible to add the gene lists as described above with \Rcode{wc\_data}. However, more convenient means are implemented for PCA, limma and MDS results in \Rfunction{gosummaries.prcomp}, \Rfunction{gosummaries.MArrayLM} and \Rfunction{gosummaries.matrix} respectively. 
+
+In each case there is a parameter \Rcode{show\_genes} that toggles if gene names or GO categories are shown. The parameters to decide the importance for different genes vary between these functions. For PCA we use the size of the component loadings, for limma we use the adjusted p-value and for MDS we use the p-values of Spearman rank correlation with the components. 
+
+As gene identifiers in expression matrices can be unintelligible then by default these functions convert the identifiers into gene names using \Rfunction{gconvert} function from \Rpackage{gProfileR} package. It is possible to turn this function off as well by setting parameter \Rcode{gconvert\_target} to \Rcode{NULL}.  
+
+These options are especially important when use \Rpackage{GOsummaries} on data that is not describing genes. For example, PCA analysis is often used for other high throughput experiments, such as metabolomics and metagenomics. Using the \Rpackage{GOsummaries} approach on these datasets can be very revealing. 
+
+\subsubsection{Example: metagenomics}
+Principal Coordinate Analysis is very common on metagenomics data. To conveniently visualise these results with \Rpackage{GOsummaries}, there is a function \Rfunction{gosummaries.matrix}. Since the rows represent taxa instead of genes we cannot use GO enrichment analysis, but we can show the names of taxons. 
+
+<<ExampleMetagenomic>>=
+data(metagenomic_example)
+
+# Run Principal Coordinate Analysis on Bray-Curtis dissimilarity matrix 
+pcoa = cmdscale(vegdist(t(metagenomic_example$otu), "bray"), k = 3)
+
+# By turning off the GO analysis we can show the names of taxa
+gs = gosummaries(pcoa, metagenomic_example$otu, metagenomic_example$annot,
+                 show_genes = T, gconvert_target = NULL, n_genes = 30)
+
+plot(gs, class = "BodySite", fontsize = 8, file = "figure7.pdf")
+@
+
+\begin{figure}[!ht]
+     \centering
+     \includegraphics[width=140mm]{figure7.pdf}
+     \caption{Visualisation of PCoA results on metagenomic data}
+     \label{fig:metagenomics}
+\end{figure}
+
+\pagebreak
+\section{Session info}
+<<SessionInfo>>=
+sessionInfo()
+@
+
+
+
+
+\end{document}
