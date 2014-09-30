@@ -1,7 +1,11 @@
+Version 1.99.3
+-------------------------------------------------------------------------------
+* Bumped the version number to 1.99.3
+
 Version 0.99.3 
 -------------------------------------------------------------------------------
-* Updated Vignette tu biocStyle
-* Form now GOsummaries is going to live in Bioconductor and ths version supercedes the CRAN version 1.1
+* Updated Vignette to biocStyle
+* Form now GOsummaries is going to live in Bioconductor and this version supersedes the CRAN version 1.1
 
 Version 0.99.2 
 -------------------------------------------------------------------------------

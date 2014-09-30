@@ -1,18 +1,30 @@
 Package: GOsummaries
 Version: 1.99.3
-Date: 2014-09-16
+Date: 2014-09-29
 License: GPL (>= 2)
-Description: A package to visualise Gene Ontology (GO) enrichment
-        analysis results on gene lists arising from different analyses
-        such clustering or PCA. The significant GO categories are
-        visualised as word clouds that can be combined with different
-        plots summarising the underlying data.
+Description: A package to visualise Gene Ontology (GO) enrichment analysis
+    results on gene lists arising from different analyses such clustering or
+    PCA. The significant GO categories are visualised as word clouds that can
+    be combined with different plots summarising the underlying data.
 Title: Word cloud summaries of GO enrichment analysis
 Author: Raivo Kolde <raivo.kolde@eesti.ee>
 Maintainer: Raivo Kolde <raivo.kolde@eesti.ee>
-Depends: R (>= 2.15), ggplot2, Rcpp
-Imports: plyr, grid, gProfileR, reshape2, limma, gtable
-Suggests: vegan
+Depends:
+    R (>= 2.15),
+    ggplot2,
+    Rcpp
+Imports:
+    plyr,
+    grid,
+    gProfileR,
+    reshape2,
+    limma,
+    gtable
+Suggests:
+    vegan
 LinkingTo: Rcpp
 URL: https://github.com/raivokolde/GOsummaries
-biocViews: GeneExpression, Clustering, GO, Visualization
+biocViews: GeneExpression,
+    Clustering,
+    GO,
+    Visualization
