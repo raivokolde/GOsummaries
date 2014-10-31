@@ -29,3 +29,5 @@ R/.DS_Store
 *.toc
 
 *.pdf
+
+data/.Rhistory
