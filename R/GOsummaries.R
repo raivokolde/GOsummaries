@@ -643,6 +643,9 @@ convert_scores = function(gosummaries){
             scores = gosummaries[[i]]$WCD[[j]]$Score
             
             if(attr(gosummaries, "score_type") == "p-value"){
+                if(any(scores == 0)){
+                    scores[scores == 0] = min(scores[scores != 0])
+                }
                 scores = -log10(scores)
             }
             if(attr(gosummaries, "score_type") == "count"){
@@ -1384,7 +1387,7 @@ panel_dummy = function(data, fontsize = 10, par){
                            ylim = c(-data$max, data$max), width = I(0.6), 
                            xlim = c(0.5, 1.5)) + 
             ggplot2::scale_fill_manual("Regulation direction", values = colors)+
-             ggplot2::theme_bw(base_size = fontsize) + 
+            ggplot2::theme_bw(base_size = fontsize) + 
             ggplot2::theme(legend.position = "none") + 
             ggplot2::coord_flip()
     }
@@ -1655,7 +1658,7 @@ pspearman = function(rho, n, lower.tail = TRUE) {
 
 spearman_mds = function(pc, expression, n_genes){
     n = ncol(expression)
-    cc = cor(t(expression), pc)[,1]
+    cc = cor(t(expression), pc, method = "spearman")[,1]
     res = data.frame(Term = names(cc), Correlation = cc)
     res$Score = pmin(pspearman(res$Correlation, n, lower.tail = FALSE), 
                      pspearman(res$Correlation, n, lower.tail = TRUE))
