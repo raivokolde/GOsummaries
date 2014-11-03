@@ -1634,7 +1634,9 @@ filter_wc_data = function(wc_data, i2g, n_genes){
     wc_data$Term = i2g[toupper(as.character(wc_data$Term))]
     wc_data = wc_data[!is.na(wc_data$Term),]
     wc_data = wc_data[!duplicated(wc_data$Term), ]
-    wc_data = wc_data[1:min(nrow(wc_data), n_genes), ]
+    if(nrow(wc_data) != 0){
+        wc_data = wc_data[1:min(nrow(wc_data), n_genes), ]
+    }
     
     return(wc_data)
 }
@@ -2074,6 +2076,11 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
         
         tt = limma::topTable(x, coef = i, p.value = p.value, lfc = lfc,
                              adjust.method = adjust.method, number = Inf)
+        
+        if(nrow(tt) == 0){
+            tt = data.frame(logFC = numeric(0), AveExpr = numeric(0), t = numeric(0), adj.P.Val = numeric(0), P.Value = numeric(0), B = numeric(0))
+        }
+        
         tt$ID = rownames(tt)
         
         gl_up = as.character(tt$ID[tt$logFC > 0])
@@ -2083,7 +2090,7 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
         g2 = paste(flevels[x$contrasts[, i] > 0], collapse = ", ")
         
         title = sprintf("G1: %s; G2: %s", g1, g2)
-        perc[[i]] = sprintf("G1 > G2: %d\nG1 < G2: %d", length(gl_down), 
+        perc[[title]] = sprintf("G1 > G2: %d\nG1 < G2: %d", length(gl_down), 
                             length(gl_up))
         
         gl[[title]] = list(
@@ -2109,8 +2116,14 @@ gosummaries.MArrayLM = function(x, p.value = 0.05, lfc = 1, adjust.method = "fdr
             
             tt = limma::topTable(x, coef = i, p.value = p.value, lfc = lfc, 
                                  adjust.method = adjust.method, number = Inf)
+            if(nrow(tt) == 0){
+                tt = data.frame(logFC = numeric(0), AveExpr = numeric(0), t = numeric(0), adj.P.Val = numeric(0), P.Value = numeric(0), B = numeric(0))
+            }
+            
             tt$ID = rownames(tt)
-        
+            
+            tt = tt[!is.na(tt$adj.P.Val), ]
+            
             wc_data_up = tt[tt$logFC > 0, c("ID", "adj.P.Val")]
             wc_data_down = tt[tt$logFC < 0, c("ID", "adj.P.Val")]
             
