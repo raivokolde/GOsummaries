@@ -474,6 +474,7 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
                             packageVersion("gProfileR"), 
                             packageVersion("GOsummaries"))
     gProfileR::set_user_agent(ua = user_agent, append = FALSE)
+    # gProfileR::set_base_url(url = "http://biit.cs.ut.ee/gprofiler_archive/r1227_e72_eg19/web/")
     
     gpr = gProfileR::gprofiler(query = gl, organism = organism, 
                                ordered_query = ordered_query, 
@@ -485,6 +486,11 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
     gpr$query.number = as.numeric(as.character(gpr$query.number))
     gpr = filter_gprofiler(gpr, go_branches = go_branches, 
                            min_set_size = min_set_size, max_signif = max_signif)
+    
+    # Make one copy to return to the user
+    gpr_out = data.frame(Query = NA, gpr)
+    
+    # Filter columns
     gpr = gpr[, c("query.number", "p.value", "term.name")]
     colnames(gpr) = c("query.number", "Score", "Term")
     
@@ -493,11 +499,17 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
     for(i in seq_along(components)){
         for(j in seq_along(gosummaries[[i]]$WCD)){
             lname = paste("wcd", j, sep = "")
-            results = gpr[gpr$query.number == k, c("Term", "Score")] 
-            gosummaries[[i]]$WCD[[lname]] = results
+            ind = gpr$query.number == k
+            results = gpr[ind, c("Term", "Score")] 
+            gosummaries[[components[i]]]$WCD[[lname]] = results
+            
+            gpr_out[ind, "Query"] = paste(gosummaries[[components[i]]]$Title, j)
+            
             k = k + 1
         }
     }
+    
+    attr(gosummaries, "gprofiler_results") = gpr_out
     
     return(gosummaries)
 }
