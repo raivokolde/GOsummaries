@@ -33,8 +33,8 @@ findCoordinates_left_top = function (width, height){
 #' @param colors vector of colors fro the words. This vector will be 
 #' extrapolated into as many colors as needed, starting with the first color 
 #' for lower frequencies and ending with last color for higher frequencies.
-#' @param fontface fontface for the words (1 - regular; 2 - Bold; 3 - italic)
 #' @param random.colors if true, assigns random color for the words.
+#' @param fontface fontface for the words (1 - regular; 2 - Bold; 3 - italic)
 #' @param algorithm algorithm to find positions of words possible values: 
 #' "circle", "leftside" and "rightside".
 #' @param tryfit if TRUE the algorithm checks if all words fit to the figure, 
