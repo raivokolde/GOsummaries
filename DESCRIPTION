@@ -1,5 +1,9 @@
 Package: GOsummaries
+<<<<<<< Updated upstream
 Version: 2.3.0
+=======
+Version: 2.1.5
+>>>>>>> Stashed changes
 Date: 2014-09-29
 License: GPL (>= 2)
 Description: A package to visualise Gene Ontology (GO) enrichment analysis
