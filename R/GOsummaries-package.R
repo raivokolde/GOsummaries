@@ -48,6 +48,9 @@
 #' @importFrom ggplot2 scale_y_continuous
 #' @importFrom ggplot2 theme
 #' @importFrom ggplot2 theme_bw
+#' @importFrom ggplot2 aes
+#' @importFrom ggplot2 position_identity
+#' @importFrom ggplot2 scale_fill_brewer
 #' 
 #' @useDynLib GOsummaries 
 #' 

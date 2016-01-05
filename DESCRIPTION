@@ -11,7 +11,6 @@ Author: Raivo Kolde <raivo.kolde@eesti.ee>
 Maintainer: Raivo Kolde <raivo.kolde@eesti.ee>
 Depends:
     R (>= 2.15),
-    ggplot2,
     Rcpp
 Imports:
     plyr,
@@ -19,6 +18,7 @@ Imports:
     gProfileR,
     reshape2,
     limma,
+    ggplot2,
     gtable
 Suggests:
     vegan
