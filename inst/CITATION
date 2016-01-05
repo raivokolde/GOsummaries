@@ -1,1 +1,17 @@
-citation(auto = meta)
+citHeader("To cite GOsummaries in publications use:")
+
+citEntry(entry = "Article",
+  title        = "GOsummaries: an R Package for Visual Functional Annotation of Experimental Data",
+  author       = personList(as.person("Raivo Kolde"),
+                   as.person("Jaak Vilo")),
+  journal      = "F1000Research",
+  year         = "2015",
+  volume       = "4",
+  url          = "http://f1000research.com/articles/4-574/v1",
+
+  textVersion  =
+  paste("Raivo Kolde, Jaak Vilo (2015).",
+        "GOsummaries: an R Package for Visual Functional Annotation of Experimental Data.",
+        "F1000Research.",
+        "URL http://f1000research.com/articles/4-574/v1.")
+)

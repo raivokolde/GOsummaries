@@ -1343,12 +1343,12 @@ panel_violin_box_classes = function(data, fontsize = 10, par){
 ## Panel functions for pca data
 panel_histogram = function(data, fontsize = 10, par){
     if(!is.null(par$classes)){
-        p = ggplot2::qplot(data$x, geom = "bar", fill = data[, par$classes], 
+        p = ggplot2::qplot(data$x, geom = "histogram", fill = data[, par$classes], 
                            binwidth = (max(data$x) - min(data$x)) / 20, 
                            colour = I("grey70")) 
     }
     else{
-        p = ggplot2::qplot(data$x, geom = "bar", 
+        p = ggplot2::qplot(data$x, geom = "histogram", 
                            binwidth = (max(data$x) - min(data$x)) / 20, 
                            data = data)
     }
