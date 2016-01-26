@@ -10,7 +10,7 @@ source("https://bioconductor.org/biocLite.R")
 biocLite("GOsummaries")
 ```
 
-More comprehensive user guide can be found in the [vignette](http://cran.r-project.org/web/packages/GOsummaries/vignettes/GOsummaries-basics.pdf).
+More comprehensive user guide can be found in the [vignette](https://www.bioconductor.org/packages/release/bioc/vignettes/GOsummaries/inst/doc/GOsummaries-basics.pdf).
 
 ## Examples
 
