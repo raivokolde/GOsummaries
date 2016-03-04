@@ -766,6 +766,7 @@ panelize_ggplot2 = function(plot_function, customize_function, par){
             else{
                 res = gtable::gtable(widths = unit(0, "cm"), 
                                      heights = unit(0, "cm"))
+                res = gtable::gtable_add_grob(res, zeroGrob(), 1, 1)
                 return(res)
             }
         }

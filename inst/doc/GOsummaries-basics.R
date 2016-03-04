@@ -11,6 +11,7 @@ BiocStyle::latex()
 ###################################################
 library(GOsummaries, quietly=TRUE)
 library(vegan, quietly=TRUE)
+library(ggplot2, quietly=TRUE)
 
 
 ###################################################

@@ -18,6 +18,7 @@ BiocStyle::latex()
 <<myCodeBlock, echo=FALSE>>=
 library(GOsummaries, quietly=TRUE)
 library(vegan, quietly=TRUE)
+library(ggplot2, quietly=TRUE)
 @
 
 \title{GOsummaries basics}
