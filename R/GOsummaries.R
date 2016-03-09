@@ -1053,6 +1053,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
     else{
         panel_legend = gtable::gtable(widths = unit(0, "cm"), 
                                       heights = unit(0, "cm"))
+        panel_legend = gtable::gtable_add_grob(panel_legend, zeroGrob(), 1, 1)
     }
     
     if(par$wordcloud_colors[1] == par$wordcloud_colors[2]){
