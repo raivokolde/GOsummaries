@@ -766,6 +766,7 @@ panelize_ggplot2 = function(plot_function, customize_function, par){
             else{
                 res = gtable::gtable(widths = unit(0, "cm"), 
                                      heights = unit(0, "cm"))
+                res = gtable::gtable_add_grob(res, zeroGrob(), 1, 1)
                 return(res)
             }
         }
@@ -1052,6 +1053,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
     else{
         panel_legend = gtable::gtable(widths = unit(0, "cm"), 
                                       heights = unit(0, "cm"))
+        panel_legend = gtable::gtable_add_grob(panel_legend, zeroGrob(), 1, 1)
     }
     
     if(par$wordcloud_colors[1] == par$wordcloud_colors[2]){
@@ -1142,37 +1144,7 @@ plot_motor = function(gosummaries, plot_panel, par = list(fontsize = 10, panel_h
 }
 ##
 
-## Panel functions for expression data
-panel_crossbar = function(data, fontsize = 10, par){
-    qq = function(x, ...) {
-        res = data.frame(ymin = quantile(x, 0.05), y = median(x), 
-                         ymax = quantile(x, 0.95))
-        
-        return(res)
-    }
-    
-    if(!is.null(par$classes)){
-        p = ggplot2::qplot(x = data$x, y = data$y, geom = "crossbar", 
-                           stat = "summary", width = 0.7, fun.data = qq, 
-                           fill = data[, par$classes]) + 
-            ggplot2::geom_bar(aes(x = 1, y = 0, fill = data[, par$classes]), 
-                              stat = "identity")
-    }
-    else{
-        p = ggplot2::qplot(x = data$x, y = data$y, geom = "crossbar", 
-                           stat = "summary", width = 0.7, fun.data = qq)
-    }
-    
-    if(inherits(data, "twoListExpData")){
-        p = p + ggplot2::geom_vline(xintercept = length(unique(data$x))/2 + 0.5)
-    }
-    
-    p = p + ggplot2::theme_bw(base_size = fontsize)
-    
-    return(p)
-}
-
- 
+## Panel functions for expression data 
 #' Panel drawing functions 
 #' 
 #' These functions are used to draw the panel portion of every component based 
@@ -1241,13 +1213,24 @@ panel_boxplot = function(data, fontsize = 10, par){
     
     }
     if(!is.null(par$classes)){
-            p = ggplot2::qplot(x = data$x, y = data$y, geom = "boxplot", 
-                               stat = "summary", fun.data = qq, 
-                               fill = data[, par$classes], width = 0.7) 
+            # p = ggplot2::qplot(x = data$x, y = data$y, geom = "boxplot",
+            #                    stat = "summary", fun.data = qq,
+            #                    fill = data[, par$classes], width = 0.7)
+            # browser()
+            data = data[, c("x", "y", par$classes)]
+            colnames(data)[3] = "Class"
+            
+            p = ggplot2::ggplot(aes(x = x, y = y, fill = Class, width = 0.7), 
+                                data = data)
+            p = p + ggplot2::layer(geom = "boxplot", stat = "summary", 
+                                   position = position_identity(), 
+                                   params = list(fun.data = qq, na.rm = T)) 
     }
     else{
-            p = ggplot2::qplot(x = data$x, y = data$y, geom = "boxplot", 
-                               stat = "summary", fun.data = qq, width = 0.7) 
+        p = ggplot2::ggplot(aes(x = x, y = y, width = 0.7), data = data)
+        p = p + ggplot2::layer(geom = "boxplot", stat = "summary", 
+                               position = position_identity(), 
+                               params = list(fun.data = qq, na.rm = T)) 
     }
     
     if(inherits(data, "twoListExpData")){
@@ -1362,12 +1345,12 @@ panel_violin_box_classes = function(data, fontsize = 10, par){
 ## Panel functions for pca data
 panel_histogram = function(data, fontsize = 10, par){
     if(!is.null(par$classes)){
-        p = ggplot2::qplot(data$x, geom = "bar", fill = data[, par$classes], 
+        p = ggplot2::qplot(data$x, geom = "histogram", fill = data[, par$classes], 
                            binwidth = (max(data$x) - min(data$x)) / 20, 
                            colour = I("grey70")) 
     }
     else{
-        p = ggplot2::qplot(data$x, geom = "bar", 
+        p = ggplot2::qplot(data$x, geom = "histogram", 
                            binwidth = (max(data$x) - min(data$x)) / 20, 
                            data = data)
     }
@@ -1381,9 +1364,11 @@ panel_histogram = function(data, fontsize = 10, par){
 panel_dummy = function(data, fontsize = 10, par){
     if(nrow(data$mat) == 1){
         colors = "#336699"
-        p = ggplot2::qplot(1, data$mat$y, geom = "bar", stat = "identity", 
-                           fill = data$mat$x, width = I(0.6), 
-                           ylim = c(0, data$max), xlim = c(0.5, 1.5)) + 
+        p = ggplot2::ggplot(aes(x = 1, y = y, fill = x, width = 0.6), 
+                            data = data$mat) +
+            ggplot2::geom_bar(stat = "identity") + 
+            ggplot2::scale_x_continuous(limits = c(0.5, 1.5)) +
+            ggplot2::scale_y_continuous(limits = c(0, data$max)) +
             ggplot2::scale_fill_manual(values = colors) + 
             ggplot2::theme_bw(base_size = fontsize) + 
             ggplot2::theme(legend.position = "none") + 
@@ -1394,10 +1379,11 @@ panel_dummy = function(data, fontsize = 10, par){
         colors = c("#336699", "#990033")
         data$mat$y[1] = -data$mat$y[1]
         data$mat$x = factor(data$mat$x, labels = c("G1 > G2", "G1 < G2"))
-        p = ggplot2::qplot(1, data$mat$y, geom = "bar", stat = "identity", 
-                           position = "identity", fill = data$mat$x, 
-                           ylim = c(-data$max, data$max), width = I(0.6), 
-                           xlim = c(0.5, 1.5)) + 
+        p = ggplot2::ggplot(aes(x = 1, y = y, fill = x, width = 0.6), 
+                            data = data$mat) +
+            ggplot2::geom_bar(stat = "identity", position = "identity") + 
+            ggplot2::scale_x_continuous(limits = c(0.5, 1.5)) +
+            ggplot2::scale_y_continuous(limits = c(-data$max, data$max)) + 
             ggplot2::scale_fill_manual("Regulation direction", values = colors)+
             ggplot2::theme_bw(base_size = fontsize) + 
             ggplot2::theme(legend.position = "none") + 

@@ -28,12 +28,29 @@
 #' 
 #' @import grid
 #' @import plyr
-#' @import ggplot2
 #' @import gProfileR
 #' @import reshape2
 #' @import limma
 #' @import gtable
 #' @import Rcpp
+#' @importFrom ggplot2 coord_flip
+#' @importFrom ggplot2 geom_bar
+#' @importFrom ggplot2 geom_boxplot
+#' @importFrom ggplot2 geom_vline
+#' @importFrom ggplot2 ggplot
+#' @importFrom ggplot2 ggplot_build
+#' @importFrom ggplot2 ggplot_gtable
+#' @importFrom ggplot2 layer
+#' @importFrom ggplot2 qplot
+#' @importFrom ggplot2 scale_fill_discrete
+#' @importFrom ggplot2 scale_fill_manual
+#' @importFrom ggplot2 scale_x_continuous
+#' @importFrom ggplot2 scale_y_continuous
+#' @importFrom ggplot2 theme
+#' @importFrom ggplot2 theme_bw
+#' @importFrom ggplot2 aes
+#' @importFrom ggplot2 position_identity
+#' @importFrom ggplot2 scale_fill_brewer
 #' 
 #' @useDynLib GOsummaries 
 #' 
