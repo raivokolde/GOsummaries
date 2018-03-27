@@ -31,3 +31,4 @@ R/.DS_Store
 *.pdf
 
 data/.Rhistory
+.Rproj.user

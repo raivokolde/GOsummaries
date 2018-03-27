@@ -293,7 +293,7 @@ gosummaries = function(x = NULL, ...){
 #' @param organism the organism that the gene lists correspond to. The format 
 #' should be as follows: "hsapiens", "mmusculus", "scerevisiae", etc.
 #' @param go_branches GO tree branches and pathway databases as denoted in 
-#' g:Profiler (Possible values: BP, CC, MF, ke, re) 
+#' g:Profiler (Possible values: BP, CC, MF, keg, rea) 
 #' @param max_p_value threshold for p-values that have been corrected for 
 #' multiple testing
 #' @param min_set_size minimal size of functional category to be considered
@@ -317,7 +317,7 @@ gosummaries = function(x = NULL, ...){
 #' @rdname gosummaries
 #' @method gosummaries default
 #' @export
-gosummaries.default = function(x = NULL, wc_data = NULL, organism = "hsapiens", go_branches = c("BP", "ke", "re"), max_p_value = 1e-2, min_set_size = 50, max_set_size = 1000, max_signif = 40, ordered_query = TRUE, hier_filtering = "moderate", score_type = "p-value", wc_algorithm = "middle", wordcloud_legend_title = NULL, ...){
+gosummaries.default = function(x = NULL, wc_data = NULL, organism = "hsapiens", go_branches = c("BP", "keg", "rea"), max_p_value = 1e-2, min_set_size = 50, max_set_size = 1000, max_signif = 40, ordered_query = TRUE, hier_filtering = "moderate", score_type = "p-value", wc_algorithm = "middle", wordcloud_legend_title = NULL, ...){
     
     # Create basic structure
     res = gosummaries_base(gl = x, 
@@ -474,6 +474,7 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
                             packageVersion("gProfileR"), 
                             packageVersion("GOsummaries"))
     gProfileR::set_user_agent(ua = user_agent, append = FALSE)
+    gProfileR::set_base_url("http://biit.cs.ut.ee/gprofiler")
     # gProfileR::set_base_url(url = "http://biit.cs.ut.ee/gprofiler_archive/r1227_e72_eg19/web/")
     
     gpr = gProfileR::gprofiler(query = gl, organism = organism, 

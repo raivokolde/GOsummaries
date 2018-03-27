@@ -52,7 +52,7 @@
 #' @importFrom ggplot2 position_identity
 #' @importFrom ggplot2 scale_fill_brewer
 #' 
-#' @useDynLib GOsummaries 
+#' @useDynLib GOsummaries, .registration = TRUE
 #' 
 #' @aliases GOsummaries
 NULL

@@ -1,5 +1,5 @@
 Package: GOsummaries
-Version: 2.3.4
+Version: 2.3.5
 Date: 2016-03-08
 License: GPL (>= 2)
 Description: A package to visualise Gene Ontology (GO) enrichment analysis
@@ -28,3 +28,4 @@ biocViews: GeneExpression,
     Clustering,
     GO,
     Visualization
+RoxygenNote: 6.0.1

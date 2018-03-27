@@ -1,2 +1,4 @@
 visual_test
 
+^.*\.Rproj$
+^\.Rproj\.user$
