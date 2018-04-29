@@ -318,6 +318,7 @@ gosummaries = function(x = NULL, ...){
 #' @method gosummaries default
 #' @export
 gosummaries.default = function(x = NULL, wc_data = NULL, organism = "hsapiens", go_branches = c("BP", "keg", "rea"), max_p_value = 1e-2, min_set_size = 50, max_set_size = 1000, max_signif = 40, ordered_query = TRUE, hier_filtering = "moderate", score_type = "p-value", wc_algorithm = "middle", wordcloud_legend_title = NULL, ...){
+
     
     # Create basic structure
     res = gosummaries_base(gl = x, 
@@ -475,6 +476,7 @@ annotate.gosummaries = function(gosummaries, organism, components = 1:length(gos
                             packageVersion("GOsummaries"))
     gProfileR::set_user_agent(ua = user_agent, append = FALSE)
     gProfileR::set_base_url("http://biit.cs.ut.ee/gprofiler")
+
     # gProfileR::set_base_url(url = "http://biit.cs.ut.ee/gprofiler_archive/r1227_e72_eg19/web/")
     
     gpr = gProfileR::gprofiler(query = gl, organism = organism, 

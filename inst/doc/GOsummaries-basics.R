@@ -14,6 +14,7 @@ library(vegan, quietly=TRUE)
 library(ggplot2, quietly=TRUE)
 
 
+
 ###################################################
 ### code chunk number 3: example1
 ###################################################
